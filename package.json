@@ -1,6 +1,6 @@
 {
   "name": "git-changelog",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Uses Git to display dynamic vault and file changelogs in the sidebar.",
   "keywords": [],
   "license": "MIT",
