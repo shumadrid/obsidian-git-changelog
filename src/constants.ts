@@ -1,0 +1,19 @@
+export const PLUGIN_NAME = 'Git Changelog';
+export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
+export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.0';
+
+// Icons
+export const ADDITIONS_ICON = 'list-plus';
+export const DELETIONS_ICON = 'list-minus';
+export const FILE_ADDED_ICON = 'file-plus';
+export const FILE_MODIFIED_ICON = 'file-diff';
+export const FILE_DELETED_ICON = 'file-minus';
+export const FILE_RENAMED_ICON = 'file-pen';
+export const CHANGE_INTERVAL_ICON = 'calendar-clock';
+export const TEXT_FILES_SUMMARY_ICON = 'file-type-2';
+export const BINARY_FILES_SUMMARY_ICON = 'file-digit';
+export const TOGGLE_FILE_TREE_ICON = 'folder-tree';
+export const TOGGLE_FILES_SUMMARY_OPTION_ICON = 'list-tree';
+export const OPEN_FILE_ICON = 'file-input';
+export const PLUS_ICON = 'plus';
+export const MINUS_ICON = 'minus';

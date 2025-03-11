@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "allowArbitraryExtensions": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "lib": ["DOM", "ES2024"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "target": "ES2024",
+    "types": ["node", "svelte", "obsidian-typings"],
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "*": ["*"]
+    },
+    "baseUrl": "src",
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "strictPropertyInitialization": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true,
+    "noImplicitThis": true
+  },
+  "include": ["./src/**/*.svelte", "./src/**/*.ts", "./scripts/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
