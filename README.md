@@ -4,9 +4,13 @@ A new plugin that utilizes Git commit history to display dynamic changelogs in y
 
 ## Installation
 
-This plugin is in early beta. The [beta releases](obsidian://brat?plugin=https://github.com/shumadrid/obsidian-git-changelog) can be installed via [BRAT](https://obsidian.md/plugins?id=obsidian42-brat).
+This plugin is currently in early beta. To install the plugin, follow these steps:
 
-It is NOT yet available in [the official Community Plugins repository](https://obsidian.md/plugins).
+1. Make sure to have the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) installed and enabled.
+2. Paste this link in your browser and press enter: `obsidian://brat?plugin=https://github.com/shumadrid/obsidian-git-changelog`
+3. An Obsidian pop-up window should appear. In the window, click the 'Add plugin' button once and wait a few seconds for the plugin to install.
+
+The plugin is NOT yet available in [the official Community Plugins repository](https://obsidian.md/plugins).
 
 > [!IMPORTANT]
 > Requires the [Git plugin](https://github.com/Vinzent03/obsidian-git) to be installed. Installing it and maintaining a Git repository can be beneficial, even if you rely on other sync or backup services.
