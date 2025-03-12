@@ -1,13 +1,15 @@
 # Git Changelog
 
-A new plugin that utilizes Git commit history to display dynamic changelogs in your sidebar.
+A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to display dynamic changelogs in your sidebar.
 
 ## Installation
 
 This plugin is currently in early beta. To install the plugin, follow these steps:
 
 1. Make sure to have the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) installed and enabled.
-2. Paste this link in your browser and press enter: `obsidian://brat?plugin=https://github.com/shumadrid/obsidian-git-changelog`
+2. Paste this link in your browser and press enter: 
+
+    `obsidian://brat?plugin=https://github.com/shumadrid/obsidian-git-changelog`
 3. An Obsidian pop-up window should appear. In the window, click the 'Add plugin' button once and wait a few seconds for the plugin to install.
 
 The plugin is NOT yet available in [the official Community Plugins repository](https://obsidian.md/plugins).
