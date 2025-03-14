@@ -2,25 +2,18 @@ import type { ObsidianGitPlugin } from 'gitPluginTypes.ts';
 import type { Debouncer, PluginSettingTab } from 'obsidian';
 import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 import type { SimpleGit } from 'simple-git';
-import type {
-  FileChangelogEntry,
-  VaultChangelogEntry
-} from 'Views/types.svelte.ts';
 
-import { ChangelogTaskManager } from 'ChangelogTaskManager.svelte.ts';
+import { FileChangelogManager } from 'core/FileChangelogManager.ts';
+import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
 import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
-import {
-  changelogGenerationSettingsUnchanged,
-  fileChangelogGenerationSettingsUnchanged,
-  statusBarSettingsUnchanged,
-  vaultChangelogGenerationSettingsUnchanged
-} from 'settings/helper.ts';
+import { changelogGenerationSettingsUnchanged } from 'settings/helper.ts';
 import { GitChangelogPluginSettings } from 'settings/settings.ts';
 import {
   gitPluginCompatibleVersion,
   gitPluginTestedVersion
 } from 'settings/ui/GitPluginWarning.ts';
+import { TaskManager } from 'TaskManager.svelte.ts';
 import {
   FILE_CHANGELOG_VIEW_CONFIG,
   FileChangelogView
@@ -30,8 +23,6 @@ import {
   VAULT_CHANGELOG_VIEW_CONFIG,
   VaultChangelogView
 } from 'Views/VaultChangelog/VaultChangelog.ts';
-
-import type { ChangelogInterval } from './types.ts';
 
 import { addCommands } from './commands.ts';
 import { GitChangelogSettingsTab } from './settings/settingsTab.ts';
@@ -44,14 +35,13 @@ import {
 } from './types.ts';
 
 export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
-  public cachedActiveGitFile = $state<string>();
   public debouncedChangelogSettingsChangedCheck:
     | Debouncer<[], void>
     | undefined;
 
   public gitPluginState = $state<GitPluginState>(GitPluginState.Uninitialized);
-
   public gitRepoReady = $state<boolean>(false);
+
   public dependenciesReady = $derived(
     (this.gitPluginState === GitPluginState.Enabled ||
       this.gitPluginState === GitPluginState.UntestedVersion) &&
@@ -59,23 +49,13 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   );
 
   public detectedTimeZone: string | undefined;
+  public vaultChangelogManager = $state<VaultChangelogManager>();
 
-  public fileChangelogCacheInterval?: ChangelogInterval;
-  public fileChangelogEntries: FileChangelogEntry[] | undefined = $state();
-
-  // Settings: IGitChangelogSettings;
-
-  public fileChangelogNewBatchEntries: FileChangelogEntry[] | undefined =
-    $state();
-
+  public fileChangelogManager = $state<FileChangelogManager>();
   public settingsOfComputedCache?: ChangelogGenerationSettings;
-
   public statusBar?: StatusBar;
-  public statusBarCachedTimeframe?: number;
-  public vaultChangelogCacheInterval?: ChangelogInterval;
-  public vaultChangelogEntries: undefined | VaultChangelogEntry[] = $state();
-  public vaultChangelogNewBatchEntries: VaultChangelogEntry[] = $state([]);
-  public changelogTaskManager!: ChangelogTaskManager;
+
+  public cachedActiveGitFile: string | undefined;
 
   public async addFileChangelogView(): Promise<void> {
     await this.app.workspace.ensureSideLeaf(
@@ -95,7 +75,11 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
 
   public assignStatusBar(): void {
     const statusBarElement = this.addStatusBarItem();
-    this.statusBar = new StatusBar(statusBarElement, this);
+    this.statusBar = new StatusBar(
+      statusBarElement,
+      this,
+      new TaskManager(this)
+    );
   }
 
   // eslint-disable-next-line no-magic-numbers
@@ -148,22 +132,31 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
         'Identical changelog settings',
         this.settings.changelogGenerationSettings.gitDiffIgnore
       );
+      const activeGitFile = getActiveGitRelativeFile(this);
       if (
-        !fileChangelogGenerationSettingsUnchanged(this) &&
-        this.cachedActiveGitFile
+        this.fileChangelogManager &&
+        !this.fileChangelogManager.generationSettingsUnchanged() &&
+        activeGitFile
       ) {
         // This.fileChangelogCacheInterval = undefined;
         this.app.workspace.trigger(
           'obsidian-git-changelog:file-changelog-generation-settings-changed'
         );
       }
-      if (!statusBarSettingsUnchanged(this) && this.cachedActiveGitFile) {
+      if (
+        this.statusBar &&
+        !this.statusBar.statusBarSettingsUnchanged() &&
+        activeGitFile
+      ) {
         // This.statusBarCachedTimeframe = undefined;
         this.app.workspace.trigger(
           'obsidian-git-changelog:status-bar-settings-changed'
         );
       }
-      if (!vaultChangelogGenerationSettingsUnchanged(this)) {
+      if (
+        this.vaultChangelogManager &&
+        !this.vaultChangelogManager.generationSettingsUnchanged()
+      ) {
         // This.vaultChangelogCacheInterval = undefined;
         this.app.workspace.trigger(
           'obsidian-git-changelog:vault-changelog-generation-settings-changed'
@@ -176,34 +169,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       );
     }
   }
-
-  public updateActiveGitFile(): void {
-    try {
-      const currentActiveGitFile = getActiveGitRelativeFile(this);
-      if (currentActiveGitFile) {
-        if (currentActiveGitFile !== this.cachedActiveGitFile) {
-          this.cachedActiveGitFile = currentActiveGitFile;
-          this.app.workspace.trigger(
-            'obsidian-git-changelog:active-file-changed'
-          );
-        }
-      } else {
-        const currentActiveView =
-          this.app.workspace.getActiveViewOfType(ItemView);
-        if (isDiffView(currentActiveView)) {
-          return;
-        }
-        this.cachedActiveGitFile = undefined;
-        this.app.workspace.trigger(
-          'obsidian-git-changelog:active-file-changed'
-        );
-      }
-    } catch {
-      /* Empty */
-    }
-  }
-
-  // Functions below are from obsidian-dev-utils (https://github.com/mnaoumov/obsidian-dev-utils/blob/main/src/obsidian/Plugin/PluginBase.ts)
 
   public override async saveSettings(
     newSettings: GitChangelogPluginSettings,
@@ -221,14 +186,23 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     return new GitChangelogPluginSettings(data);
   }
 
+  // Functions below are from obsidian-dev-utils (https://github.com/mnaoumov/obsidian-dev-utils/blob/main/src/obsidian/Plugin/PluginBase.ts)
+
   protected override createPluginSettingsTab(): null | PluginSettingTab {
     return new GitChangelogSettingsTab(this);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   protected override async onLayoutReady(): Promise<void> {
-    // This has to be initiated first. Handles all operations.
-    this.changelogTaskManager = new ChangelogTaskManager(this);
+    // These have to be initiated first.
+    this.vaultChangelogManager = new VaultChangelogManager({
+      plugin: this,
+      taskManager: new TaskManager(this)
+    });
+    this.fileChangelogManager = new FileChangelogManager({
+      plugin: this,
+      taskManager: new TaskManager(this)
+    });
 
     if (this.settings.statusBarStats) {
       this.assignStatusBar();
@@ -240,18 +214,18 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       })
     );
 
-    // This.registerEvent(
-    //   This.app.workspace.on('active-leaf-change', () => {
-    //     This.clearActiveGitFileIfNoViewOpen();
-    //   }),
-    // );
-
-    // Because of the case when the git plugin is re-enabled. Otherwise the file changelog view wouldn't refresh with the data from the current active note until the first file-open event.
+    // This will detect if the current open file was renamed after every git commit.
     this.registerEvent(
       this.app.workspace.on('obsidian-git:head-change', () => {
         this.updateActiveGitFile();
       })
     );
+
+    // This.registerEvent(
+    //   This.app.workspace.on('active-leaf-change', () => {
+    //     This.clearActiveGitFileIfNoViewOpen();
+    //   }),
+    // );
 
     this.updateActiveGitFile();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -261,12 +235,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   }
 
   protected override onloadComplete(): void {
-    // Runs when plugin is unloaded.
+    // Runs when the plugin is unloaded.
     this.register(() => {
       this.debouncedChangelogSettingsChangedCheck?.cancel();
-      if (this.changelogTaskManager) {
-        this.changelogTaskManager.abortAll();
-      }
+      this.fileChangelogManager?.taskManager.abort();
+      this.vaultChangelogManager?.taskManager.abort();
+      this.statusBar?.remove();
     });
 
     this.registerView(VAULT_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
@@ -287,5 +261,33 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       500,
       true
     );
+  }
+
+  private setNewActiveGitFile(activeGitFile: string | undefined): void {
+    this.fileChangelogManager?.resetAndGetSignal();
+    this.cachedActiveGitFile = activeGitFile;
+    this.app.workspace.trigger('obsidian-git-changelog:active-file-changed');
+  }
+
+  private updateActiveGitFile(): void {
+    try {
+      const currentActiveGitFile = getActiveGitRelativeFile(this);
+      if (currentActiveGitFile === this.cachedActiveGitFile) {
+        return;
+      }
+
+      if (currentActiveGitFile) {
+        this.setNewActiveGitFile(currentActiveGitFile);
+      } else {
+        const currentActiveView =
+          this.app.workspace.getActiveViewOfType(ItemView);
+        if (isDiffView(currentActiveView)) {
+          return;
+        }
+        this.setNewActiveGitFile(undefined);
+      }
+    } catch {
+      /* Empty */
+    }
   }
 }

@@ -3,15 +3,18 @@ import type GitChangelogPlugin from 'main.ts';
 import type { LogEntry, TextDiffBaseStats } from 'types.ts';
 
 import { assignDiffAlgorithm } from 'core/gitOperations/helper.ts';
+import { AbortError } from 'types.ts';
 import { parseContentChange } from 'utils.ts';
 
 /**
  * Used for status bar stats.
  */
 export async function runWorkingDirFileDiff({
+  abortSignal,
   oldCommit,
   plugin
 }: {
+  abortSignal: AbortSignal;
   oldCommit: LogEntry;
   plugin: GitChangelogPlugin;
 }): Promise<TextDiffBaseStats | undefined> {
@@ -25,6 +28,10 @@ export async function runWorkingDirFileDiff({
   ];
 
   assignDiffAlgorithm(numstatArguments, plugin);
+
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
 
   const git = await plugin.getGit();
   const diffNumstatResult = await git.diff(numstatArguments);
@@ -40,5 +47,10 @@ export async function runWorkingDirFileDiff({
   const textDiffStats = isBinary
     ? undefined
     : parseContentChange({ addedStr: addedString, deletedStr: deletedString });
+
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
+
   return textDiffStats?.baseStats;
 }

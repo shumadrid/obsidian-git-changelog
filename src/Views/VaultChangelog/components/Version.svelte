@@ -1,6 +1,6 @@
 <script lang="ts">
+  import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type GitChangelogPlugin from 'main.ts';
-  import type { VaultChangelogEntry } from 'Views/types.svelte.ts';
 
   import { slide } from 'svelte/transition';
   import { DiffFileStatus, FilesSummariesDisplayMode } from 'types.ts';

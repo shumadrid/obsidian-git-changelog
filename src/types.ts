@@ -62,7 +62,7 @@ export enum ChangelogInterval {
 }
 
 export enum DiffAlgorithm {
-  Default = 'Default', // Myers
+  Default = 'Default', // Myers algorithm
   Inherit = 'Inherit',
   Minimal = 'Minimal'
 }

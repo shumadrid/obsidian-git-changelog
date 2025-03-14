@@ -5,8 +5,6 @@ import {
   systemTimeZoneUnchanged,
   validateCustomTimeZone
 } from 'settings/ui/CustomTimeZone.ts';
-import { getStatusBarAlternateInterval } from 'settings/ui/StatusBarInterval.ts';
-import { getChangelogInterval } from 'settings/validation/changelogInterval.ts';
 
 export function changelogGenerationSettingsUnchanged(
   plugin: GitChangelogPlugin
@@ -30,28 +28,4 @@ export function changelogGenerationSettingsUnchanged(
     return true;
   }
   return false;
-}
-
-export function fileChangelogGenerationSettingsUnchanged(
-  plugin: GitChangelogPlugin
-): boolean {
-  return (
-    getChangelogInterval(plugin, 'file') === plugin.fileChangelogCacheInterval
-  );
-}
-
-export function statusBarSettingsUnchanged(
-  plugin: GitChangelogPlugin
-): boolean {
-  return (
-    getStatusBarAlternateInterval(plugin) === plugin.statusBarCachedTimeframe
-  );
-}
-
-export function vaultChangelogGenerationSettingsUnchanged(
-  plugin: GitChangelogPlugin
-): boolean {
-  return (
-    getChangelogInterval(plugin, 'vault') === plugin.vaultChangelogCacheInterval
-  );
 }

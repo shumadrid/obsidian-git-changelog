@@ -1,24 +1,19 @@
 <script lang="ts">
+  import type { ChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
+  import type { ChangelogManager } from 'core/ChangelogManager.svelte.ts';
   import type GitChangelogPlugin from 'main.ts';
 
   import { CHANGE_INTERVAL_ICON } from 'constants.ts';
   import { setIcon } from 'obsidian';
-  import { setNextChangelogInterval } from 'settings/validation/changelogInterval.ts';
   import { onDestroy } from 'svelte';
 
   interface Properties {
+    changelogManager: ChangelogManager<ChangelogEntry> | undefined;
     enabled: boolean;
-    fileOrVault: 'file' | 'vault';
     plugin: GitChangelogPlugin;
-    resetChangelog: (abortSignal: AbortSignal) => Promise<void>;
   }
 
-  const {
-    enabled,
-    fileOrVault,
-    plugin,
-    resetChangelog: recomputeChangelog
-  }: Properties = $props();
+  const { changelogManager, enabled, plugin }: Properties = $props();
 
   let isChangingInterval = $state(false);
   let button: HTMLElement | undefined;
@@ -34,29 +29,24 @@
   });
 
   async function onClick(): Promise<void> {
-    const abortSignal =
-      plugin.changelogTaskManager.abortPreviousTasksAndGetSignal(fileOrVault);
-
-    await plugin.changelogTaskManager.enqueueAndWait(
-      async () => {
-        if (isChangingInterval) return;
-        isChangingInterval = true;
-        try {
-          await setNextChangelogInterval(plugin, fileOrVault);
-          await recomputeChangelog(abortSignal);
-        } catch (error) {
-          if (error instanceof Error) {
-            plugin.consoleDebug(error.message);
-          }
-        } finally {
-          // If onClick can’t run concurrently (e.g. always in a queue), then it's ok to modify isChangingInterval like this.
-          // eslint-disable-next-line require-atomic-updates
-          isChangingInterval = false;
+    if (!changelogManager) return;
+    const abortSignal = changelogManager.resetAndGetSignal();
+    await changelogManager.taskManager.enqueueAndWait(async () => {
+      if (isChangingInterval) return;
+      isChangingInterval = true;
+      try {
+        await changelogManager.setNextInterval();
+        await changelogManager.computeChangelog(abortSignal);
+      } catch (error) {
+        if (error instanceof Error) {
+          plugin.consoleDebug(error.message);
         }
-      },
-
-      fileOrVault
-    );
+      } finally {
+        // If onClick can’t run concurrently (e.g. always in a queue), then it's ok to modify isChangingInterval like this.
+        // eslint-disable-next-line require-atomic-updates
+        isChangingInterval = false;
+      }
+    });
   }
 </script>
 
@@ -69,7 +59,7 @@
   aria-label="Change Interval"
   aria-disabled={isChangingInterval || !enabled}
   bind:this={button}
-  onclick={onClick}
+  onclick={isChangingInterval || !enabled ? undefined : onClick}
 ></div>
 
 <style lang="scss">

@@ -7,7 +7,7 @@ export class StatusBarStatsToggle extends GitChangelogSetting {
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.statusBarStats)
-          .onChange(async (value) => {
+          .onChange((value) => {
             this.refreshDisplaySmooth();
 
             const newSettings = this.plugin.settingsClone;
@@ -17,7 +17,6 @@ export class StatusBarStatsToggle extends GitChangelogSetting {
 
             if (value) {
               this.plugin.assignStatusBar();
-              await this.plugin.statusBar?.updateStatusBarWithFileStats();
             } else {
               this.plugin.statusBar?.remove();
               this.plugin.statusBar = undefined;

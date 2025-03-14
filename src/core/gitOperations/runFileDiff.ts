@@ -1,13 +1,13 @@
 import type GitChangelogPlugin from 'main.ts';
 import type { LogEntry } from 'types.ts';
 
+import { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import {
   assignDiffAlgorithm,
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
 import { parseContentChange } from 'utils.ts';
-import { FileChangelogEntry } from 'Views/types.svelte.ts';
 
 export async function runFileDiff({
   abortSignal,

@@ -8,7 +8,7 @@ export class StatusBarInterval extends GitChangelogSetting {
     this.createSetting()
       .setName('Interval for status bar stats (minutes)')
       .setDesc(
-        'Works by comparing the live file version against the first commit after the interval.'
+        'Works by comparing the live file version against the first commit before the interval.'
       )
       .addText((text) => {
         text.inputEl.pattern = '[1-9][0-9]*';

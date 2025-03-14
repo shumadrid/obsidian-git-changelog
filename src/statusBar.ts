@@ -1,7 +1,10 @@
+import type { TaskManager } from 'TaskManager.svelte.ts';
+
 import { findFirstCommitBefore } from 'core/gitOperations/findFirstCommitBefore.ts';
 import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
 import { runWorkingDirFileDiff } from 'core/gitOperations/runWorkingDirFileDiff.ts';
 import { MarkdownView } from 'obsidian';
+import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 import { getMeasurementUnit } from 'settings/ui/ChangelogMeasurementUnit.ts';
 import { getStatusBarAlternateInterval } from 'settings/ui/StatusBarInterval.ts';
 import { DiffMeasurementUnit } from 'types.ts';
@@ -10,28 +13,29 @@ import { getActiveGitFileFromView } from 'Views/helper.ts';
 import type GitChangelogPlugin from './main.ts';
 
 export class StatusBar {
+  private statusBarCachedTimeframe?: number;
+
   public constructor(
     private statusBarElement: HTMLElement,
-    private readonly plugin: GitChangelogPlugin
+    private readonly plugin: GitChangelogPlugin,
+    public taskManager: TaskManager
   ) {
     // Initialize immediately
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.updateStatusBarWithFileStats();
+
+    this.recompute();
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on(
         'obsidian-git-changelog:generation-settings-changed',
         () => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.updateStatusBarWithFileStats();
+          this.recompute();
         }
       )
     );
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on('file-open', () => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.updateStatusBarWithFileStats();
+        this.recompute();
       })
     );
 
@@ -39,37 +43,46 @@ export class StatusBar {
       this.plugin.app.workspace.on(
         'obsidian-git-changelog:status-bar-settings-changed',
         () => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.updateStatusBarWithFileStats();
+          this.recompute();
         }
       )
     );
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on('editor-change', () => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.updateStatusBarWithFileStats();
+        this.recompute(false);
       })
+    );
+  }
+
+  public statusBarSettingsUnchanged(): boolean {
+    return (
+      getStatusBarAlternateInterval(this.plugin) ===
+      this.statusBarCachedTimeframe
     );
   }
 
   public remove(): void {
     this.statusBarElement.remove();
+    this.taskManager.abort();
   }
 
   public setStatusBar(text: string): void {
     this.statusBarElement.setText(text);
   }
 
-  public async updateStatusBarWithFileStats(): Promise<void> {
+  private async updateStatusBarWithFileStats(
+    abortSignal: AbortSignal
+  ): Promise<void> {
     try {
       if (this.plugin.settings.statusBarStats) {
-        this.plugin.statusBarCachedTimeframe = getStatusBarAlternateInterval(
+        this.statusBarCachedTimeframe = getStatusBarAlternateInterval(
           this.plugin
         );
 
         const result = await this.getFileLatestDiffStats(
-          this.plugin.app.workspace.getActiveViewOfType(MarkdownView)
+          this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
+          abortSignal
         );
         if (result) {
           this.setStatusBar(result);
@@ -82,8 +95,20 @@ export class StatusBar {
     }
   }
 
+  private recompute(reset = true): void {
+    const abortSignal = reset
+      ? this.taskManager.abortPreviousTasksAndGetSignal()
+      : this.taskManager.getAbortSignal();
+    invokeAsyncSafely(() =>
+      this.taskManager.enqueueAndWait(async () => {
+        await this.updateStatusBarWithFileStats(abortSignal);
+      })
+    );
+  }
+
   private async getFileLatestDiffStats(
-    activeFileView: MarkdownView | null
+    activeFileView: MarkdownView | null,
+    abortSignal: AbortSignal
   ): Promise<string | undefined> {
     const activeGitFile = getActiveGitFileFromView(activeFileView, this.plugin);
 
@@ -95,6 +120,7 @@ export class StatusBar {
     let deletions = 0;
 
     const oldCommit = await findFirstCommitBefore({
+      abortSignal,
       filePath: activeGitFile,
       minutes: getStatusBarAlternateInterval(this.plugin),
       plugin: this.plugin
@@ -102,6 +128,7 @@ export class StatusBar {
 
     if (oldCommit) {
       const baseStats = await runWorkingDirFileDiff({
+        abortSignal,
         oldCommit,
         plugin: this.plugin
       });
@@ -120,6 +147,7 @@ export class StatusBar {
       // 1. New files not yet tracked by git -> show line/word count
       // 2. Git ignored files -> show nothing to avoid misleading stats (don't show 0s)
       const fileIsGitIgnored = await runCheckIgnore({
+        abortSignal,
         activeGitFile,
         plugin: this.plugin
       });

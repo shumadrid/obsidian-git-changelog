@@ -2,6 +2,7 @@
 import type GitChangelogPlugin from 'main.ts';
 import type { DiffFile, FilesSummary, LogEntry, TextDiffFile } from 'types.ts';
 
+import { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import {
   addFileStatusToSummary,
   assignDiffAlgorithm,
@@ -12,7 +13,6 @@ import { getRenameLimit } from 'settings/ui/RenameDetectionFileLimit.ts';
 import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
 import { insertSorted, parseContentChange } from 'utils.ts';
-import { VaultChangelogEntry } from 'Views/types.svelte.ts';
 
 import { runRepoDiffStatus } from './runRepoDiffStatus.ts';
 
@@ -62,7 +62,7 @@ export async function runRepoDiff({
   newCommit: LogEntry;
   oldCommit?: LogEntry;
   plugin: GitChangelogPlugin;
-}): Promise<null | VaultChangelogEntry> {
+}): Promise<undefined | VaultChangelogEntry> {
   if (oldCommit === undefined) {
     return new VaultChangelogEntry({
       binaryFiles: [],
@@ -123,7 +123,7 @@ export async function runRepoDiff({
   const records = diffNumstatResult.split('\0').filter((token) => token !== '');
 
   if (records.length === 0) {
-    return null;
+    return undefined;
   }
 
   const textFilesSummary: FilesSummary = {

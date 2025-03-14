@@ -4,12 +4,15 @@ import type { LogEntry } from 'types.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
 import spacetime from 'spacetime';
+import { AbortError } from 'types.ts';
 
 export async function findFirstCommitBefore({
+  abortSignal,
   filePath,
   minutes,
   plugin
 }: {
+  abortSignal: AbortSignal;
   filePath: string | undefined;
   minutes: number;
   plugin: GitChangelogPlugin;
@@ -39,12 +42,20 @@ export async function findFirstCommitBefore({
     );
     options['--find-renames'] = `${renameDetectionSensitivity.toString()}%`;
   }
+
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
   const git = await plugin.getGit();
   const result = await git.log(options);
   const timezone = getTimeZone(
     plugin.settings.changelogGenerationSettings,
     plugin
   );
+
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
 
   // If all commits fall inside the interval, or file isn't in the repo
   if (result.total === 0) {

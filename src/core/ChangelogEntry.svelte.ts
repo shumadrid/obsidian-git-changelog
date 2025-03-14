@@ -11,6 +11,11 @@ export abstract class ChangelogEntry {
   ) {}
 
   public abstract isInitialCommit(): boolean;
+  /**
+   * Always returns undefined for vault changelog entries and the file path for file changelog entries.
+   * It exists so that it's easier to write universal functions
+   */
+  public abstract getPotentialGitFilePath(): string | undefined;
 }
 
 export class FileChangelogEntry extends ChangelogEntry implements DiffFile {
@@ -43,6 +48,10 @@ export class FileChangelogEntry extends ChangelogEntry implements DiffFile {
 
   public override isInitialCommit(): boolean {
     return this.status === DiffFileStatus.Added;
+  }
+
+  public override getPotentialGitFilePath(): string {
+    return this.pathGitRelative;
   }
   // IsCollapsed?: boolean;
 }
@@ -78,6 +87,10 @@ export class VaultChangelogEntry extends ChangelogEntry {
     this.textFilesSummaryCached = textFilesSummaryCached;
     this.binaryFilesSummaryCached = binaryFilesSummaryCached;
     this.previousDayLastCommitHash = previousDayLastCommitHash;
+  }
+
+  public override getPotentialGitFilePath(): undefined {
+    return undefined;
   }
 
   public getChangelogContentAdditions(): number {

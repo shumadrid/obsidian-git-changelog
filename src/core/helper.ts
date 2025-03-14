@@ -1,16 +1,8 @@
-import type GitChangelogPlugin from 'main.ts';
 import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 import type { Spacetime } from 'spacetime';
 import type { ChangelogInterval, FilesSummary, LogEntry } from 'types.ts';
-import type {
-  FileChangelogEntry,
-  VaultChangelogEntry
-} from 'Views/types.svelte.ts';
 
-import { runFileDiff } from 'core/gitOperations/runFileDiff.ts';
-import { runRepoDiff } from 'core/gitOperations/runRepoDiff.ts';
 import { getDayStartTime } from 'settings/ui/DayStartTime.ts';
-import { getChangelogInterval } from 'settings/validation/changelogInterval.ts';
 import { applyDayStartTimeSetting } from 'timeUtils.ts';
 
 export const GIT_MAX_CONCURRENT_PROCESSES = 6;
@@ -23,53 +15,6 @@ export function addStatsToSummary(
   mainSummary.deletedFiles += stats.deletedFiles;
   mainSummary.renamedFiles += stats.renamedFiles;
   mainSummary.modifiedFiles += stats.modifiedFiles;
-}
-
-export async function appendToFileChangelogEntries({
-  abortSignal,
-  currentCommit,
-  entries,
-  plugin,
-  previousCommit
-}: {
-  abortSignal: AbortSignal;
-  currentCommit: LogEntry;
-  entries: FileChangelogEntry[];
-  plugin: GitChangelogPlugin;
-  previousCommit?: LogEntry;
-}): Promise<void> {
-  const entry = await runFileDiff({
-    abortSignal,
-    newCommit: currentCommit,
-    oldCommit: previousCommit,
-    plugin
-  });
-  entries.push(entry);
-}
-
-export async function appendToVaultChangelogEntries({
-  abortSignal,
-  currentCommit,
-  entries,
-  plugin,
-  previousCommit
-}: {
-  abortSignal: AbortSignal;
-  currentCommit: LogEntry;
-  entries: VaultChangelogEntry[];
-  plugin: GitChangelogPlugin;
-  previousCommit?: LogEntry;
-}): Promise<void> {
-  const entry = await runRepoDiff({
-    abortSignal,
-    newCommit: currentCommit,
-    oldCommit: previousCommit,
-    plugin
-  });
-  // Generate a new version only if the Git diff shows changes. Versions with no changes can occur frequently if a restrictive additional .gitignore is specified in the plugin settings.
-  if (entry) {
-    entries.push(entry);
-  }
 }
 
 /**
@@ -127,27 +72,4 @@ export function extractLastCommitsForInterval({
   }
 
   return lastCommitsInEachInterval;
-}
-
-/**
- * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
- */
-export function recordUsedSettings(
-  plugin: GitChangelogPlugin,
-  fileOrVault: 'file' | 'vault'
-): void {
-  plugin.settingsOfComputedCache = structuredClone(
-    plugin.settings.changelogGenerationSettings
-  );
-  if (fileOrVault === 'vault') {
-    plugin.vaultChangelogCacheInterval = getChangelogInterval(
-      plugin,
-      fileOrVault
-    );
-  } else if (fileOrVault === 'file') {
-    plugin.fileChangelogCacheInterval = getChangelogInterval(
-      plugin,
-      fileOrVault
-    );
-  }
 }

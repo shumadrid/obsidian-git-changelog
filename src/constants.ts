@@ -17,3 +17,8 @@ export const TOGGLE_FILES_SUMMARY_OPTION_ICON = 'list-tree';
 export const OPEN_FILE_ICON = 'file-input';
 export const PLUS_ICON = 'plus';
 export const MINUS_ICON = 'minus';
+
+export const CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER = 35;
+export const CHANGELOG_LOAD_AMOUNT_VERSIONS = 10;
+export const FILE_VIEW_VERSIONS_MULTIPLIER = 2.4;
+export const VAULT_MAX_COUNT_MULTIPLIER = 6;
