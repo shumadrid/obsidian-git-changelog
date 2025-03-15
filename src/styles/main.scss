@@ -4,14 +4,24 @@
   justify-content: center;
 }
 
-.git-changelog-disabled {
+.git-changelog-faint {
   opacity: 0.5;
+  // color: var(--text-faint);
+}
+
+.git-changelog-disabled {
+  opacity: 0.4;
 }
 
 .git-changelog-warning {
   border-bottom: 1px solid var(--text-warning);
 }
 
+.git-changelog-align-file {
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+}
 // Status colors
 .git-changelog-stat-color {
   opacity: var(--git-changelog-opacity);
@@ -130,21 +140,37 @@
   white-space: nowrap;
 }
 
-.git-changelog-changelog-date {
-  @extend .git-changelog-one-line;
-  flex: 0 1 auto;
-  min-width: min-content;
-  margin-right: var(--size-4-2);
+.git-changelog-file-name-container {
+  display: flex;
+  min-width: 54px;
+  margin-right: var(--size-2-3);
+  gap: var(--size-4-1);
+
+  .open-file-icon {
+    padding: 0 4px;
+    height: 16px;
+    min-width: min-content;
+  }
 }
 
 .git-changelog-file-status-letter {
   text-align: center;
   align-items: center;
-  margin-right: 0;
-  width: 0.9em;
+  margin-right: var(--size-4-1);
+  // width: 0.9em;
   flex-shrink: 2;
   min-width: 0;
   overflow: hidden;
+}
+
+.git-changelog-renamed-and-moved {
+  // text-overflow: clip;
+  display: flex;
+  margin-left: auto;
+  min-width: min-content;
+  // overflow: hidden;
+  // white-space: nowrap;
+  gap: var(--size-2-2);
 }
 
 /* Sticky view header and padding fixes */

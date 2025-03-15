@@ -7,19 +7,36 @@ import type { DiffFile } from '../types.ts';
 
 import { getNewLeaf } from '../utils.ts';
 
-export function changelogFileClick(
-  event: MouseEvent,
-  file: DiffFile,
-  plugin: GitChangelogPlugin,
-  aReference?: string,
-  bReference?: string
-): void {
-  event.stopPropagation();
-  if (file.textDiffStats && aReference && bReference) {
+export function changelogFileClick({
+  aReference,
+  bReference,
+  event,
+  file,
+  plugin
+}: {
+  aReference: string;
+  bReference: string;
+  event: MouseEvent;
+  file: DiffFile;
+  plugin: GitChangelogPlugin;
+}): void {
+  if (canOpenInDiffView({ aReference, bReference, file })) {
     // Show the diff that compares that version to the version from the previous day or if some other interval were specified
 
     showDiff(event, file, plugin, aReference, bReference);
   }
+}
+
+export function canOpenInDiffView({
+  aReference,
+  bReference,
+  file
+}: {
+  aReference?: string;
+  bReference?: string;
+  file: DiffFile;
+}): boolean {
+  return !!(file.textDiffStats && aReference && bReference);
 }
 
 export function getActiveGitFileFromView(
@@ -64,11 +81,10 @@ export function openFile({
   relativeVaultPath
 }: {
   event: MouseEvent;
-  file: DiffFile;
+  file?: DiffFile;
   plugin: GitChangelogPlugin;
   relativeVaultPath: string;
 }): void {
-  event.stopPropagation();
   const obsidianFile =
     plugin.app.vault.getAbstractFileByPath(relativeVaultPath);
 
@@ -78,16 +94,9 @@ export function openFile({
       .catch((error) => {
         plugin.displayError(error);
       });
-  } else if (relativeVaultPath === undefined) {
-    if (file.fromPathGitRelative) {
-      plugin.displayNotice(
-        "Can't open this version of the file because it doesn't exist in the vault anymore."
-      );
-    } else {
-      plugin.displayNotice('This is the initial version. No diff to show.');
-    }
   } else if (obsidianFile === undefined) {
-    plugin.displayNotice(`Can't open ${file.pathGitRelative}.`);
+    const fileNameToShow = file?.pathGitRelative ?? relativeVaultPath;
+    plugin.displayNotice(`Can't open ${fileNameToShow}.`);
   }
 }
 

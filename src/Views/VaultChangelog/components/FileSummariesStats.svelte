@@ -22,33 +22,31 @@
 
   const { filesSummary }: Properties = $props();
 
-  const iconElements = $state<Record<string, HTMLElement>>({});
+  const iconElements: Record<string, HTMLElement> = {};
 
-  const stats = $derived<SummaryStat[]>(
-    [
-      {
-        count: filesSummary.addedFiles,
-        icon: FILE_ADDED_ICON,
-        type: DiffFileStatus.Added
-      },
+  const stats: SummaryStat[] = [
+    {
+      count: filesSummary.addedFiles,
+      icon: FILE_ADDED_ICON,
+      type: DiffFileStatus.Added
+    },
 
-      {
-        count: filesSummary.modifiedFiles,
-        icon: FILE_MODIFIED_ICON,
-        type: DiffFileStatus.Modified
-      },
-      {
-        count: filesSummary.renamedFiles,
-        icon: FILE_RENAMED_ICON,
-        type: DiffFileStatus.Renamed
-      },
-      {
-        count: filesSummary.deletedFiles,
-        icon: FILE_DELETED_ICON,
-        type: DiffFileStatus.Deleted
-      }
-    ].filter((stat) => stat.count > 0)
-  );
+    {
+      count: filesSummary.modifiedFiles,
+      icon: FILE_MODIFIED_ICON,
+      type: DiffFileStatus.Modified
+    },
+    {
+      count: filesSummary.renamedFiles,
+      icon: FILE_RENAMED_ICON,
+      type: DiffFileStatus.Renamed
+    },
+    {
+      count: filesSummary.deletedFiles,
+      icon: FILE_DELETED_ICON,
+      type: DiffFileStatus.Deleted
+    }
+  ].filter((stat) => stat.count > 0);
 
   $effect(() => {
     for (const [type, element] of Object.entries(iconElements)) {
@@ -59,6 +57,10 @@
       }
     }
   });
+
+  function setStatIcon(node: HTMLElement, icon: string): void {
+    setIcon(node, icon);
+  }
 </script>
 
 {#each stats as stat}
@@ -66,7 +68,7 @@
     <span
       class="icon git-changelog-stat-color"
       data-type={stat.type}
-      bind:this={iconElements[stat.type]}
+      use:setStatIcon={stat.icon}
     ></span>
     <span class="number git-changelog-stat-color" data-type={stat.type}>
       {stat.count}

@@ -228,13 +228,11 @@
       {#if changelogState === VaultChangelogState.HasEntries}
         <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
         {#each changelogManager!.visibleEntries! as version}
-          <div class="tree-item nav-folder mod-root">
-            <VersionComponent
-              {version}
-              {plugin}
-              showFilesCountSummaries={showFilesCountSummariesMode}
-            />
-          </div>
+          <VersionComponent
+            {version}
+            {plugin}
+            showFilesCountSummaries={showFilesCountSummariesMode}
+          />
         {/each}
         <div bind:this={sentinel} id="sentinel"></div>
       {:else if changelogState === VaultChangelogState.Recomputing}

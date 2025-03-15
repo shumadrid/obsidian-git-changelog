@@ -2,13 +2,13 @@
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
   import type { EventRef } from 'obsidian';
 
+  import { setIcon } from 'obsidian';
   import { onDestroy, untrack } from 'svelte';
-  import { isMoved, isRenamed } from 'utils.ts';
   import ChangeIntervalButton from 'Views/components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from 'Views/components/DependenciesStatusCheck.svelte';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
   import { composeAriaLabel, composeVersionTitle } from 'Views/formatters.ts';
-  import { changelogFileClick } from 'Views/helper.ts';
+  import { canOpenInDiffView, changelogFileClick } from 'Views/helper.ts';
 
   // eslint-disable-next-line capitalized-comments
   // svelte-ignore non_reactive_update
@@ -31,6 +31,7 @@
   let activeFileChangedReference: EventRef;
 
   const changelogManager = $derived(plugin.fileChangelogManager);
+  const openFileButton = $state<HTMLElement>();
 
   const changelogState = $derived.by(() => {
     if (!changelogManager) {
@@ -136,6 +137,13 @@
     plugin.app.workspace.offref(fileChangelogSettingsChangedReference);
   });
 
+  $effect(() => {
+    if (openFileButton) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setIcon(openFileButton, openFileButton.getAttr('data-icon')!);
+    }
+  });
+
   function cleanupObserver(): void {
     if (observer) {
       observer.disconnect();
@@ -144,19 +152,38 @@
   }
 
   function primaryClick(event: MouseEvent, entryIndex: number | string): void {
+    event.stopPropagation();
+
+    if (isVersionClickable(entryIndex)) {
+      changelogFileClick({
+        aReference:
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          changelogManager!.visibleEntries![(entryIndex as number) + 1]
+            ?.commitHash,
+
+        bReference:
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          changelogManager!.visibleEntries![entryIndex as number].commitHash,
+        event,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        file: changelogManager!.visibleEntries![entryIndex as number],
+        plugin
+      });
+    }
+  }
+
+  function isVersionClickable(entryIndex: number | string): boolean {
     if (
       changelogManager?.visibleEntries === undefined ||
       typeof entryIndex === 'string'
     ) {
-      return;
+      return false;
     }
-    changelogFileClick(
-      event,
-      changelogManager.visibleEntries[entryIndex],
-      plugin,
-      changelogManager.visibleEntries[entryIndex + 1]?.commitHash,
-      changelogManager.visibleEntries[entryIndex].commitHash
-    );
+    return canOpenInDiffView({
+      aReference: changelogManager.visibleEntries[entryIndex + 1]?.commitHash,
+      bReference: changelogManager.visibleEntries[entryIndex].commitHash,
+      file: changelogManager.visibleEntries[entryIndex]
+    });
   }
 </script>
 
@@ -183,7 +210,7 @@
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
-            class="tree-item-self git-changelog-file-changelog-entry is-clickable nav-file-title"
+            class="git-changelog-align-file nav-file-title is-clickable git-changelog-file-changelog-entry"
             aria-label={composeAriaLabel(entry)}
             data-tooltip-position="bottom"
             onclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -191,69 +218,39 @@
               primaryClick(event, index);
             }}
           >
-            <div class="git-changelog-changelog-date">
-              {composeVersionTitle({
-                interval: plugin.settings.fileChangelogInterval,
-                plugin,
-                timezoneAdjustedEntryDate: entry.timezoneAdjustedDate
-              })}
+            <div class="git-changelog-file-name-container">
+              <div
+                class="git-changelog-one-line {isVersionClickable(index)
+                  ? ''
+                  : 'git-changelog-faint'}"
+              >
+                {composeVersionTitle({
+                  interval: plugin.settings.fileChangelogInterval,
+                  plugin,
+                  timezoneAdjustedEntryDate: entry.timezoneAdjustedDate
+                })}
+              </div>
             </div>
-
-            <div class="file-actions git-changelog-status-tag">
-              {#if entry.fromPathGitRelative === undefined}
-                <span
-                  class="git-changelog-stat-color nav-file-tag"
-                  data-type={entry.status}
-                >
-                  Created
-                </span>
-              {:else}
-                {#if isMoved(entry)}
-                  <span
-                    class="git-changelog-stat-color nav-file-tag"
-                    data-type="F"
-                  >
-                    Moved
-                  </span>
-                {/if}
-
-                {#if isRenamed(entry)}
-                  <span
-                    class="git-changelog-stat-color nav-file-tag"
-                    data-type="R"
-                  >
-                    Renamed
-                  </span>
-                {/if}
-              {/if}
-              {#if entry.textDiffStats?.baseStats !== undefined && entry.textDiffStats.baseStats.additions + entry.textDiffStats.baseStats.deletions > 0}
-                <span class="git-changelog-margin-left">
-                  <DiffStatsComponent
-                    baseStats={entry.textDiffStats
-                      ? {
-                          additions: entry.textDiffStats.baseStats.additions,
-                          deletions: entry.textDiffStats.baseStats.deletions
-                        }
-                      : undefined}
-                    inFileExplorer={false}
-                    file={entry}
-                    inFileChangelog={true}
-                  /></span
-                >
-              {/if}
-            </div>
+            <DiffStatsComponent
+              baseStats={entry.textDiffStats
+                ? {
+                    additions: entry.textDiffStats.baseStats.additions,
+                    deletions: entry.textDiffStats.baseStats.deletions
+                  }
+                : undefined}
+              inFileExplorer={false}
+              file={entry}
+              inFileChangelog={true}
+            />
           </div>
-          <!-- </div> -->
         {/each}
         <div bind:this={sentinel} id="sentinel"></div>
       {:else if changelogState === FileChangelogState.Recomputing}
         <div class="pane-empty">Loading...</div>
       {:else if changelogState === FileChangelogState.NoMarkdownFileOpen}
         <div class="pane-empty">No markdown file opened.</div>
-      {:else if changelogState === FileChangelogState.EmptyHistory}
+      {:else}
         <div class="pane-empty">File has no Git history.</div>
-      {:else if changelogState === FileChangelogState.GitIgnoredFileOpen}
-        <div class="pane-empty">File is ignored by Git.</div>
       {/if}
     </div>
   </DependenciesStatusCheck>
@@ -265,21 +262,6 @@
     align-items: center;
     width: 100%;
     padding-left: var(--size-4-2);
-  }
-
-  .git-changelog-margin-left {
-    margin-left: var(--size-2-3);
-  }
-
-  .git-changelog-status-tag {
-    display: flex;
-    align-items: center;
-    padding-right: 0px;
-    overflow: hidden;
-    flex-grow: 1;
-    flex-shrink: 1;
-    min-width: 0;
-    width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between; // Better space distribution
   }
 </style>

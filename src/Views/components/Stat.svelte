@@ -30,12 +30,17 @@
   function getStatCount(): number {
     return stat?.count ?? 0;
   }
+
+  // eslint-disable-next-line capitalized-comments
+  // const shrinkableClass =
+  // eslint-disable-next-line capitalized-comments
+  //   isFileStat && isInvisible ? 'git-changelog-shrinkable' : '';
 </script>
 
 <span
-  class={isFileStat
-    ? 'git-changelog-stat-item-file'
-    : 'git-changelog-stat-item'}
+  class={`${
+    isFileStat ? 'git-changelog-stat-item-file' : 'git-changelog-stat-item'
+  } `}
 >
   <span
     class="{isFileStat ? 'file-icon' : 'icon'} git-changelog-stat-color"
@@ -53,4 +58,8 @@
 </span>
 
 <style lang="scss">
+  // Doesn't work currently. It should make the invisible stats that are used to maintain the table structure shrink when space gets tight. Additionally, the diff-file-stats in DiffStats.svelte still enforces a gap.
+  .git-changelog-shrinkable {
+    min-width: 0;
+  }
 </style>

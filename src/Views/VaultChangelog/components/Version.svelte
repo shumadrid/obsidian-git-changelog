@@ -18,21 +18,19 @@
 
   const { plugin, showFilesCountSummaries, version }: Properties = $props();
 
-  const formattedDate = $derived(
-    composeVersionTitle({
-      interval: plugin.settings.vaultChangelogInterval,
-      plugin,
-      timezoneAdjustedEntryDate: version.timezoneAdjustedDate
-    })
-  );
+  const formattedDate = composeVersionTitle({
+    interval: plugin.settings.vaultChangelogInterval,
+    plugin,
+    timezoneAdjustedEntryDate: version.timezoneAdjustedDate
+  });
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 {#if !version.isInitialCommit()}
-  <div class="tree-item nav-folder" class:is-collapsed={version.isCollapsed}>
+  <div class:is-collapsed={version.isCollapsed}>
     <div
-      class="tree-item-self is-clickable nav-folder-title git-changelog-bottom-padding"
+      class="tree-item-self is-clickable git-changelog-bottom-padding"
       data-tooltip-position="bottom"
       onclick={/* eslint-disable-next-line @typescript-eslint/explicit-function-return-type */
       () => {
@@ -104,7 +102,7 @@
     </div>
     {#if !version.isCollapsed}
       <div
-        class="tree-item-children nav-folder-children"
+        class="tree-item-children"
         transition:slide|local={// eslint-disable-next-line no-magic-numbers
         { duration: 150 }}
       >

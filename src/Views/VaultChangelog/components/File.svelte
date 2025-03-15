@@ -5,9 +5,9 @@
   import { OPEN_FILE_ICON } from 'constants.ts';
   import { isFileRenamedOrMoved } from 'core/gitOperations/helper.ts';
   import { setIcon, TFile } from 'obsidian';
-  import { DiffFileStatus } from 'types.ts';
   import { mayTriggerFileMenu } from 'utils.ts';
   import {
+    canOpenInDiffView,
     changelogFileClick,
     getDisplayPath,
     openFile
@@ -32,23 +32,16 @@
   }: Properties = $props();
   const buttons: HTMLElement[] = $state([]);
 
-  const ariaLabel = $derived(
-    isFileRenamedOrMoved(file.status)
-      ? `${file.fromPathGitRelative}  →\n${file.pathGitRelative}`
-      : file.pathGitRelative
-  );
+  const ariaLabel = isFileRenamedOrMoved(file.status)
+    ? `${file.fromPathGitRelative}  →\n${file.pathGitRelative}`
+    : file.pathGitRelative;
 
-  const fileStatusText = $derived(
-    isFileRenamedOrMoved(file.status) ? DiffFileStatus.Renamed : file.status
-  );
   // This isn't perfect because some old file path could match an unrelated file's current path in the current state of the vault.
-  const relativeVaultPath = $state(
-    plugin.getGitPlugin().gitManager.getRelativeVaultPath(file.pathGitRelative)
-  );
+  const relativeVaultPath = plugin
+    .getGitPlugin()
+    .gitManager.getRelativeVaultPath(file.pathGitRelative);
 
-  const tFile = $derived(
-    plugin.app.vault.getAbstractFileByPath(relativeVaultPath)
-  );
+  const tFile = plugin.app.vault.getAbstractFileByPath(relativeVaultPath);
 
   $effect(() => {
     for (const b of buttons) {
@@ -59,17 +52,27 @@
     }
   });
 
-  function mainClick(event: MouseEvent): void {
-    changelogFileClick(
+  const isClickable = canOpenInDiffView({
+    aReference: previousDayLastCommitHash ?? currentDayCommitHash,
+    bReference: currentDayCommitHash,
+    file
+  });
+
+  function primaryClick(event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!isClickable) return;
+    changelogFileClick({
+      aReference: previousDayLastCommitHash ?? currentDayCommitHash,
+      bReference: currentDayCommitHash,
       event,
       file,
-      plugin,
-      previousDayLastCommitHash ?? currentDayCommitHash,
-      currentDayCommitHash
-    );
+      plugin
+    });
   }
 
   function openVaultFile(event: MouseEvent): void {
+    event.stopPropagation();
     openFile({ event, file, plugin, relativeVaultPath });
   }
 </script>
@@ -78,12 +81,12 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 
 <div
-  class="tree-item-self git-changelog-align-file nav-file-title
+  class="git-changelog-align-file nav-file-title
 			'is-clickable'"
   data-path={relativeVaultPath}
   data-tooltip-position="bottom"
   aria-label={ariaLabel}
-  onclick={mainClick}
+  onclick={primaryClick}
   onauxclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   (event) => {
     event.stopPropagation();
@@ -100,13 +103,15 @@
         });
       }
     } else {
-      mainClick(event);
+      primaryClick(event);
     }
   }}
   data-type={file.status}
 >
   <div class="git-changelog-file-name-container">
-    <div class="git-changelog-one-line">
+    <div
+      class="git-changelog-one-line {isClickable ? '' : 'git-changelog-faint'}"
+    >
       {getDisplayPath(file.pathGitRelative)}
     </div>
     {#if tFile instanceof TFile && !!plugin.app.viewRegistry?.getTypeByExtension(tFile.extension)}
@@ -120,53 +125,18 @@
       ></div>
     {/if}
   </div>
-  <div class="diff-file-stats">
-    <DiffStatsComponent
-      inFileChangelog={false}
-      baseStats={file.textDiffStats
-        ? {
-            additions: file.textDiffStats.baseStats.additions,
-            deletions: file.textDiffStats.baseStats.deletions
-          }
-        : undefined}
-      {file}
-    />
 
-    <span
-      class="git-changelog-stat-color git-changelog-file-status-letter"
-      data-type={file.status}
-    >
-      <!-- {#if file.status !== DiffFileStatus.Modified} -->
-      {fileStatusText}
-      <!-- {/if} -->
-    </span>
-  </div>
+  <DiffStatsComponent
+    inFileChangelog={false}
+    baseStats={file.textDiffStats
+      ? {
+          additions: file.textDiffStats.baseStats.additions,
+          deletions: file.textDiffStats.baseStats.deletions
+        }
+      : undefined}
+    {file}
+  />
 </div>
 
 <style lang="scss">
-  .diff-file-stats {
-    display: flex;
-    align-items: center;
-    gap: var(--size-4-3);
-    padding-right: 0px;
-    flex: 1 1 auto;
-    justify-content: flex-end;
-  }
-
-  .git-changelog-align-file {
-    align-items: center;
-  }
-
-  .git-changelog-file-name-container {
-    display: flex;
-    min-width: 54px;
-    margin-right: var(--size-2-3);
-    gap: var(--size-4-1);
-
-    .open-file-icon {
-      padding: 0 4px;
-      height: 16px;
-      min-width: min-content;
-    }
-  }
 </style>
