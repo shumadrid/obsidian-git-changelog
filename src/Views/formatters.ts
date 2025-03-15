@@ -62,24 +62,28 @@ export function composeHourlyVersionDisplayText(
   entryDate: Spacetime,
   plugin: GitChangelogPlugin
 ): string {
-  const hoursDifference = entryDate
-    .startOf('hour')
-    .diff(fullyAdjustedCurrentDate.startOf('hour'), 'hours');
+  const isToday = entryDate.isSame(fullyAdjustedCurrentDate, 'day');
+  const isYesterday = entryDate.isSame(
+    fullyAdjustedCurrentDate.clone().subtract(1, 'days'),
+    'day'
+  );
 
-  if (hoursDifference === 0) {
-    return 'This Hour';
-  }
-  if (hoursDifference === 1) {
-    return '1 hour ago';
-  }
-  // eslint-disable-next-line no-magic-numbers
-  if (hoursDifference <= 48) {
-    return `${hoursDifference} hours ago`;
+  const userLocale = getUserLocale(plugin);
+
+  // Replaces the date part of the date time string with today or yesterday labels.
+  if (isToday || isYesterday) {
+    const timeFormatter = new Intl.DateTimeFormat(userLocale, {
+      timeStyle: 'short'
+    });
+    const timeString = timeFormatter.format(
+      entryDate.startOf('hour').toNativeDate()
+    );
+    return `${isToday ? 'Today' : 'Yesterday'}, ${timeString}`;
   }
 
   return formatDateWithHour(
     entryDate.startOf('hour').toNativeDate(),
-    getUserLocale(plugin)
+    userLocale
   );
 }
 
@@ -125,10 +129,11 @@ export function composeVersionTitle({
       return composeMonthlyVersionDisplayText(fullyAdjustedEntryDate, plugin);
     }
     case ChangelogInterval.Weekly: {
-      return composeWeeklyVersionDisplayText(
+      return composeWeeklyVersionDisplayText({
         fullyAdjustedCurrentDate,
-        fullyAdjustedEntryDate
-      );
+        fullyAdjustedEntryDate,
+        plugin
+      });
     }
     default: {
       return composeDailyVersionDisplayText(
@@ -140,22 +145,54 @@ export function composeVersionTitle({
   }
 }
 
-export function composeWeeklyVersionDisplayText(
-  fullyAdjustedCurrentDate: Spacetime,
-  entryDate: Spacetime
-): string {
-  const weeksDifference = entryDate
-    .startOf('week')
-    .diff(fullyAdjustedCurrentDate.startOf('week'), 'weeks');
+export function composeWeeklyVersionDisplayText({
+  fullyAdjustedCurrentDate,
+  fullyAdjustedEntryDate,
+  plugin
+}: {
+  fullyAdjustedCurrentDate: Spacetime;
+  fullyAdjustedEntryDate: Spacetime;
+  plugin: GitChangelogPlugin;
+}): string {
+  const entryWeek = fullyAdjustedEntryDate.startOf('week');
+
+  // In order for this to be accurate we need to normalize the dates to the start of the interval, which is a week here. If comparing would be based on what the actual commit date is of the current version is, instead of that interval that version belongs to, the diffs would be inconsistent because e.g. when comparing the latest version with the latest commit on thursday with the previous version that had it's last commit on wednesday, the diff would count 2 weeks difference instead of 1.
+  const weeksDifference = entryWeek.diff(
+    fullyAdjustedCurrentDate.startOf('week'),
+    'weeks'
+  );
 
   if (weeksDifference === 0) {
-    return 'This Week';
+    return 'This week';
   }
   if (weeksDifference === 1) {
-    return '1 week ago';
+    return 'Last week';
   }
 
-  return `${weeksDifference.toString()} weeks ago`;
+  const userLocale = getUserLocale(plugin);
+
+  const weekNumber = fullyAdjustedEntryDate.week();
+
+  const isCurrentYear = fullyAdjustedEntryDate.isSame(
+    fullyAdjustedCurrentDate,
+    'year'
+  );
+
+  const nativeEntryWeek = entryWeek.toNativeDate();
+
+  if (isCurrentYear) {
+    const monthString = new Intl.DateTimeFormat(userLocale, {
+      month: 'short'
+    }).format(nativeEntryWeek);
+    return `Week ${weekNumber}, ${monthString}`;
+  }
+
+  const monthAndYearString = new Intl.DateTimeFormat(userLocale, {
+    month: 'short',
+    year: '2-digit'
+  }).format(nativeEntryWeek);
+
+  return `Week ${weekNumber}, ${monthAndYearString}`;
 }
 
 export function formatDate(date: Date, locale: string): string {
@@ -171,6 +208,7 @@ export function formatDateWithHour(date: Date, locale: string): string {
   return formatter.format(date);
 }
 
+// Just adds a "BINARY" label to files with no extension
 export function formatDiffFileType(file: DiffFile): string {
   const fileExtension = getDisplayExtensionFromPath(file.pathGitRelative);
   if (fileExtension === '') {
