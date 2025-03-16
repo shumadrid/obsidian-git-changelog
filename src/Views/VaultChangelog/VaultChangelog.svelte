@@ -38,6 +38,11 @@
   const changelogManager = $derived(plugin.vaultChangelogManager);
 
   const changelogState = $derived.by(() => {
+    // Not entirely accurate, but works for the use case.
+    if (!plugin.dependenciesReady) {
+      return VaultChangelogState.Recomputing;
+    }
+
     if (!changelogManager) {
       return VaultChangelogState.Recomputing;
     }
@@ -189,18 +194,15 @@
         data-icon={allEntriesCollapsed
           ? 'chevrons-up-down'
           : 'chevrons-down-up'}
-        aria-disabled={!(
-          changelogManager?.hasEntries === true && plugin.dependenciesReady
-        )}
+        aria-disabled={changelogState !== VaultChangelogState.HasEntries}
         aria-label={allEntriesCollapsed ? 'Expand all' : 'Collapse all'}
         bind:this={collapseButton}
-        onclick={changelogManager?.hasEntries && plugin.dependenciesReady
+        onclick={changelogState === VaultChangelogState.HasEntries
           ? toggleCollapsedState
           : undefined}
       ></div>
       <ChangeIntervalButton
-        enabled={changelogManager?.hasEntries === true &&
-          plugin.dependenciesReady}
+        enabled={changelogState === VaultChangelogState.HasEntries}
         {changelogManager}
         {plugin}
       ></ChangeIntervalButton>
@@ -208,15 +210,13 @@
         id="filesSummaryChange"
         class="clickable-icon nav-action-button"
         data-icon={TOGGLE_FILES_SUMMARY_OPTION_ICON}
-        aria-disabled={!(
-          changelogManager?.hasEntries === true && plugin.dependenciesReady
-        )}
+        aria-disabled={changelogState !== VaultChangelogState.HasEntries}
         aria-label={showFilesCountSummariesMode ===
         FilesSummariesDisplayMode.Total
           ? 'Text/media summary stats'
           : 'Total files summary stats'}
         bind:this={filesSummaryDisplayModeButton}
-        onclick={changelogManager?.hasEntries && plugin.dependenciesReady
+        onclick={changelogState === VaultChangelogState.HasEntries
           ? toggleFilesSummaryOption
           : undefined}
       ></div>

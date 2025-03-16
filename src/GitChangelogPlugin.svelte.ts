@@ -39,8 +39,8 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     | Debouncer<[], void>
     | undefined;
 
-  public gitPluginState = $state<GitPluginState>(GitPluginState.Uninitialized);
-  public gitRepoReady = $state<boolean>(false);
+  public gitPluginState = $state<GitPluginState>();
+  public gitRepoReady = $state<boolean>();
 
   public dependenciesReady = $derived(
     (this.gitPluginState === GitPluginState.Enabled ||

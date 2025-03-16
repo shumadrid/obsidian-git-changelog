@@ -20,7 +20,7 @@
   <div class="pane-empty git-changelog-git-issue">
     ⚠️ Current version of the Git plugin is incompatible.
   </div>
-{:else if !plugin.gitRepoReady}
+{:else if plugin.gitRepoReady === false}
   <div class="pane-empty git-changelog-git-issue">
     ⚠️ Can't detect a valid active git repository. Please ensure you have
     configured a valid Git repository with the Git plugin.

@@ -34,6 +34,10 @@
   const openFileButton = $state<HTMLElement>();
 
   const changelogState = $derived.by(() => {
+    if (!plugin.dependenciesReady) {
+      return FileChangelogState.Recomputing;
+    }
+
     if (!changelogManager) {
       return FileChangelogState.Recomputing;
     }
@@ -193,8 +197,7 @@
     <div class="nav-buttons-container">
       <ChangeIntervalButton
         {changelogManager}
-        enabled={changelogManager?.hasEntries === true &&
-          plugin.dependenciesReady}
+        enabled={changelogState === FileChangelogState.HasEntries}
         {plugin}
       ></ChangeIntervalButton>
     </div>
