@@ -1,6 +1,8 @@
 import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
+import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
+import type { ReadonlyDeep } from 'type-fest';
 import type { ChangelogInterval, LogEntry } from 'types.ts';
 
 import {
@@ -71,8 +73,10 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     return Math.ceil(3 * CHANGELOG_LOAD_AMOUNT_VERSIONS);
   }
 
-  protected override getLiveInterval(): ChangelogInterval {
-    const interval = this.plugin.settings.vaultChangelogInterval;
+  protected override getInterval(
+    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
+  ): ChangelogInterval {
+    const interval = settings.vaultChangelogInterval;
 
     if (!validateChangelogInterval(interval)) {
       return DEFAULT_SETTINGS.vaultChangelogInterval;
@@ -90,7 +94,6 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
       abortSignal
     });
 
-    this.recordUsedSettings();
     this.prependToExistingEntries({
       newEntries
     });
@@ -107,9 +110,7 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     const initialLoadMultiplier = resetCache ? 2 : 1;
 
     const intervalMultiplier =
-      VaultChangelogManager.getIntervalMaxCountMultiplier(
-        this.getLiveInterval()
-      );
+      VaultChangelogManager.getIntervalMaxCountMultiplier(this.getInterval());
     return (
       CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER *
       initialLoadMultiplier *

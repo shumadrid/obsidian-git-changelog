@@ -1,6 +1,8 @@
 import type { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
+import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
+import type { ReadonlyDeep } from 'type-fest';
 import type { ChangelogInterval, LogEntry } from 'types.ts';
 
 import {
@@ -80,7 +82,6 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
       activeGitFile
     });
 
-    this.recordUsedSettings();
     this.prependToExistingEntries({
       newEntries
     });
@@ -104,8 +105,10 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
     );
   }
 
-  protected override getLiveInterval(): ChangelogInterval {
-    const interval = this.plugin.settings.fileChangelogInterval;
+  protected override getInterval(
+    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
+  ): ChangelogInterval {
+    const interval = settings.fileChangelogInterval;
 
     if (!validateChangelogInterval(interval)) {
       return DEFAULT_SETTINGS.fileChangelogInterval;
@@ -143,9 +146,7 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
     // eslint-disable-next-line no-magic-numbers
     const initialLoadMultiplier = resetCache ? 2 : 1;
     const intervalMultiplier =
-      FileChangelogManager.getIntervalMaxCountMultiplier(
-        this.getLiveInterval()
-      );
+      FileChangelogManager.getIntervalMaxCountMultiplier(this.getInterval());
     return (
       CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER *
       initialLoadMultiplier *

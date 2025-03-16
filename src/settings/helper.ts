@@ -1,4 +1,5 @@
 import type GitChangelogPlugin from 'main.ts';
+import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 
 import { deepEqual } from 'obsidian-dev-utils/Object';
 import {
@@ -6,26 +7,31 @@ import {
   validateCustomTimeZone
 } from 'settings/ui/CustomTimeZone.ts';
 
-export function changelogGenerationSettingsUnchanged(
-  plugin: GitChangelogPlugin
-): boolean {
-  const oldSettings = plugin.settingsOfComputedCache;
-  const newSettings = plugin.settings.changelogGenerationSettings;
-
-  if (!oldSettings) {
-    return false;
+export function changelogGenerationSettingsChanged({
+  newChangelogSettings,
+  oldChangelogSettings,
+  plugin
+}: {
+  newChangelogSettings: ChangelogGenerationSettings;
+  oldChangelogSettings: ChangelogGenerationSettings;
+  plugin: GitChangelogPlugin;
+}): boolean {
+  if (!oldChangelogSettings) {
+    return true;
   }
+
   // IsAncestor run
 
   if (
-    !validateCustomTimeZone(newSettings.timezone) &&
+    !validateCustomTimeZone(newChangelogSettings.timezone) &&
     !systemTimeZoneUnchanged(plugin)
   ) {
+    return true;
+  }
+
+  if (deepEqual(oldChangelogSettings, newChangelogSettings)) {
     return false;
   }
 
-  if (deepEqual(oldSettings, newSettings)) {
-    return true;
-  }
-  return false;
+  return true;
 }

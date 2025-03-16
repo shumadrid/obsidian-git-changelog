@@ -1,4 +1,5 @@
-import type GitChangelogPlugin from 'main.ts';
+import type { GitChangelogPluginSettings } from 'settings/settings.ts';
+import type { ReadonlyDeep } from 'type-fest';
 
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 import { DEFAULT_SETTINGS, MAX_SUPPORTED_INTERVAL } from 'settings/settings.ts';
@@ -19,7 +20,7 @@ export class StatusBarInterval extends GitChangelogSetting {
           .setPlaceholder(DEFAULT_SETTINGS.statusBarInterval)
           .onChange((value) => {
             const newSettings = this.plugin.settingsClone;
-            newSettings.statusBarInterval = validateStatusBarAlternateInterval(
+            newSettings.statusBarInterval = validateStatusBarInterval(
               String(value)
             )
               ? String(value)
@@ -36,16 +37,16 @@ export class StatusBarInterval extends GitChangelogSetting {
   }
 }
 
-export function getStatusBarAlternateInterval(
-  plugin: GitChangelogPlugin
+export function getStatusBarInterval(
+  settings: ReadonlyDeep<GitChangelogPluginSettings>
 ): number {
-  if (!validateStatusBarAlternateInterval(plugin.settings.statusBarInterval)) {
+  if (!validateStatusBarInterval(settings.statusBarInterval)) {
     return Number(DEFAULT_SETTINGS.statusBarInterval);
   }
-  return Number(plugin.settings.statusBarInterval);
+  return Number(settings.statusBarInterval);
 }
 
-export function validateStatusBarAlternateInterval(
+export function validateStatusBarInterval(
   statusBarAlternateInterval: string
 ): boolean {
   if (

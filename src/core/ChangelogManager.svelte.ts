@@ -1,7 +1,9 @@
 import type { ChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
+import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { Spacetime } from 'spacetime';
 import type { TaskManager } from 'TaskManager.svelte.ts';
+import type { ReadonlyDeep } from 'type-fest';
 import type { LogEntry } from 'types.ts';
 
 import { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
@@ -10,7 +12,6 @@ import {
   extractLastCommitsForInterval,
   GIT_MAX_CONCURRENT_PROCESSES
 } from 'core/helper.ts';
-import { changelogGenerationSettingsUnchanged } from 'settings/helper.ts';
 import { AbortError, ChangelogInterval } from 'types.ts';
 
 export abstract class ChangelogManager<T extends ChangelogEntry> {
@@ -18,7 +19,6 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   public taskManager: TaskManager;
 
   public hasEntries = $derived((this.visibleEntries?.length ?? 0) > 0);
-  protected cachedInterval?: ChangelogInterval;
 
   protected reservedEntries = $state<T[]>([]);
 
@@ -92,19 +92,11 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     abortSignal: AbortSignal;
     filePath?: string;
   }): Promise<void> {
-    const settingsUnchanged =
-      this.generationSettingsUnchanged() &&
-      changelogGenerationSettingsUnchanged(this.plugin);
-
-    if (settingsUnchanged) {
-      if (!ChangelogManager.initialCommitReached(this.visibleEntries)) {
-        await this.appendToVisibleEntries({
-          abortSignal,
-          filePath
-        });
-      }
-    } else {
-      this.resetSafely();
+    if (!ChangelogManager.initialCommitReached(this.visibleEntries)) {
+      await this.appendToVisibleEntries({
+        abortSignal,
+        filePath
+      });
     }
   }
 
@@ -134,8 +126,11 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     });
   }
 
-  public generationSettingsUnchanged(): boolean {
-    return this.getLiveInterval() === this.cachedInterval;
+  public generationSettingsChanged(
+    oldSettings: GitChangelogPluginSettings,
+    newSettings: GitChangelogPluginSettings
+  ): boolean {
+    return this.getInterval(oldSettings) !== this.getInterval(newSettings);
   }
 
   public resetAndGetSignal(): AbortSignal {
@@ -182,7 +177,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     const extractedVersions = extractLastCommitsForInterval({
       changelogGenerationSettings:
         this.plugin.settings.changelogGenerationSettings,
-      interval: this.getLiveInterval(),
+      interval: this.getInterval(),
       timezoneAdjustedLogs
     });
 
@@ -291,9 +286,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       filePath,
       upperBoundaryCommit
     });
-    if (this.allEntries === undefined) {
-      this.recordUsedSettings();
-    }
+
     this.appendEntriesAndFillNextBatch({
       retrievedEntries: newEntries
     });
@@ -304,17 +297,11 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   protected abstract calculateMaxVersionsToGet(): number;
 
   /**
-   * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
-   */
-  protected recordUsedSettings(): void {
-    this.plugin.settingsOfComputedCache = structuredClone(
-      this.plugin.settings.changelogGenerationSettings
-    );
+   *   */
 
-    this.cachedInterval = this.getLiveInterval();
-  }
-
-  protected abstract getLiveInterval(): ChangelogInterval;
+  protected abstract getInterval(
+    settings?: ReadonlyDeep<GitChangelogPluginSettings>
+  ): ChangelogInterval;
 
   protected abstract runDiff({
     abortSignal,
@@ -333,7 +320,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   }): number;
 
   protected getNextInterval(): ChangelogInterval {
-    let interval = this.getLiveInterval();
+    let interval = this.getInterval();
 
     switch (interval) {
       case ChangelogInterval.Daily: {
@@ -376,7 +363,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       this.allEntries === undefined
     );
 
-    const interval = this.getLiveInterval();
+    const interval = this.getInterval();
 
     this.plugin.consoleDebug(
       'appendChangelogEntries minVersionsToGet',

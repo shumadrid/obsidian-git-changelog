@@ -2,12 +2,13 @@ import type { ObsidianGitPlugin } from 'gitPluginTypes.ts';
 import type { Debouncer, PluginSettingTab } from 'obsidian';
 import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 import type { SimpleGit } from 'simple-git';
+import type { ReadonlyDeep } from 'type-fest';
 
 import { FileChangelogManager } from 'core/FileChangelogManager.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
 import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
-import { changelogGenerationSettingsUnchanged } from 'settings/helper.ts';
+import { changelogGenerationSettingsChanged } from 'settings/helper.ts';
 import { GitChangelogPluginSettings } from 'settings/settings.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import {
@@ -38,7 +39,13 @@ import {
 
 export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   public debouncedChangelogSettingsChangedCheck:
-    | Debouncer<[], void>
+    | Debouncer<
+        [
+          oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
+          newSettings: ReadonlyDeep<GitChangelogPluginSettings>
+        ],
+        void
+      >
     | undefined;
 
   public gitPluginState = $state<GitPluginState>();
@@ -130,43 +137,53 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     }
   }
 
-  public onSettingsSave(): void {
-    if (changelogGenerationSettingsUnchanged(this)) {
-      this.consoleDebug(
-        'Identical changelog settings',
-        this.settings.changelogGenerationSettings.gitDiffIgnore
-      );
+  /**
+   * Triggers events for the views to listen to instead of updating the changelogs directly from the settings so that if the views aren't active we don't do unnecessary computation.
+   * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
+   */
+  public onSettingsSave(
+    oldSettings: GitChangelogPluginSettings,
+    newSettings: GitChangelogPluginSettings
+  ): void {
+    if (
+      changelogGenerationSettingsChanged({
+        newChangelogSettings: newSettings.changelogGenerationSettings,
+        oldChangelogSettings: oldSettings.changelogGenerationSettings,
+        plugin: this
+      })
+    ) {
+      // The main settings, that trigger recalculation for all stats when they change.
+      this.app.workspace.trigger('git-changelog:generation-settings-changed');
+    } else {
       const activeGitFile = getActiveGitRelativeFile(this);
       if (
-        this.fileChangelogManager &&
-        !this.fileChangelogManager.generationSettingsUnchanged() &&
+        this.fileChangelogManager?.generationSettingsChanged(
+          oldSettings,
+          newSettings
+        ) &&
         activeGitFile
       ) {
-        // This.fileChangelogCacheInterval = undefined;
         this.app.workspace.trigger(
           'git-changelog:file-changelog-generation-settings-changed'
         );
       }
       if (
         this.statusBar &&
-        !this.statusBar.statusBarSettingsUnchanged() &&
+        StatusBar.generationSettingsChanged(oldSettings, newSettings) &&
         activeGitFile
       ) {
-        // This.statusBarCachedTimeframe = undefined;
         this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
       }
       if (
-        this.vaultChangelogManager &&
-        !this.vaultChangelogManager.generationSettingsUnchanged()
+        this.vaultChangelogManager?.generationSettingsChanged(
+          oldSettings,
+          newSettings
+        )
       ) {
-        // This.vaultChangelogCacheInterval = undefined;
         this.app.workspace.trigger(
           'git-changelog:vault-changelog-generation-settings-changed'
         );
       }
-    } else {
-      // So it's not redundantly triggered multiple times
-      this.app.workspace.trigger('git-changelog:generation-settings-changed');
     }
   }
 
@@ -174,9 +191,10 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     newSettings: GitChangelogPluginSettings,
     checkForChanges = true
   ): Promise<void> {
+    const oldSettings = this.settings;
     await super.saveSettings(newSettings);
     if (checkForChanges) {
-      this.debouncedChangelogSettingsChangedCheck?.();
+      this.debouncedChangelogSettingsChangedCheck?.(oldSettings, newSettings);
     }
   }
 
@@ -270,11 +288,14 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     addCommands(this);
 
     this.debouncedChangelogSettingsChangedCheck = debounce(
-      () => {
-        this.onSettingsSave();
+      (
+        oldSettings: GitChangelogPluginSettings,
+        newSettings: GitChangelogPluginSettings
+      ) => {
+        this.onSettingsSave(oldSettings, newSettings);
       },
       // eslint-disable-next-line no-magic-numbers
-      500,
+      700,
       true
     );
   }

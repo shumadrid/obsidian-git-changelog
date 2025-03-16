@@ -1,3 +1,4 @@
+import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 
 import { findFirstCommitBefore } from 'core/gitOperations/findFirstCommitBefore.ts';
@@ -6,15 +7,13 @@ import { runWorkingDirFileDiff } from 'core/gitOperations/runWorkingDirFileDiff.
 import { MarkdownView } from 'obsidian';
 import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 import { getMeasurementUnit } from 'settings/ui/ChangelogMeasurementUnit.ts';
-import { getStatusBarAlternateInterval } from 'settings/ui/StatusBarInterval.ts';
+import { getStatusBarInterval } from 'settings/ui/StatusBarInterval.ts';
 import { DiffMeasurementUnit } from 'types.ts';
 import { getActiveGitFileFromView } from 'Views/helper.ts';
 
 import type GitChangelogPlugin from './main.ts';
 
 export class StatusBar {
-  private statusBarCachedTimeframe?: number;
-
   public constructor(
     private statusBarElement: HTMLElement,
     private readonly plugin: GitChangelogPlugin,
@@ -55,10 +54,12 @@ export class StatusBar {
     );
   }
 
-  public statusBarSettingsUnchanged(): boolean {
+  public static generationSettingsChanged(
+    oldSettings: GitChangelogPluginSettings,
+    newSettings: GitChangelogPluginSettings
+  ): boolean {
     return (
-      getStatusBarAlternateInterval(this.plugin) ===
-      this.statusBarCachedTimeframe
+      getStatusBarInterval(oldSettings) !== getStatusBarInterval(newSettings)
     );
   }
 
@@ -76,10 +77,6 @@ export class StatusBar {
   ): Promise<void> {
     try {
       if (this.plugin.settings.statusBarStats) {
-        this.statusBarCachedTimeframe = getStatusBarAlternateInterval(
-          this.plugin
-        );
-
         const result = await this.getFileLatestDiffStats(
           this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
           abortSignal
@@ -122,7 +119,7 @@ export class StatusBar {
     const oldCommit = await findFirstCommitBefore({
       abortSignal,
       filePath: activeGitFile,
-      minutes: getStatusBarAlternateInterval(this.plugin),
+      minutes: getStatusBarInterval(this.plugin.settings),
       plugin: this.plugin
     });
 
