@@ -79,7 +79,8 @@ export default typescriptEslint.config(
       'modules-newlines/import-declaration-newline': 'off',
       'unicorn/no-null': 'off',
       'unicorn/no-empty-file': 'warn',
-      'unicorn/prevent-abbreviations': 'warn'
+      'unicorn/prevent-abbreviations': 'warn',
+      'unicorn/prefer-global-this': 'off'
     }
   },
   {

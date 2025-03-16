@@ -18,10 +18,15 @@
 
   const { plugin, showFilesCountSummaries, version }: Properties = $props();
 
-  const formattedDate = composeVersionTitle({
-    interval: plugin.settings.vaultChangelogInterval,
-    plugin,
-    timezoneAdjustedEntryDate: version.timezoneAdjustedDate
+  const formattedVersionDateLabel = $derived.by(() => {
+    // CurrentDay just used to trigger updates
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const currentDay = plugin.currentDay;
+    return composeVersionTitle({
+      interval: plugin.settings.vaultChangelogInterval,
+      plugin,
+      timezoneAdjustedEntryDate: version.timezoneAdjustedDate
+    });
   });
 </script>
 
@@ -57,7 +62,7 @@
         </div>
       {/if}
       <div class="file-stats git-changelog-files-summaries-stats">
-        <div class="git-changelog-entry-title">{formattedDate}</div>
+        <div class="git-changelog-entry-title">{formattedVersionDateLabel}</div>
         <!-- if more than one option is selected then show labels -->
         {#if showFilesCountSummaries === FilesSummariesDisplayMode.Total}
           <div class="git-changelog-stat">

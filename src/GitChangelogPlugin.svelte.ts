@@ -9,10 +9,12 @@ import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { changelogGenerationSettingsUnchanged } from 'settings/helper.ts';
 import { GitChangelogPluginSettings } from 'settings/settings.ts';
+import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import {
   gitPluginCompatibleVersion,
   gitPluginTestedVersion
 } from 'settings/ui/GitPluginWarning.ts';
+import spacetime from 'spacetime';
 import { TaskManager } from 'TaskManager.svelte.ts';
 import {
   FILE_CHANGELOG_VIEW_CONFIG,
@@ -41,6 +43,8 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
 
   public gitPluginState = $state<GitPluginState>();
   public gitRepoReady = $state<boolean>();
+  // Used for keeping relative interval labels like "today" and "yesterday" up to date
+  public currentDay = $state<string>();
 
   public dependenciesReady = $derived(
     (this.gitPluginState === GitPluginState.Enabled ||
@@ -208,6 +212,21 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       this.app.workspace.on('file-open', () => {
         this.updateActiveGitFile();
       })
+    );
+
+    // Every 5 minutes it checks if it's a new day in order to update the potentially outdated interval labels.
+    this.registerInterval(
+      window.setInterval(
+        () => {
+          const timezone = getTimeZone(
+            this.settings.changelogGenerationSettings,
+            this
+          );
+          this.currentDay = spacetime.now(timezone).format('day');
+        },
+        // eslint-disable-next-line no-magic-numbers
+        5 * 60 * 1000
+      )
     );
 
     // This will detect if the current open file was renamed after every git commit.
