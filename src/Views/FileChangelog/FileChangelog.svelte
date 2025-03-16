@@ -185,11 +185,4 @@
 </div>
 
 <style lang="scss">
-  .git-changelog-file-changelog-entry {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding-left: var(--size-4-2);
-    justify-content: space-between; // Better space distribution
-  }
 </style>
