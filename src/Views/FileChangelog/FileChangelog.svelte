@@ -63,21 +63,21 @@
     }
   );
   fileChangelogSettingsChangedReference = plugin.app.workspace.on(
-    'obsidian-git-changelog:file-changelog-generation-settings-changed',
+    'git-changelog:file-changelog-generation-settings-changed',
     () => {
       changelogManager?.resetSafely();
     }
   );
 
   settingsChangedReference = plugin.app.workspace.on(
-    'obsidian-git-changelog:generation-settings-changed',
+    'git-changelog:generation-settings-changed',
     () => {
       changelogManager?.resetSafely();
     }
   );
 
   activeFileChangedReference = plugin.app.workspace.on(
-    'obsidian-git-changelog:active-file-changed',
+    'git-changelog:active-git-file-changed',
     () => {
       changelogManager?.resetSafely();
     }

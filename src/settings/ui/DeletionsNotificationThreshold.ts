@@ -5,7 +5,7 @@ export class DeletionsNotificationThreshold extends GitChangelogSetting {
     this.createSetting()
       .setName('Notify on large amount of changes.')
       .setDesc(
-        'Notify if changes between neighboring commits exceed a threshold. Which can be a sign of data loss or corruption.'
+        'Notify if changes between neighboring commits exceed a threshold, which can be a sign of data loss or corruption.'
       )
       .addToggle((toggle) =>
         toggle

@@ -6,7 +6,7 @@ export class ContentDeletionsMovesThreshold extends GitChangelogSetting {
     this.createSetting()
       .setName('Custom threshold for deletions/moves alert')
       .setDesc(
-        "Acceptable amount of deletions and moves between commits. Represents either words or lines, depending on your setup. note that this doesn't mean between each interval but between the actual commits meaning if your auto-commit interval is five minutes this will trigger only if you manage to delete that many files inside those five minutes which usually signals corruption or data loss"
+        "Acceptable amount of deletions and moves between commits. Represents either words or lines, depending on your setup. Note that this doesn't mean between each interval but between the actual commits, meaning if your auto-commit interval is five minutes, this will trigger only if you manage to delete that many files inside those five minutes, which usually signals corruption or data loss."
       )
       .addText((text) => {
         text.setDisabled(this.disabled).onChange((value) => {

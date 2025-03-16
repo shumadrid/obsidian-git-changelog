@@ -8,7 +8,7 @@ import FileChangelogComponent from './FileChangelog.svelte';
 
 export const FILE_CHANGELOG_VIEW_CONFIG = {
   icon: 'file-clock',
-  name: 'File Changelog',
+  name: 'File changelog',
   type: 'file-changelog-view'
 };
 

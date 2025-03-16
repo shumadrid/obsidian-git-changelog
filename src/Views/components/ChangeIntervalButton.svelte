@@ -56,7 +56,7 @@
   id="changeInterval"
   class="clickable-icon nav-action-button"
   data-icon={CHANGE_INTERVAL_ICON}
-  aria-label="Change Interval"
+  aria-label="Change interval"
   aria-disabled={isChangingInterval || !enabled}
   bind:this={button}
   onclick={isChangingInterval || !enabled ? undefined : onClick}

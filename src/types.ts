@@ -33,11 +33,11 @@ declare module 'obsidian' {
   interface Workspace {
     on(
       name:
-        | 'obsidian-git-changelog:active-file-changed'
-        | 'obsidian-git-changelog:file-changelog-generation-settings-changed'
-        | 'obsidian-git-changelog:generation-settings-changed'
-        | 'obsidian-git-changelog:status-bar-settings-changed'
-        | 'obsidian-git-changelog:vault-changelog-generation-settings-changed',
+        | 'git-changelog:active-git-file-changed'
+        | 'git-changelog:file-changelog-generation-settings-changed'
+        | 'git-changelog:generation-settings-changed'
+        | 'git-changelog:status-bar-settings-changed'
+        | 'git-changelog:vault-changelog-generation-settings-changed',
       callback: () => void,
       context?: unknown
     ): EventRef;
@@ -45,11 +45,11 @@ declare module 'obsidian' {
     // BUG:? Read directly from settings instead of passing as arguments?
     trigger(
       name:
-        | 'obsidian-git-changelog:active-file-changed'
-        | 'obsidian-git-changelog:file-changelog-generation-settings-changed'
-        | 'obsidian-git-changelog:generation-settings-changed'
-        | 'obsidian-git-changelog:status-bar-settings-changed'
-        | 'obsidian-git-changelog:vault-changelog-generation-settings-changed'
+        | 'git-changelog:active-git-file-changed'
+        | 'git-changelog:file-changelog-generation-settings-changed'
+        | 'git-changelog:generation-settings-changed'
+        | 'git-changelog:status-bar-settings-changed'
+        | 'git-changelog:vault-changelog-generation-settings-changed'
     ): void;
   }
 }

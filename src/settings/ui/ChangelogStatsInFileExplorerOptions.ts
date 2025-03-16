@@ -5,7 +5,7 @@ import { FileExplorerStats } from 'types.ts';
 export class ChangelogStatsInFileExplorerOptions extends GitChangelogSetting {
   public display(): void {
     this.createSetting()
-      .setName('Show changelog stats in File Explorer')
+      .setName('Show changelog stats in file explorer')
       .addDropdown((dropdown) => {
         const options: Record<FileExplorerStats, string> = {
           Disabled: 'Disabled',

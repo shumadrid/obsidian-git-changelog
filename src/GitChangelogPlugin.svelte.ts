@@ -140,7 +140,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       ) {
         // This.fileChangelogCacheInterval = undefined;
         this.app.workspace.trigger(
-          'obsidian-git-changelog:file-changelog-generation-settings-changed'
+          'git-changelog:file-changelog-generation-settings-changed'
         );
       }
       if (
@@ -149,9 +149,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
         activeGitFile
       ) {
         // This.statusBarCachedTimeframe = undefined;
-        this.app.workspace.trigger(
-          'obsidian-git-changelog:status-bar-settings-changed'
-        );
+        this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
       }
       if (
         this.vaultChangelogManager &&
@@ -159,14 +157,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       ) {
         // This.vaultChangelogCacheInterval = undefined;
         this.app.workspace.trigger(
-          'obsidian-git-changelog:vault-changelog-generation-settings-changed'
+          'git-changelog:vault-changelog-generation-settings-changed'
         );
       }
     } else {
       // So it's not redundantly triggered multiple times
-      this.app.workspace.trigger(
-        'obsidian-git-changelog:generation-settings-changed'
-      );
+      this.app.workspace.trigger('git-changelog:generation-settings-changed');
     }
   }
 
@@ -266,7 +262,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   private setNewActiveGitFile(activeGitFile: string | undefined): void {
     this.fileChangelogManager?.resetAndGetSignal();
     this.cachedActiveGitFile = activeGitFile;
-    this.app.workspace.trigger('obsidian-git-changelog:active-file-changed');
+    this.app.workspace.trigger('git-changelog:active-git-file-changed');
   }
 
   private updateActiveGitFile(): void {

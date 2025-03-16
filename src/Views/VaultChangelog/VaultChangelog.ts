@@ -8,7 +8,7 @@ import VaultChangelogComponent from './VaultChangelog.svelte';
 
 export const VAULT_CHANGELOG_VIEW_CONFIG = {
   icon: 'folder-clock',
-  name: 'Vault Changelog',
+  name: 'Vault changelog',
   type: 'vault-changelog-view'
 };
 

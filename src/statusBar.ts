@@ -26,7 +26,7 @@ export class StatusBar {
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on(
-        'obsidian-git-changelog:generation-settings-changed',
+        'git-changelog:generation-settings-changed',
         () => {
           this.recompute();
         }
@@ -41,7 +41,7 @@ export class StatusBar {
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on(
-        'obsidian-git-changelog:status-bar-settings-changed',
+        'git-changelog:status-bar-settings-changed',
         () => {
           this.recompute();
         }

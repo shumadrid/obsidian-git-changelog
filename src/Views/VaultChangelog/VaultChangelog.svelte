@@ -73,14 +73,14 @@
   );
 
   vaultChangelogSettingsChangedReference = plugin.app.workspace.on(
-    'obsidian-git-changelog:vault-changelog-generation-settings-changed',
+    'git-changelog:vault-changelog-generation-settings-changed',
     () => {
       changelogManager?.resetSafely();
     }
   );
 
   settingsChangedReference = plugin.app.workspace.on(
-    'obsidian-git-changelog:generation-settings-changed',
+    'git-changelog:generation-settings-changed',
     () => {
       changelogManager?.resetSafely();
     }
@@ -192,7 +192,7 @@
         aria-disabled={!(
           changelogManager?.hasEntries === true && plugin.dependenciesReady
         )}
-        aria-label={allEntriesCollapsed ? 'Expand All' : 'Collapse All'}
+        aria-label={allEntriesCollapsed ? 'Expand all' : 'Collapse all'}
         bind:this={collapseButton}
         onclick={changelogManager?.hasEntries && plugin.dependenciesReady
           ? toggleCollapsedState

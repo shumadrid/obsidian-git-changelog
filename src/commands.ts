@@ -15,7 +15,7 @@ export function addCommands(plugin: GitChangelogPlugin): void {
       );
     },
     id: `open-${VAULT_CHANGELOG_VIEW_CONFIG.type}`,
-    name: `Open ${VAULT_CHANGELOG_VIEW_CONFIG.name} view`
+    name: `Open ${VAULT_CHANGELOG_VIEW_CONFIG.name.toLocaleLowerCase()} view`
   });
 
   plugin.addCommand({
@@ -27,6 +27,6 @@ export function addCommands(plugin: GitChangelogPlugin): void {
       );
     },
     id: `open-${FILE_CHANGELOG_VIEW_CONFIG.type}`,
-    name: `Open ${FILE_CHANGELOG_VIEW_CONFIG.name} view`
+    name: `Open ${FILE_CHANGELOG_VIEW_CONFIG.name.toLocaleLowerCase()} view`
   });
 }

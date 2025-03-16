@@ -5,10 +5,8 @@ export class FileExplorerStatsInterval extends GitChangelogSetting {
   public display(): void {
     this.createSetting()
 
-      .setName('Interval for File explorer stats (minutes)')
-      .setDesc(
-        'If specified, generates stats instead of relying on stats from the Changelog view.'
-      )
+      .setName('Interval for file explorer stats (minutes)')
+
       .addText((text) => {
         text.setDisabled(this.disabled).onChange((value) => {
           const newSettings = this.plugin.settingsClone;

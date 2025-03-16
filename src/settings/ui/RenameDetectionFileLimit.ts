@@ -10,7 +10,7 @@ export class RenameDetectionFileLimit extends GitChangelogSetting {
 
       .setName('Rename detection file limit')
       .setDesc(
-        'If more than ~X files change, exhaustive rename detection won’t run, though some renames may still be detected. Be aware of potential computation costs when setting higher limits. Set 0 for no limit.'
+        'If number of changed files exceeds the limit, exhaustive rename detection won’t run, though some renames may still be detected. Be aware of potential computation costs when setting higher limits. Set 0 for no limit.'
       )
       .addText((text) => {
         text.inputEl.pattern = '[0-9]*';

@@ -14,7 +14,7 @@ export class RenameDetectionSensitivitySlider extends GitChangelogSetting {
     const setting = this.createSetting()
       .setName('File move/rename detection sensitivity')
       .setDesc(
-        "Flag files as renamed if more than X% of the file hasn't changed. Adjust this if you notice the plugin missing valid moves/renames or showing false positives."
+        "Flag files as renamed only if more than X% of the file hasn't changed. Adjust this if you notice the plugin missing valid moves/renames or showing false positives."
       );
 
     new ResetButton(setting.controlEl).onClick(() => {
