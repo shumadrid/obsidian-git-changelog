@@ -2,13 +2,11 @@
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
   import type { EventRef } from 'obsidian';
 
-  import { setIcon } from 'obsidian';
   import { onDestroy, untrack } from 'svelte';
   import ChangeIntervalButton from 'Views/components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from 'Views/components/DependenciesStatusCheck.svelte';
-  import DiffStatsComponent from 'Views/components/DiffStats.svelte';
-  import { composeAriaLabel, composeVersionTitle } from 'Views/formatters.ts';
-  import { canOpenInDiffView, changelogFileClick } from 'Views/helper.ts';
+
+  import Version from './Version.svelte';
 
   // eslint-disable-next-line capitalized-comments
   // svelte-ignore non_reactive_update
@@ -31,7 +29,6 @@
   let activeFileChangedReference: EventRef;
 
   const changelogManager = $derived(plugin.fileChangelogManager);
-  const openFileButton = $state<HTMLElement>();
 
   const changelogState = $derived.by(() => {
     if (!plugin.dependenciesReady) {
@@ -141,53 +138,11 @@
     plugin.app.workspace.offref(fileChangelogSettingsChangedReference);
   });
 
-  $effect(() => {
-    if (openFileButton) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setIcon(openFileButton, openFileButton.getAttr('data-icon')!);
-    }
-  });
-
   function cleanupObserver(): void {
     if (observer) {
       observer.disconnect();
       observer = undefined;
     }
-  }
-
-  function primaryClick(event: MouseEvent, entryIndex: number | string): void {
-    event.stopPropagation();
-
-    if (isVersionClickable(entryIndex)) {
-      changelogFileClick({
-        aReference:
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          changelogManager!.visibleEntries![(entryIndex as number) + 1]
-            ?.commitHash,
-
-        bReference:
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          changelogManager!.visibleEntries![entryIndex as number].commitHash,
-        event,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        file: changelogManager!.visibleEntries![entryIndex as number],
-        plugin
-      });
-    }
-  }
-
-  function isVersionClickable(entryIndex: number | string): boolean {
-    if (
-      changelogManager?.visibleEntries === undefined ||
-      typeof entryIndex === 'string'
-    ) {
-      return false;
-    }
-    return canOpenInDiffView({
-      aReference: changelogManager.visibleEntries[entryIndex + 1]?.commitHash,
-      bReference: changelogManager.visibleEntries[entryIndex].commitHash,
-      file: changelogManager.visibleEntries[entryIndex]
-    });
   }
 </script>
 
@@ -210,42 +165,12 @@
       {#if changelogState === FileChangelogState.HasEntries}
         <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
         {#each changelogManager!.visibleEntries! as entry, index}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div
-            class="git-changelog-align-file nav-file-title is-clickable git-changelog-file-changelog-entry"
-            aria-label={composeAriaLabel(entry)}
-            data-tooltip-position="bottom"
-            onclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-            (event) => {
-              primaryClick(event, index);
-            }}
-          >
-            <div class="git-changelog-file-name-container">
-              <div
-                class="git-changelog-one-line {isVersionClickable(index)
-                  ? ''
-                  : 'git-changelog-faint'}"
-              >
-                {composeVersionTitle({
-                  interval: plugin.settings.fileChangelogInterval,
-                  plugin,
-                  timezoneAdjustedEntryDate: entry.timezoneAdjustedDate
-                })}
-              </div>
-            </div>
-            <DiffStatsComponent
-              baseStats={entry.textDiffStats
-                ? {
-                    additions: entry.textDiffStats.baseStats.additions,
-                    deletions: entry.textDiffStats.baseStats.deletions
-                  }
-                : undefined}
-              inFileExplorer={false}
-              file={entry}
-              inFileChangelog={true}
-            />
-          </div>
+          <Version
+            previousEntry={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            changelogManager!.visibleEntries!.at(index + 1)}
+            {entry}
+            {plugin}
+          ></Version>
         {/each}
         <div bind:this={sentinel} id="sentinel"></div>
       {:else if changelogState === FileChangelogState.Recomputing}
