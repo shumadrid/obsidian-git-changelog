@@ -40,6 +40,7 @@ export interface IGitChangelogSettings {
   fileExplorerStats: FileExplorerStats;
   filesChangesWarningThreshold: string;
   fileSummariesDisplayMode: FilesSummariesDisplayMode;
+  firstStartup: boolean;
   locale: string;
   notifyOnContentDeletionsAndMovesThresholdReached: boolean;
   notifyOnFilesChangesThresholdReached: boolean;
@@ -96,6 +97,8 @@ export class GitChangelogPluginSettings extends PluginSettingsBase {
   public vaultChangelogInterval: ChangelogInterval =
     DEFAULT_SETTINGS.vaultChangelogInterval;
 
+  public firstStartup: boolean = DEFAULT_SETTINGS.firstStartup;
+
   public constructor(data: unknown) {
     super();
     // Object.assign(this, DEFAULT_SETTINGS);
@@ -125,6 +128,7 @@ export const DEFAULT_SETTINGS: IGitChangelogSettings = {
   fileExplorerStats: FileExplorerStats.Disabled,
   filesChangesWarningThreshold: '50',
   fileSummariesDisplayMode: FilesSummariesDisplayMode.Total,
+  firstStartup: true,
   locale: '',
   notifyOnContentDeletionsAndMovesThresholdReached: true,
   notifyOnFilesChangesThresholdReached: false,

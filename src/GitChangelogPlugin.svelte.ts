@@ -210,7 +210,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     return new GitChangelogSettingsTab(this);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   protected override async onLayoutReady(): Promise<void> {
     // These have to be initiated first.
     this.vaultChangelogManager = new VaultChangelogManager({
@@ -260,6 +259,14 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     //   }),
     // );
 
+    if (this.settings.firstStartup) {
+      await this.addVaultChangelogView();
+      await this.addFileChangelogView();
+
+      const newSettings = this.settingsClone;
+      newSettings.firstStartup = false;
+      await this.saveSettings(newSettings, false);
+    }
     this.updateActiveGitFile();
   }
 
@@ -279,11 +286,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     this.registerView(FILE_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
       return new FileChangelogView(leaf, this);
     });
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.addVaultChangelogView();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.addFileChangelogView();
 
     addCommands(this);
 
