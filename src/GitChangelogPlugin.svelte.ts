@@ -224,10 +224,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     // );
 
     this.updateActiveGitFile();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.addVaultChangelogView();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.addFileChangelogView();
   }
 
   protected override onloadComplete(): void {
@@ -246,6 +242,11 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     this.registerView(FILE_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
       return new FileChangelogView(leaf, this);
     });
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.addVaultChangelogView();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.addFileChangelogView();
 
     addCommands(this);
 
