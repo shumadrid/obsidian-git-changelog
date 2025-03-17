@@ -21,11 +21,7 @@ import {
   FILE_CHANGELOG_VIEW_CONFIG,
   FileChangelogView
 } from 'Views/FileChangelog/FileChangelog.ts';
-import {
-  getActiveGitRelativeFile,
-  getActiveViewGitRelativeFile,
-  isDiffView
-} from 'Views/helper.ts';
+import { getActiveGitRelativeFile, isDiffView } from 'Views/helper.ts';
 import {
   VAULT_CHANGELOG_VIEW_CONFIG,
   VaultChangelogView
@@ -159,13 +155,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       // The main settings, that trigger recalculation for all stats when they change.
       this.app.workspace.trigger('git-changelog:generation-settings-changed');
     } else {
-      const activeGitFile = getActiveViewGitRelativeFile(this);
       if (
         this.fileChangelogManager?.generationSettingsChanged(
           oldSettings,
           newSettings
         ) &&
-        activeGitFile
+        this.cachedActiveGitFile
       ) {
         this.app.workspace.trigger(
           'git-changelog:file-changelog-generation-settings-changed'
@@ -174,7 +169,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       if (
         this.statusBar &&
         StatusBar.generationSettingsChanged(oldSettings, newSettings) &&
-        activeGitFile
+        this.cachedActiveGitFile
       ) {
         this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
       }
