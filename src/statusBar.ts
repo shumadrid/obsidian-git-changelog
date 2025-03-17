@@ -20,7 +20,6 @@ export class StatusBar {
     public taskManager: TaskManager
   ) {
     // Initialize immediately
-
     this.recompute();
 
     this.plugin.registerEvent(
@@ -49,8 +48,17 @@ export class StatusBar {
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on('editor-change', () => {
+        // Previous operations aren't aborted because this will be triggered often, and the results will lag behind if new calls ones keep getting scheduled and resetting the previous calls before they finish.
         this.recompute(false);
       })
+    );
+
+    this.plugin.registerInterval(
+      // Since the most frequent status bar interval is 1 minute, we check that frequently to verify if the stats are still valid for the current time range. Without this, in a scenario where Obsidian remains idle, none of the other events would trigger, and stats for edits made hours ago would still be in the status bar, even though they are possibly outside the specified interval by now.
+      window.setInterval(() => {
+        this.recompute();
+        // eslint-disable-next-line no-magic-numbers
+      }, 60 * 1000)
     );
   }
 
@@ -68,7 +76,7 @@ export class StatusBar {
     this.taskManager.abort();
   }
 
-  public setStatusBar(text: string): void {
+  private setStatusBar(text: string): void {
     this.statusBarElement.setText(text);
   }
 
@@ -77,7 +85,7 @@ export class StatusBar {
   ): Promise<void> {
     try {
       if (this.plugin.settings.statusBarStats) {
-        const result = await this.getFileLatestDiffStats(
+        const result = await this.getDiffStatsForActiveFile(
           this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
           abortSignal
         );
@@ -103,7 +111,7 @@ export class StatusBar {
     );
   }
 
-  private async getFileLatestDiffStats(
+  private async getDiffStatsForActiveFile(
     activeFileView: MarkdownView | null,
     abortSignal: AbortSignal
   ): Promise<string | undefined> {
@@ -134,15 +142,11 @@ export class StatusBar {
         deletions = baseStats.deletions;
       } else {
         // File is binary
-
         return;
       }
     } else {
       // For files with no commit found (either new or the interval is spanning entire history),
-      // We can use the current file's word/line count, but we need to handle
-      // Two cases differently:
-      // 1. New files not yet tracked by git -> show line/word count
-      // 2. Git ignored files -> show nothing to avoid misleading stats (don't show 0s)
+      // We can use the current file's word/line count, unless the file is git ignored, in that case show nothing to avoid misleading stats (don't show 0s)
       const fileIsGitIgnored = await runCheckIgnore({
         abortSignal,
         activeGitFile,
