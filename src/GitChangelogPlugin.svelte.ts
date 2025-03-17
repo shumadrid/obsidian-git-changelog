@@ -21,7 +21,11 @@ import {
   FILE_CHANGELOG_VIEW_CONFIG,
   FileChangelogView
 } from 'Views/FileChangelog/FileChangelog.ts';
-import { getActiveGitRelativeFile, isDiffView } from 'Views/helper.ts';
+import {
+  getActiveGitRelativeFile,
+  getActiveViewGitRelativeFile,
+  isDiffView
+} from 'Views/helper.ts';
 import {
   VAULT_CHANGELOG_VIEW_CONFIG,
   VaultChangelogView
@@ -155,7 +159,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       // The main settings, that trigger recalculation for all stats when they change.
       this.app.workspace.trigger('git-changelog:generation-settings-changed');
     } else {
-      const activeGitFile = getActiveGitRelativeFile(this);
+      const activeGitFile = getActiveViewGitRelativeFile(this);
       if (
         this.fileChangelogManager?.generationSettingsChanged(
           oldSettings,
@@ -231,6 +235,13 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       })
     );
 
+    // This will detect if the current open file was renamed after every commit.
+    this.registerEvent(
+      this.app.workspace.on('obsidian-git:head-change', () => {
+        this.updateActiveGitFile();
+      })
+    );
+
     // Every 5 minutes it checks if it's a new day in order to update the potentially outdated interval labels.
     this.registerInterval(
       window.setInterval(
@@ -244,13 +255,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
         // eslint-disable-next-line no-magic-numbers
         5 * 60 * 1000
       )
-    );
-
-    // This will detect if the current open file was renamed after every git commit.
-    this.registerEvent(
-      this.app.workspace.on('obsidian-git:head-change', () => {
-        this.updateActiveGitFile();
-      })
     );
 
     // This.registerEvent(
@@ -309,8 +313,11 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   }
 
   private updateActiveGitFile(): void {
+    // Trying to communicate with the Git plugin could throw an error.
     try {
       const currentActiveGitFile = getActiveGitRelativeFile(this);
+
+      // This ordering doesn't react to opening the diff views.
       if (currentActiveGitFile === this.cachedActiveGitFile) {
         return;
       }
@@ -320,9 +327,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       } else {
         const currentActiveView =
           this.app.workspace.getActiveViewOfType(ItemView);
+
+        // If a DiffView is active, don't clear the active git file, but keep it, so that the file changelog still shows stats for that previously active file.
         if (isDiffView(currentActiveView)) {
           return;
         }
+
         this.setNewActiveGitFile(undefined);
       }
     } catch {

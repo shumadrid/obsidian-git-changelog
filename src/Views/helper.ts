@@ -39,25 +39,28 @@ export function canOpenInDiffView({
   return !!(file.textDiffStats && aReference && bReference);
 }
 
-export function getActiveGitFileFromView(
-  activeFileView: MarkdownView | null,
+export function getGitRelativeFilePath(
+  file: null | TFile | undefined,
   plugin: GitChangelogPlugin
 ): string | undefined {
-  if (activeFileView?.file) {
+  if (file) {
     const gitPlugin = plugin.getGitPlugin();
-    return gitPlugin.gitManager.getRelativeRepoPath(
-      activeFileView.file.path,
-      true
-    );
+    return gitPlugin.gitManager.getRelativeRepoPath(file.path, true);
   }
 }
 
-// Use this function to get the active file over plugin.activeGitFile if you don't want to get an error if the active file changed.
-export function getActiveGitRelativeFile(
+export function getActiveViewGitRelativeFile(
   plugin: GitChangelogPlugin
 ): string | undefined {
   const activeFileView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-  return getActiveGitFileFromView(activeFileView, plugin);
+  return getGitRelativeFilePath(activeFileView?.file, plugin);
+}
+
+export function getActiveGitRelativeFile(
+  plugin: GitChangelogPlugin
+): string | undefined {
+  const activeFile = plugin.app.workspace.getActiveFile();
+  return getGitRelativeFilePath(activeFile, plugin);
 }
 
 export function getDisplayPath(path: string): string {

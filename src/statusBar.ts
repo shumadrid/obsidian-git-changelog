@@ -9,7 +9,7 @@ import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 import { getMeasurementUnit } from 'settings/ui/ChangelogMeasurementUnit.ts';
 import { getStatusBarInterval } from 'settings/ui/StatusBarInterval.ts';
 import { DiffMeasurementUnit } from 'types.ts';
-import { getActiveGitFileFromView } from 'Views/helper.ts';
+import { getGitRelativeFilePath } from 'Views/helper.ts';
 
 import type GitChangelogPlugin from './main.ts';
 
@@ -115,7 +115,10 @@ export class StatusBar {
     activeFileView: MarkdownView | null,
     abortSignal: AbortSignal
   ): Promise<string | undefined> {
-    const activeGitFile = getActiveGitFileFromView(activeFileView, this.plugin);
+    const activeGitFile = getGitRelativeFilePath(
+      activeFileView?.file,
+      this.plugin
+    );
 
     if (!(activeGitFile && activeFileView)) {
       return;
