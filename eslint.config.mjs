@@ -21,7 +21,6 @@ export default typescriptEslint.config(
     languageOptions: {
       parser: typescriptEslint.parser,
       parserOptions: {
-        // project: './tsconfig.json',
         projectService: true
       }
     }
@@ -76,6 +75,12 @@ export default typescriptEslint.config(
         }
       ],
       'perfectionist/sort-modules': 'off',
+      'perfectionist/sort-enums': 'off',
+      'perfectionist/sort-interfaces': 'off',
+      'perfectionist/sort-switch-case': 'off',
+      'perfectionist/sort-object-types': 'off',
+      'perfectionist/sort-objects': 'off',
+      'perfectionist/sort-variable-declarations': 'off',
       'modules-newlines/import-declaration-newline': 'off',
       'unicorn/no-null': 'off',
       'unicorn/no-empty-file': 'warn',
@@ -84,6 +89,6 @@ export default typescriptEslint.config(
     }
   },
   {
-    ignores: ['node_modules/', 'dist/']
+    ignores: ['node_modules/', 'dist/', 'eslint.config.mjs']
   }
 );
