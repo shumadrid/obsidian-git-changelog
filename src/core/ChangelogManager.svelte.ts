@@ -174,7 +174,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       upperBoundaryCommit: undefined
     });
 
-    const extractedVersions = extractLastCommitsForInterval({
+    const extractedVersions = await extractLastCommitsForInterval({
       changelogGenerationSettings:
         this.plugin.settings.changelogGenerationSettings,
       interval: this.getInterval(),
@@ -400,7 +400,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       });
 
       // All we need from a version is its latest commit, not all commits included in that interval
-      const extractedVersions = extractLastCommitsForInterval({
+      const extractedVersions = await extractLastCommitsForInterval({
         changelogGenerationSettings:
           this.plugin.settings.changelogGenerationSettings,
         interval,
