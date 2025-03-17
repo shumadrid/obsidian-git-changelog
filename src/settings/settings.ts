@@ -19,7 +19,7 @@ export const AUTO_DETECT_TIMEZONE_PLACEHOLDER = 'Auto-detect';
  */
 export interface ChangelogGenerationSettings {
   // Time settings
-  dayStartTime: number;
+  dayStartHour: number;
   // Diff settings
   detectMovedContent: boolean;
   diffAlgorithm: DiffAlgorithm;
@@ -109,7 +109,7 @@ export class GitChangelogPluginSettings extends PluginSettingsBase {
 
 export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings =
   {
-    dayStartTime: 0,
+    dayStartHour: 0,
     detectMovedContent: true,
     diffAlgorithm: DiffAlgorithm.Inherit,
     gitDiffIgnore: '',

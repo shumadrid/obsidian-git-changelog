@@ -12,7 +12,7 @@ export function applyDayStartTimeSetting({
   dayStartTime: number;
   timezoneAdjustedDate: Spacetime;
 }): Spacetime {
-  return timezoneAdjustedDate.subtract(dayStartTime, 'minutes');
+  return timezoneAdjustedDate.subtract(dayStartTime, 'hours');
 }
 
 export function getDayStartTimeAdjustedLogs(

@@ -80,7 +80,7 @@ export abstract class GitChangelogSetting {
       if (text instanceof NumberComponent) {
         text.setValue(Number(storedValue));
       } else if (text instanceof TimeComponent) {
-        text.setValue(moment.duration({ minutes: Number(storedValue) }));
+        text.setValue(moment.duration({ hours: Number(storedValue) }));
       } else {
         text.setValue(
           typeof storedValue === 'object'
