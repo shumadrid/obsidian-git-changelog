@@ -6,6 +6,7 @@ import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
 import { runWorkingDirFileDiff } from 'core/gitOperations/runWorkingDirFileDiff.ts';
 import { MarkdownView } from 'obsidian';
 import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
+import { clearPendingQueueItems } from 'obsidian-dev-utils/obsidian/Queue';
 import { getMeasurementUnit } from 'settings/ui/ChangelogMeasurementUnit.ts';
 import { getStatusBarInterval } from 'settings/ui/StatusBarInterval.ts';
 import { DiffMeasurementUnit } from 'types.ts';
@@ -21,6 +22,8 @@ export class StatusBar {
   ) {
     // Initialize immediately
     this.recompute();
+
+    // It doesn't listen to obsidian-git:head-change event because it always compares the working directory to some past commit anyway.
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on(
@@ -76,42 +79,44 @@ export class StatusBar {
     this.taskManager.abort();
   }
 
-  private setStatusBar(text: string): void {
+  private setText(text: string): void {
     this.statusBarElement.setText(text);
   }
 
-  private async updateStatusBarWithFileStats(
-    abortSignal: AbortSignal
-  ): Promise<void> {
+  private async updateStats(abortSignal: AbortSignal): Promise<void> {
     try {
       if (this.plugin.settings.statusBarStats) {
-        const result = await this.getDiffStatsForActiveFile(
+        const result = await this.calculateStatsForActiveFile(
           this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
           abortSignal
         );
         if (result) {
-          this.setStatusBar(result);
+          this.setText(result);
         } else {
-          this.setStatusBar('');
+          this.setText('');
         }
       }
     } catch {
-      this.setStatusBar('');
+      this.setText('');
     }
   }
 
   private recompute(reset = true): void {
+    // Stop the massive build-up of updateStats() calls when the user is typing
+    clearPendingQueueItems(this.plugin.app);
+
     const abortSignal = reset
       ? this.taskManager.abortPreviousTasksAndGetSignal()
       : this.taskManager.getAbortSignal();
+
     invokeAsyncSafely(() =>
       this.taskManager.enqueueAndWait(async () => {
-        await this.updateStatusBarWithFileStats(abortSignal);
+        await this.updateStats(abortSignal);
       })
     );
   }
 
-  private async getDiffStatsForActiveFile(
+  private async calculateStatsForActiveFile(
     activeFileView: MarkdownView | null,
     abortSignal: AbortSignal
   ): Promise<string | undefined> {
