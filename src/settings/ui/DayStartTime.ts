@@ -10,7 +10,6 @@ export class DayStartTime extends GitChangelogSetting {
       .setName('Day start time')
       .setDesc('Adjust the day based on your schedule.')
       .addTime((text) => {
-        text.inputEl.addClass('git-changelog-time-component');
         text
           .setValue(
             moment.duration({
