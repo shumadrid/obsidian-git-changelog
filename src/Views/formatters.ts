@@ -3,9 +3,9 @@ import type { Spacetime } from 'spacetime';
 import type { DiffFile } from 'types.ts';
 
 import { normalizePath } from 'obsidian';
+import { getUserLocale } from 'settings/ui/CustomLocale.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import { getDayStartTime } from 'settings/ui/DayStartTime.ts';
-import { getUserLocale } from 'settings/validation/userLocale.ts';
 import spacetime from 'spacetime';
 import { applyDayStartTimeSetting } from 'timeUtils.ts';
 import { ChangelogInterval } from 'types.ts';
@@ -67,7 +67,7 @@ export function composeDailyVersionDisplayText({
   );
 }
 
-// only for composing the UI string
+// Only for composing the UI string
 export function applyDayDisplayOffset({
   dayStartTime,
   timezoneAdjustedDate

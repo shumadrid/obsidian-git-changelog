@@ -2,6 +2,7 @@ import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 
 import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsTabBase';
 import { DEFAULT_SETTINGS } from 'settings/settings.ts';
+import { CustomLocale } from 'settings/ui/CustomLocale.ts';
 import { MiscellaneousButtons } from 'settings/ui/MiscellaneousButtons.ts';
 
 import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
@@ -21,19 +22,23 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     const { containerEl, plugin } = this;
 
     containerEl.empty();
-
     // Const notifyOnLargeChanges =
     //   Plugin.settings.notifyIfContentDeletionsAndMovesThresholdReached ??
     //   DEFAULT_SETTINGS.notifyIfContentDeletionsAndMovesThresholdReached;
 
     new GitPluginWarning({ containerEl, plugin }).display();
+
     new AutoCommitDisabledWarning({
       containerEl,
       plugin
     }).display();
+
     new DayStartTime({ containerEl, plugin }).display();
 
     new CustomTimeZone({ containerEl, plugin }).display();
+
+    new CustomLocale({ containerEl, plugin }).display();
+
     new DiffAlgorithmOptions({
       containerEl,
       plugin
@@ -49,19 +54,6 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     //   ContainerEl,
     //   NotifyOnLargeChanges
     // ).display();
-
-    new StatusBarStatsToggle({
-      containerEl,
-      plugin,
-      settingTab: this
-    }).display();
-    new StatusBarInterval({
-      containerEl,
-      disabled: !(
-        plugin.settings.statusBarStats ?? DEFAULT_SETTINGS.statusBarStats
-      ),
-      plugin
-    }).display();
     // New ChangelogStatsInFileExplorerOptions(plugin, containerEl, false, this).display();
 
     // New FileExplorerStatsInterval(
@@ -71,16 +63,32 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     //     DEFAULT_SETTINGS.fileExplorerChangelogStats) ===
     //     FileExplorerChangelogStats.Disabled
     // ).display();
-
     new ExcludeFilesAndFolders({ containerEl, plugin }).display();
+
     new RenameDetectionSensitivitySlider({
       containerEl,
       plugin
     }).display();
+
     new RenameDetectionFileLimit({
       containerEl,
       plugin
     }).display();
+
+    new StatusBarStatsToggle({
+      containerEl,
+      plugin,
+      settingTab: this
+    }).display();
+
+    new StatusBarInterval({
+      containerEl,
+      disabled: !(
+        plugin.settings.statusBarStats ?? DEFAULT_SETTINGS.statusBarStats
+      ),
+      plugin
+    }).display();
+
     new MiscellaneousButtons({
       containerEl,
       plugin

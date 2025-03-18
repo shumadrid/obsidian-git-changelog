@@ -11,7 +11,7 @@ import {
 // Constants
 export const TIME_ZONES_LIST = new Set(Object.keys(spacetime().timezones));
 export const MAX_SUPPORTED_INTERVAL = 99_999; // ~69 days
-export const AUTO_DETECT_TIMEZONE_PLACEHOLDER = 'Auto-detect';
+export const AUTO_DETECT_PLACEHOLDER = 'Auto-detect';
 
 /**
  * Each change in these settings triggers a recalculation of the changelogs statistics.
@@ -27,6 +27,7 @@ export interface ChangelogGenerationSettings {
   renameDetectionSensitivity: number;
   renameLimit: string;
   timezone: string;
+  locale: string;
 }
 
 export interface IGitChangelogSettings {
@@ -40,7 +41,6 @@ export interface IGitChangelogSettings {
   filesChangesWarningThreshold: string;
   fileSummariesDisplayMode: FilesSummariesDisplayMode;
   firstStartup: boolean;
-  locale: string;
   notifyOnContentDeletionsAndMovesThresholdReached: boolean;
   notifyOnFilesChangesThresholdReached: boolean;
   statusBarInterval: string;
@@ -55,6 +55,8 @@ export class GitChangelogPluginSettings
   // State
   public autoCommitDisabledWarningDismissed: boolean =
     DEFAULT_SETTINGS.autoCommitDisabledWarningDismissed;
+
+  public firstStartup: boolean = DEFAULT_SETTINGS.firstStartup;
 
   public changelogGenerationSettings: ChangelogGenerationSettings =
     DEFAULT_CHANGELOG_GENERATION_SETTINGS;
@@ -86,7 +88,6 @@ export class GitChangelogPluginSettings
   public fileSummariesDisplayMode: FilesSummariesDisplayMode =
     DEFAULT_SETTINGS.fileSummariesDisplayMode;
 
-  public locale: string = DEFAULT_SETTINGS.locale;
   public notifyOnContentDeletionsAndMovesThresholdReached: boolean =
     DEFAULT_SETTINGS.notifyOnContentDeletionsAndMovesThresholdReached;
 
@@ -98,8 +99,6 @@ export class GitChangelogPluginSettings
   // Specific Changelog Generation Settings
   public vaultChangelogInterval: ChangelogInterval =
     DEFAULT_SETTINGS.vaultChangelogInterval;
-
-  public firstStartup: boolean = DEFAULT_SETTINGS.firstStartup;
 
   public constructor(data: unknown) {
     super();
@@ -118,7 +117,8 @@ export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings 
     measurementUnit: DiffMeasurementUnit.Words,
     renameDetectionSensitivity: 50,
     renameLimit: '1000',
-    timezone: AUTO_DETECT_TIMEZONE_PLACEHOLDER
+    timezone: AUTO_DETECT_PLACEHOLDER,
+    locale: AUTO_DETECT_PLACEHOLDER
   } as const;
 export const DEFAULT_SETTINGS: IGitChangelogSettings = {
   autoCommitDisabledWarningDismissed: false,
@@ -131,7 +131,6 @@ export const DEFAULT_SETTINGS: IGitChangelogSettings = {
   filesChangesWarningThreshold: '50',
   fileSummariesDisplayMode: FilesSummariesDisplayMode.Total,
   firstStartup: true,
-  locale: '',
   notifyOnContentDeletionsAndMovesThresholdReached: true,
   notifyOnFilesChangesThresholdReached: false,
   statusBarInterval: '30', // In mins
