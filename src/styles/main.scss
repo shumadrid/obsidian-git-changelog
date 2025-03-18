@@ -113,10 +113,22 @@
 }
 
 .git-changelog-entry-title {
+  @extend .git-changelog-one-line;
   color: var(--text-accent);
   display: flex;
-  gap: var(--size-4-3);
+  gap: var(--size-4-1);
   margin-bottom: var(--size-4-1);
+}
+
+.git-changelog-initial-version-tag {
+  @extend .git-changelog-one-line;
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  background-color: rgba(var(--color-green-rgb), 0.18);
+  align-self: center;
+  vertical-align: text-top;
+  margin-top: 1px;
+  padding: var(--size-2-1) var(--size-4-2);
 }
 
 .git-changelog-one-line {

@@ -59,7 +59,16 @@
       >
     </div>
     <div class="file-stats git-changelog-files-summaries-stats">
-      <div class="git-changelog-entry-title">{formattedVersionDateLabel}</div>
+      <div class="git-changelog-entry-title">
+        <div>{formattedVersionDateLabel}</div>
+        {#if !version.previousDayLastCommitHash}
+          <div>
+            <span class="nav-file-tag git-changelog-initial-version-tag"
+              >Initial</span
+            >
+          </div>
+        {/if}
+      </div>
       <!-- if more than one option is selected then show labels -->
       {#if showFilesCountSummaries === FilesSummariesDisplayMode.Total}
         <div class="git-changelog-stat">
@@ -153,6 +162,6 @@
   }
 
   .git-changelog-bottom-padding {
-    padding-bottom: 2px;
+    padding-bottom: var(--size-2-1);
   }
 </style>
