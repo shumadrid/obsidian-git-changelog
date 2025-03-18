@@ -1,10 +1,6 @@
 {
   "version": "0.2",
-  "ignorePaths": [
-    "dist",
-    "node_modules",
-    "tsconfig.tsbuildinfo"
-  ],
+  "ignorePaths": ["dist", "node_modules", "tsconfig.tsbuildinfo"],
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [

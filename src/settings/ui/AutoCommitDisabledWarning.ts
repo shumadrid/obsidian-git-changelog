@@ -10,7 +10,9 @@ export class AutoCommitDisabledWarning extends GitChangelogSetting {
       ) {
         const warningSetting = this.createSetting()
           .setName('⚠️ Auto-commit setting not enabled')
-          .setDesc("It's recommended to enable this in Git plugin's settings.")
+          .setDesc(
+            "It's recommended to enable this setting in Git plugin's settings."
+          )
           .setClass('git-changelog-warning')
           .addButton((button) => {
             button.setButtonText('Dismiss');
