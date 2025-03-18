@@ -16,6 +16,8 @@ import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 import { validateChangelogInterval } from 'settings/validation/changelogInterval.ts';
 
 export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry> {
+  private collapseFirstVersion: boolean | undefined;
+
   public constructor({
     plugin,
     taskManager
@@ -33,6 +35,11 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
       abortSignal,
       filePath: undefined
     });
+  }
+
+  public override resetAndGetSignal(): AbortSignal {
+    this.collapseFirstVersion = this.visibleEntries?.at(0)?.isCollapsed;
+    return super.resetAndGetSignal();
   }
 
   public override async setNextInterval(): Promise<void> {
@@ -120,21 +127,13 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   protected override appendEntriesAndFillNextBatch({
     retrievedEntries
   }: {
-    resetCache: boolean;
     retrievedEntries: VaultChangelogEntry[];
   }): void {
-    // Copy over previous first version's collapsed state in the vault changelog if we are changing intervals...or expand the first version if this is the initial load (firstVersionCollapsed undefined)
-    let firstVersionCollapsed: boolean | undefined;
-    if (this.hasEntries) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      firstVersionCollapsed = this.allEntries![0].isCollapsed;
+    // Preserve the collapsed state of the first version between recomputes....or expand the first version if this is the initial load (collapseFirstVersion undefined)
+    if (this.allEntries === undefined && retrievedEntries.length > 0) {
+      retrievedEntries[0].isCollapsed = this.collapseFirstVersion ?? false;
     }
 
     super.appendEntriesAndFillNextBatch({ retrievedEntries });
-
-    if (this.hasEntries) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.allEntries![0].isCollapsed = firstVersionCollapsed ?? false;
-    }
   }
 }
