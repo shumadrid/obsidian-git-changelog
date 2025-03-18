@@ -4,11 +4,12 @@
 
   import { OPEN_FILE_ICON } from 'constants.ts';
   import { isFileRenamedOrMoved } from 'core/gitOperations/helper.ts';
-  import { setIcon, TFile } from 'obsidian';
+  import { setIcon } from 'obsidian';
   import { mayTriggerFileMenu } from 'utils.ts';
   import {
     canOpenInDiffView,
     changelogFileClick,
+    fileOpenableInObsidian,
     getDisplayPath,
     openFile
   } from 'Views/helper.ts';
@@ -20,7 +21,6 @@
     currentDayCommitHash: string;
     file: DiffFile;
     plugin: GitChangelogPlugin;
-
     previousDayLastCommitHash?: string;
   }
 
@@ -36,13 +36,6 @@
     ? `${file.fromPathGitRelative}  →\n${file.pathGitRelative}`
     : file.pathGitRelative;
 
-  // This isn't perfect because some old file path could match an unrelated file's current path in the current state of the vault.
-  const relativeVaultPath = plugin
-    .getGitPlugin()
-    .gitManager.getRelativeVaultPath(file.pathGitRelative);
-
-  const tFile = plugin.app.vault.getAbstractFileByPath(relativeVaultPath);
-
   $effect(() => {
     for (const b of buttons) {
       if (b) {
@@ -53,8 +46,6 @@
   });
 
   const isClickable = canOpenInDiffView({
-    aReference: previousDayLastCommitHash ?? plugin.emptyTreeHash,
-    bReference: currentDayCommitHash,
     file
   });
 
@@ -72,8 +63,17 @@
     });
   }
 
+  function getRelativeVaultPath(): string {
+    return plugin
+      .getGitPlugin()
+      .gitManager.getRelativeVaultPath(file.pathGitRelative);
+  }
+
+  const fileOpenable = fileOpenableInObsidian(getRelativeVaultPath(), plugin);
+
   function openVaultFile(event: MouseEvent): void {
     event.stopPropagation();
+    const relativeVaultPath = getRelativeVaultPath();
     openFile({ event, file, plugin, relativeVaultPath });
   }
 </script>
@@ -84,7 +84,6 @@
 <div
   class="git-changelog-align-file nav-file-title
 			'is-clickable'"
-  data-path={relativeVaultPath}
   data-tooltip-position="bottom"
   aria-label={ariaLabel}
   onclick={primaryClick}
@@ -98,7 +97,7 @@
         mayTriggerFileMenu({
           app: plugin.app,
           event,
-          filePath: relativeVaultPath,
+          filePath: getRelativeVaultPath(),
           source: 'git-source-control',
           view: view.leaf
         });
@@ -115,7 +114,7 @@
     >
       {getDisplayPath(file.pathGitRelative)}
     </div>
-    {#if tFile instanceof TFile && !!plugin.app.viewRegistry?.getTypeByExtension(tFile.extension)}
+    {#if fileOpenable}
       <div
         data-icon={OPEN_FILE_ICON}
         aria-label="Open File"

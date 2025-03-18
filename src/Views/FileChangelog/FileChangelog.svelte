@@ -127,12 +127,13 @@
           changelogManager!.handleScroll}
         >
           <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-          {#each changelogManager!.visibleEntries! as entry, index (entry.commitHash)}
+          {#each changelogManager!.visibleEntries! as entry, index}
             <Version
               previousEntry={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               changelogManager!.visibleEntries!.at(index + 1)}
               {entry}
               {plugin}
+              {index}
             ></Version>
           {/each}
         </InfiniteScroller>

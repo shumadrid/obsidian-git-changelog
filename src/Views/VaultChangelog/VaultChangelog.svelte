@@ -193,7 +193,7 @@
           changelogManager!.handleScroll}
         >
           <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-          {#each changelogManager!.visibleEntries! as version (version.commitHash)}
+          {#each changelogManager!.visibleEntries! as version}
             <VersionComponent
               {version}
               {plugin}

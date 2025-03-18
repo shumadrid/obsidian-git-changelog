@@ -36,7 +36,4 @@
 {#snippet empty()}{/snippet}
 
 <style lang="scss">
-  .infinite-intersection-target {
-    padding-block: var(--size-2-1) !important;
-  }
 </style>

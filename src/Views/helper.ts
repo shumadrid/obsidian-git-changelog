@@ -20,23 +20,28 @@ export function changelogFileClick({
   file: DiffFile;
   plugin: GitChangelogPlugin;
 }): void {
-  if (canOpenInDiffView({ aReference, bReference, file })) {
+  if (canOpenInDiffView({ file })) {
     // Show the diff that compares that version to the version from the previous day or if some other interval were specified
 
     showDiff(event, file, plugin, aReference, bReference);
   }
 }
 
-export function canOpenInDiffView({
-  aReference,
-  bReference,
-  file
-}: {
-  aReference?: string;
-  bReference?: string;
-  file: DiffFile;
-}): boolean {
-  return !!(file.textDiffStats && aReference && bReference);
+export function fileOpenableInObsidian(
+  relativeVaultPath: string,
+  plugin: GitChangelogPlugin
+): boolean {
+  // This isn't perfect because some old file path could match an unrelated file's current path in the current state of the vault.
+  const existingFile =
+    plugin.app.vault.getAbstractFileByPath(relativeVaultPath);
+  return (
+    existingFile instanceof TFile &&
+    !!plugin.app.viewRegistry?.getTypeByExtension(existingFile.extension)
+  );
+}
+
+export function canOpenInDiffView({ file }: { file: DiffFile }): boolean {
+  return !!file.textDiffStats;
 }
 
 export function getGitRelativeFilePath(

@@ -2,16 +2,25 @@
   import type { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 
+  import { OPEN_FILE_ICON } from 'constants.ts';
+  import { setIcon } from 'obsidian';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
   import { composeAriaLabel, composeVersionTitle } from 'Views/formatters.ts';
-  import { canOpenInDiffView, changelogFileClick } from 'Views/helper.ts';
+  import {
+    canOpenInDiffView,
+    changelogFileClick,
+    openFile
+  } from 'Views/helper.ts';
 
   interface Properties {
     entry: FileChangelogEntry;
     plugin: GitChangelogPlugin;
     previousEntry?: FileChangelogEntry;
+    index: number;
   }
-  const { entry, plugin, previousEntry }: Properties = $props();
+  const { entry, plugin, previousEntry, index }: Properties = $props();
+
+  let openFileButton = $state<HTMLElement>();
 
   function primaryClick(event: MouseEvent): void {
     event.stopPropagation();
@@ -29,12 +38,26 @@
     }
   }
 
+  function openLiveVersion(event: MouseEvent): void {
+    event.stopPropagation();
+
+    if (!plugin.cachedActiveGitFile) {
+      return;
+    }
+    const relativeVaultPath = plugin
+      .getGitPlugin()
+      .gitManager.getRelativeVaultPath(plugin.cachedActiveGitFile);
+    openFile({ event, plugin, relativeVaultPath });
+  }
+
+  $effect(() => {
+    if (openFileButton) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setIcon(openFileButton, openFileButton.getAttr('data-icon')!);
+    }
+  });
   function isVersionClickable(): boolean {
-    const previousCommitHash =
-      previousEntry?.commitHash ?? plugin.emptyTreeHash;
     return canOpenInDiffView({
-      aReference: previousCommitHash,
-      bReference: entry.commitHash,
       file: entry
     });
   }
@@ -67,6 +90,16 @@
     >
       {formattedVersionDateLabel}
     </div>
+    {#if index === 0}
+      <div
+        data-icon={OPEN_FILE_ICON}
+        aria-label="Open Live Version"
+        bind:this={openFileButton}
+        onauxclick={openLiveVersion}
+        onclick={openLiveVersion}
+        class="clickable-icon open-file-icon"
+      ></div>
+    {/if}
   </div>
   <DiffStatsComponent
     baseStats={entry.textDiffStats
