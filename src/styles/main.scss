@@ -122,12 +122,9 @@
 
 .git-changelog-initial-version-tag {
   @extend .git-changelog-one-line;
-  font-size: var(--font-smallest);
+  font-size: 0.75em;
   color: var(--text-muted);
   background-color: rgba(var(--color-green-rgb), 0.18);
-  align-self: center;
-  vertical-align: text-top;
-  margin-top: 1px;
   padding: var(--size-2-1) var(--size-4-2);
 }
 
