@@ -6,7 +6,7 @@
   import { LoaderState } from 'svelte-infinite';
   import ChangeIntervalButton from 'Views/components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from 'Views/components/DependenciesStatusCheck.svelte';
-  import InfiniteScroller from 'Views/VaultChangelog/InfiniteScroller.svelte';
+  import InfiniteScroller from 'Views/components/InfiniteScroller.svelte';
 
   import Version from './Version.svelte';
 

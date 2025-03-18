@@ -11,8 +11,8 @@
 
   import ChangeIntervalButton from '../components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from '../components/DependenciesStatusCheck.svelte';
+  import InfiniteScroller from '../components/InfiniteScroller.svelte';
   import VersionComponent from './components/Version.svelte';
-  import InfiniteScroller from './InfiniteScroller.svelte';
 
   // eslint-disable-next-line capitalized-comments
   // svelte-ignore non_reactive_update

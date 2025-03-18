@@ -64,6 +64,10 @@ export class VaultChangelogEntry extends ChangelogEntry {
   public textFiles: DiffFile[];
   public textFilesSummaryCached: FilesSummary;
 
+  public get files(): DiffFile[] {
+    return [...this.textFiles, ...this.binaryFiles];
+  }
+
   public constructor({
     binaryFiles,
     binaryFilesSummaryCached,
@@ -95,7 +99,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
 
   public getChangelogContentAdditions(): number {
     let additions = 0;
-    for (const file of this.getChangelogFiles()) {
+    for (const file of this.files) {
       if (file.textDiffStats) {
         additions += file.textDiffStats.baseStats.additions;
       }
@@ -105,7 +109,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
 
   public getChangelogContentDeletions(): number {
     let deletions = 0;
-    for (const file of this.getChangelogFiles()) {
+    for (const file of this.files) {
       if (file.textDiffStats) {
         deletions += file.textDiffStats.baseStats.deletions;
       }
@@ -115,7 +119,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
 
   public getChangelogContentMoves(): number {
     let moves = 0;
-    for (const file of this.getChangelogFiles()) {
+    for (const file of this.files) {
       if (file.textDiffStats?.moveStats) {
         moves +=
           file.textDiffStats.moveStats.internalMoves +
@@ -123,10 +127,6 @@ export class VaultChangelogEntry extends ChangelogEntry {
       }
     }
     return moves;
-  }
-
-  public getChangelogFiles(): DiffFile[] {
-    return [...this.textFiles, ...this.binaryFiles];
   }
 
   public getChangelogFilesSummary(): FilesSummary {

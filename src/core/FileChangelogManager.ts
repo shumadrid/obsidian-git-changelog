@@ -88,7 +88,6 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
   }
 
   protected override calculateVersionsToAppend(resetCache: boolean): number {
-    // eslint-disable-next-line no-magic-numbers
     const initialLoadMultiplier = resetCache ? 2 : 1;
 
     return Math.ceil(
@@ -143,7 +142,6 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
 
     resetCache: boolean;
   }): number {
-    // eslint-disable-next-line no-magic-numbers
     const initialLoadMultiplier = resetCache ? 2 : 1;
     const intervalMultiplier =
       FileChangelogManager.getIntervalMaxCountMultiplier(this.getInterval());

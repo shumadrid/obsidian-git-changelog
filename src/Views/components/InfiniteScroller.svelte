@@ -19,10 +19,6 @@
   loading={empty}
   noData={empty}
   noResults={empty}
-  intersectionOptions={{
-    root: null,
-    rootMargin: '0px 0px 0px 0px'
-  }}
   coolingOff={empty}
   error={empty}
   loopDetectionTimeout={0}

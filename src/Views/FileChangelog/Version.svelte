@@ -46,6 +46,7 @@
     }
     const relativeVaultPath = plugin
       .getGitPlugin()
+      // Pass plugin.cachedActiveGitFile instead of entry filePath so that in a case where the active file was renamed and that renamed not committed yet, this would still work and open that renamed live version.
       .gitManager.getRelativeVaultPath(plugin.cachedActiveGitFile);
     openFile({ event, plugin, relativeVaultPath });
   }

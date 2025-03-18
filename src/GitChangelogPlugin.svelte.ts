@@ -138,55 +138,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     }
   }
 
-  /**
-   * Triggers events for the views to listen to instead of updating the changelogs directly from the settings so that if the views aren't active we don't do unnecessary computation.
-   * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
-   */
-  public onSettingsSave(
-    oldSettings: GitChangelogPluginSettings,
-    newSettings: GitChangelogPluginSettings
-  ): void {
-    if (
-      changelogGenerationSettingsChanged({
-        newChangelogSettings: newSettings.changelogGenerationSettings,
-        oldChangelogSettings: oldSettings.changelogGenerationSettings,
-        plugin: this
-      })
-    ) {
-      // The main settings, that trigger recalculation for all stats when they change.
-      this.app.workspace.trigger('git-changelog:generation-settings-changed');
-    } else {
-      if (
-        this.fileChangelogManager?.generationSettingsChanged(
-          oldSettings,
-          newSettings
-        ) &&
-        this.cachedActiveGitFile
-      ) {
-        this.app.workspace.trigger(
-          'git-changelog:file-changelog-generation-settings-changed'
-        );
-      }
-      if (
-        this.statusBar &&
-        StatusBar.generationSettingsChanged(oldSettings, newSettings) &&
-        this.cachedActiveGitFile
-      ) {
-        this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
-      }
-      if (
-        this.vaultChangelogManager?.generationSettingsChanged(
-          oldSettings,
-          newSettings
-        )
-      ) {
-        this.app.workspace.trigger(
-          'git-changelog:vault-changelog-generation-settings-changed'
-        );
-      }
-    }
-  }
-
   public override async saveSettings(
     newSettings: GitChangelogPluginSettings,
     checkForChanges = true
@@ -204,10 +155,42 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     return new GitChangelogPluginSettings(data);
   }
 
-  // Functions below are from obsidian-dev-utils (https://github.com/mnaoumov/obsidian-dev-utils/blob/main/src/obsidian/Plugin/PluginBase.ts)
-
   protected override createPluginSettingsTab(): null | PluginSettingTab {
     return new GitChangelogSettingsTab(this);
+  }
+
+  // Functions below are from obsidian-dev-utils (https://github.com/mnaoumov/obsidian-dev-utils/blob/main/src/obsidian/Plugin/PluginBase.ts)
+
+  protected override onloadComplete(): void {
+    // Runs when the plugin is unloaded.
+    this.register(() => {
+      this.debouncedChangelogSettingsChangedCheck?.cancel();
+      this.fileChangelogManager?.taskManager.abort();
+      this.vaultChangelogManager?.taskManager.abort();
+      this.statusBar?.remove();
+    });
+
+    this.registerView(VAULT_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
+      return new VaultChangelogView(leaf, this);
+    });
+
+    this.registerView(FILE_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
+      return new FileChangelogView(leaf, this);
+    });
+
+    addCommands(this);
+
+    this.debouncedChangelogSettingsChangedCheck = debounce(
+      (
+        oldSettings: GitChangelogPluginSettings,
+        newSettings: GitChangelogPluginSettings
+      ) => {
+        this.onSettingsSave(oldSettings, newSettings);
+      },
+      // eslint-disable-next-line no-magic-numbers
+      700,
+      true
+    );
   }
 
   protected override async onLayoutReady(): Promise<void> {
@@ -273,36 +256,53 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     this.getGitPlugin();
   }
 
-  protected override onloadComplete(): void {
-    // Runs when the plugin is unloaded.
-    this.register(() => {
-      this.debouncedChangelogSettingsChangedCheck?.cancel();
-      this.fileChangelogManager?.taskManager.abort();
-      this.vaultChangelogManager?.taskManager.abort();
-      this.statusBar?.remove();
-    });
-
-    this.registerView(VAULT_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
-      return new VaultChangelogView(leaf, this);
-    });
-
-    this.registerView(FILE_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
-      return new FileChangelogView(leaf, this);
-    });
-
-    addCommands(this);
-
-    this.debouncedChangelogSettingsChangedCheck = debounce(
-      (
-        oldSettings: GitChangelogPluginSettings,
-        newSettings: GitChangelogPluginSettings
-      ) => {
-        this.onSettingsSave(oldSettings, newSettings);
-      },
-      // eslint-disable-next-line no-magic-numbers
-      700,
-      true
-    );
+  /**
+   * Triggers events for the views to listen to instead of updating the changelogs directly from the settings so that if the views aren't active we don't do unnecessary computation.
+   * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
+   */
+  private onSettingsSave(
+    oldSettings: GitChangelogPluginSettings,
+    newSettings: GitChangelogPluginSettings
+  ): void {
+    if (
+      changelogGenerationSettingsChanged({
+        newChangelogSettings: newSettings.changelogGenerationSettings,
+        oldChangelogSettings: oldSettings.changelogGenerationSettings,
+        plugin: this
+      })
+    ) {
+      // The main settings, that trigger recalculation for all stats when they change.
+      this.app.workspace.trigger('git-changelog:generation-settings-changed');
+    } else {
+      if (
+        this.fileChangelogManager?.generationSettingsChanged(
+          oldSettings,
+          newSettings
+        ) &&
+        this.cachedActiveGitFile
+      ) {
+        this.app.workspace.trigger(
+          'git-changelog:file-changelog-generation-settings-changed'
+        );
+      }
+      if (
+        this.statusBar &&
+        StatusBar.generationSettingsChanged(oldSettings, newSettings) &&
+        this.cachedActiveGitFile
+      ) {
+        this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
+      }
+      if (
+        this.vaultChangelogManager?.generationSettingsChanged(
+          oldSettings,
+          newSettings
+        )
+      ) {
+        this.app.workspace.trigger(
+          'git-changelog:vault-changelog-generation-settings-changed'
+        );
+      }
+    }
   }
 
   private setNewActiveGitFile(activeGitFile: string | undefined): void {
