@@ -57,6 +57,7 @@
     "outdir",
     "outfile",
     "outlinks",
+    "oved",
     "padleft",
     "padright",
     "Pagerow",

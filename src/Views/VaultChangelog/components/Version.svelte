@@ -150,11 +150,6 @@
     padding: var(--size-4-1) var(--size-4-2);
   }
 
-  .git-changelog-margin-top {
-    margin-top: var(--size-4-2);
-    padding-left: var(--size-4-3);
-  }
-
   .git-changelog-summary-type-tag {
     margin-left: 0px;
     padding: 0px var(--size-4-1);
