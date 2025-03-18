@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { PluginSettingsBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsBase';
 import spacetime from 'spacetime';
 import {
@@ -49,7 +48,10 @@ export interface IGitChangelogSettings {
   vaultChangelogInterval: ChangelogInterval;
 }
 
-export class GitChangelogPluginSettings extends PluginSettingsBase {
+export class GitChangelogPluginSettings
+  extends PluginSettingsBase
+  implements IGitChangelogSettings
+{
   // State
   public autoCommitDisabledWarningDismissed: boolean =
     DEFAULT_SETTINGS.autoCommitDisabledWarningDismissed;

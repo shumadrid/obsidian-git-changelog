@@ -1,10 +1,5 @@
 <script lang="ts">
-  import type {
-    DiffFile,
-    StatEntry,
-    TextDiffBaseStats,
-    TextDiffMoveStats
-  } from 'types.ts';
+  import type { DiffFile, StatEntry, TextDiffBaseStats } from 'types.ts';
 
   import {
     ADDITIONS_ICON,
@@ -21,8 +16,7 @@
     baseStats?: TextDiffBaseStats;
     file?: DiffFile;
     inFileChangelog: boolean;
-    inFileExplorer?: boolean;
-    moveStats?: TextDiffMoveStats;
+    // InFileExplorer: boolean;
   }
   const { baseStats, file, inFileChangelog }: Properties = $props();
 

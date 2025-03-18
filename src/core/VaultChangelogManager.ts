@@ -45,7 +45,6 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   }
 
   protected override calculateVersionsToAppend(resetCache: boolean): number {
-    // eslint-disable-next-line no-magic-numbers
     const initialLoadMultiplier = resetCache ? 2 : 1;
 
     return Math.ceil(initialLoadMultiplier * CHANGELOG_LOAD_AMOUNT_VERSIONS);
@@ -106,7 +105,6 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
 
     resetCache: boolean;
   }): number {
-    // eslint-disable-next-line no-magic-numbers
     const initialLoadMultiplier = resetCache ? 2 : 1;
 
     const intervalMultiplier =

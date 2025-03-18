@@ -85,7 +85,14 @@ export default typescriptEslint.config(
       'unicorn/no-null': 'off',
       'unicorn/no-empty-file': 'warn',
       'unicorn/prevent-abbreviations': 'warn',
-      'unicorn/prefer-global-this': 'off'
+      'unicorn/prefer-global-this': 'off',
+      'no-magic-numbers': [
+        'error',
+        {
+          ignore: [-1, 0, 1, 2],
+          ignoreDefaultValues: true
+        }
+      ]
     }
   },
   {

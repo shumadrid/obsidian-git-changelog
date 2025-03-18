@@ -5,7 +5,7 @@ import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 
-export class GitDiffIgnore extends GitChangelogSetting {
+export class ExcludeFilesAndFolders extends GitChangelogSetting {
   public display(): void {
     this.createSetting()
       .setName('Exclude files and folders (experimental)')

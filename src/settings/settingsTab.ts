@@ -8,7 +8,7 @@ import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
 import { CustomTimeZone } from './ui/CustomTimeZone.ts';
 import { DayStartTime } from './ui/DayStartTime.ts';
 import { DiffAlgorithmOptions } from './ui/DiffAlgorithmOptions.ts';
-import { GitDiffIgnore } from './ui/GitDiffIgnore.ts';
+import { ExcludeFilesAndFolders } from './ui/ExcludeFilesAndFolders.ts';
 import { GitPluginWarning } from './ui/GitPluginWarning.ts';
 import { RenameDetectionFileLimit } from './ui/RenameDetectionFileLimit.ts';
 import { RenameDetectionSensitivitySlider } from './ui/RenameDetectionSensitivitySlider.ts';
@@ -72,7 +72,7 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     //     FileExplorerChangelogStats.Disabled
     // ).display();
 
-    new GitDiffIgnore({ containerEl, plugin }).display();
+    new ExcludeFilesAndFolders({ containerEl, plugin }).display();
     new RenameDetectionSensitivitySlider({
       containerEl,
       plugin
