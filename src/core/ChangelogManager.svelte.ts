@@ -354,7 +354,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   }): Promise<T[]> {
     let reachedInitialCommit = false;
 
-    const logMaxCount = this.calculateLogMaxCount({
+    let logMaxCount = this.calculateLogMaxCount({
       resetCache: this.allEntries === undefined
     });
 
@@ -434,16 +434,26 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       );
 
       // Process all versions except the last one. Uses the last version only for comparison and doesn't calculate stats for that version because it has no previous version to compare against (in this loop iteration at least)
+      let emptyDiffHappened = false;
       while (
         lastCommitsInEachVersion.length > 1 &&
         // MaxVersionsToGet: so we don't load too many versions
         loadedEntries.length < maxVersionsToGet
       ) {
-        await this.concurrentDiffing({
-          abortSignal,
-          lastCommitsInEachVersion,
-          loadedEntries
-        });
+        if (
+          await this.concurrentDiffing({
+            abortSignal,
+            lastCommitsInEachVersion,
+            loadedEntries
+          })
+        ) {
+          emptyDiffHappened = true;
+        }
+      }
+
+      // If an empty diff happened (entry === undefined), it is most likely a sign of a very exclusive "Exclude files and folders" setting. Adapt to this by doubling the amount of logs to get for the next git log run.
+      if (emptyDiffHappened) {
+        logMaxCount *= 2;
       }
     }
     this.plugin.consoleDebug(
@@ -588,7 +598,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     abortSignal: AbortSignal;
     lastCommitsInEachVersion: LogEntry[];
     loadedEntries: ChangelogEntry[];
-  }): Promise<void> {
+  }): Promise<boolean> {
     const gitDiffTasks: Promise<ChangelogEntry | undefined>[] = [];
     const batchSize = Math.min(
       GIT_MAX_CONCURRENT_PROCESSES,
@@ -620,5 +630,10 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
     // Remove processed versions
     lastCommitsInEachVersion.splice(0, batchSize);
+
+    const emptyDiffHappened =
+      loadedEntriesBatch.length !== promiseResults.length;
+
+    return emptyDiffHappened;
   }
 }
