@@ -6,11 +6,13 @@
   import { TOGGLE_FILES_SUMMARY_OPTION_ICON } from 'constants.ts';
   import { setIcon } from 'obsidian';
   import { onDestroy, untrack } from 'svelte';
+  import { LoaderState } from 'svelte-infinite';
   import { FilesSummariesDisplayMode } from 'types.ts';
 
   import ChangeIntervalButton from '../components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from '../components/DependenciesStatusCheck.svelte';
   import VersionComponent from './components/Version.svelte';
+  import InfiniteScroller from './InfiniteScroller.svelte';
 
   // eslint-disable-next-line capitalized-comments
   // svelte-ignore non_reactive_update
@@ -23,17 +25,16 @@
   interface Properties {
     plugin: GitChangelogPlugin;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+  const loaderState = new LoaderState();
 
   const { plugin }: Properties = $props();
   let collapseButton: HTMLElement | undefined;
   let filesSummaryDisplayModeButton: HTMLElement | undefined;
 
-  let observer: IntersectionObserver | undefined;
-
   let headChangeReference: EventRef;
   let settingsChangedReference: EventRef;
   let vaultChangelogSettingsChangedReference: EventRef;
-  let sentinel: HTMLElement | undefined = $state();
 
   const changelogManager = $derived(plugin.vaultChangelogManager);
 
@@ -113,52 +114,12 @@
   });
 
   onDestroy(() => {
-    cleanupObserver();
     plugin.app.workspace.offref(headChangeReference);
     plugin.app.workspace.offref(settingsChangedReference);
     plugin.app.workspace.offref(vaultChangelogSettingsChangedReference);
 
     filesSummaryDisplayModeButton = undefined;
     collapseButton = undefined;
-  });
-
-  function cleanupObserver(): void {
-    if (observer) {
-      observer.disconnect();
-      observer = undefined;
-    }
-  }
-
-  function initializeObserver(): void {
-    cleanupObserver();
-
-    if (changelogManager?.visibleEntries !== undefined && sentinel) {
-      observer = new IntersectionObserver(
-        (observerEntries) => {
-          if (observerEntries[0].isIntersecting) {
-            const abortSignal = changelogManager.taskManager.getAbortSignal();
-            changelogManager.taskManager.enqueueSafely(() =>
-              changelogManager.handleScroll({ abortSignal })
-            );
-          }
-        },
-        {
-          root: document.querySelector('.nav-files-container'),
-          rootMargin: '120px',
-          // eslint-disable-next-line no-magic-numbers
-          threshold: 0.1
-        }
-      );
-
-      observer.observe(sentinel);
-    }
-  }
-
-  // React to both entries and sentinel changes
-  $effect(() => {
-    if (changelogManager?.visibleEntries !== undefined && sentinel) {
-      initializeObserver();
-    }
   });
 
   function toggleFilesSummaryOption(): void {
@@ -226,15 +187,20 @@
   <DependenciesStatusCheck {plugin}>
     <div class="nav-files-container">
       {#if changelogState === VaultChangelogState.HasEntries}
-        <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-        {#each changelogManager!.visibleEntries! as version}
-          <VersionComponent
-            {version}
-            {plugin}
-            showFilesCountSummaries={showFilesCountSummariesMode}
-          />
-        {/each}
-        <div bind:this={sentinel} id="sentinel"></div>
+        <InfiniteScroller
+          {loaderState}
+          triggerLoad={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          changelogManager!.handleScroll}
+        >
+          <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
+          {#each changelogManager!.visibleEntries! as version (version.commitHash)}
+            <VersionComponent
+              {version}
+              {plugin}
+              showFilesCountSummaries={showFilesCountSummariesMode}
+            />
+          {/each}
+        </InfiniteScroller>
       {:else if changelogState === VaultChangelogState.Recomputing}
         <div class="pane-empty">Loading...</div>
       {:else if changelogState === VaultChangelogState.EmptyHistory}

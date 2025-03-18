@@ -3,8 +3,10 @@
   import type { EventRef } from 'obsidian';
 
   import { onDestroy, untrack } from 'svelte';
+  import { LoaderState } from 'svelte-infinite';
   import ChangeIntervalButton from 'Views/components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from 'Views/components/DependenciesStatusCheck.svelte';
+  import InfiniteScroller from 'Views/VaultChangelog/InfiniteScroller.svelte';
 
   import Version from './Version.svelte';
 
@@ -22,13 +24,13 @@
     plugin: GitChangelogPlugin;
   }
   const { plugin }: Properties = $props();
-  let observer: IntersectionObserver | undefined;
   let headChangeReference: EventRef;
   let settingsChangedReference: EventRef;
-  let sentinel: HTMLElement | undefined = $state();
   let activeFileChangedReference: EventRef;
 
   const changelogManager = $derived(plugin.fileChangelogManager);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+  const loaderState = new LoaderState();
 
   const changelogState = $derived.by(() => {
     if (!plugin.dependenciesReady) {
@@ -92,58 +94,13 @@
     }
   });
 
-  $effect(() => {
-    // Clean up existing observer first
-    if (observer) {
-      observer.disconnect();
-      observer = undefined;
-    }
-
-    if (changelogManager?.visibleEntries !== undefined && sentinel) {
-      observer = new IntersectionObserver(
-        (observerEntries) => {
-          if (observerEntries[0].isIntersecting) {
-            const abortSignal = changelogManager.taskManager.getAbortSignal();
-            changelogManager.taskManager.enqueueSafely(() =>
-              changelogManager.handleScroll({ abortSignal })
-            );
-          }
-        },
-        {
-          root: document.querySelector('.nav-files-container'),
-          rootMargin: '120px',
-          // eslint-disable-next-line no-magic-numbers
-          threshold: 0.1
-        }
-      );
-
-      observer.observe(sentinel);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    return () => {
-      if (observer) {
-        observer.disconnect();
-        observer = undefined;
-      }
-    };
-  });
-
   onDestroy(() => {
-    cleanupObserver();
     plugin.app.workspace.offref(activeFileChangedReference);
 
     plugin.app.workspace.offref(headChangeReference);
     plugin.app.workspace.offref(settingsChangedReference);
     plugin.app.workspace.offref(fileChangelogSettingsChangedReference);
   });
-
-  function cleanupObserver(): void {
-    if (observer) {
-      observer.disconnect();
-      observer = undefined;
-    }
-  }
 </script>
 
 <div class="git-changelog-view">
@@ -164,15 +121,21 @@
     <div class="nav-files-container">
       {#if changelogState === FileChangelogState.HasEntries}
         <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-        {#each changelogManager!.visibleEntries! as entry, index}
-          <Version
-            previousEntry={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            changelogManager!.visibleEntries!.at(index + 1)}
-            {entry}
-            {plugin}
-          ></Version>
-        {/each}
-        <div bind:this={sentinel} id="sentinel"></div>
+        <InfiniteScroller
+          {loaderState}
+          triggerLoad={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          changelogManager!.handleScroll}
+        >
+          <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
+          {#each changelogManager!.visibleEntries! as entry, index (entry.commitHash)}
+            <Version
+              previousEntry={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              changelogManager!.visibleEntries!.at(index + 1)}
+              {entry}
+              {plugin}
+            ></Version>
+          {/each}
+        </InfiniteScroller>
       {:else if changelogState === FileChangelogState.Recomputing}
         <div class="pane-empty">Loading...</div>
       {:else if changelogState === FileChangelogState.NoMarkdownFileOpen}

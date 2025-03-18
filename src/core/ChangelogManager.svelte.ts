@@ -24,14 +24,14 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
   protected plugin: GitChangelogPlugin;
 
+  protected get latestCachedVersion(): T | undefined {
+    return this.allEntries?.at(0);
+  }
+
   protected get allEntries(): T[] | undefined {
     return this.visibleEntries
       ? [...this.visibleEntries, ...this.reservedEntries]
       : undefined;
-  }
-
-  protected get latestCachedVersion(): T | undefined {
-    return this.allEntries?.at(0);
   }
 
   protected get oldestCachedVersion(): T | undefined {
@@ -49,7 +49,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     this.taskManager = taskManager;
   }
 
-  protected static initialCommitReached(
+  public static initialCommitReached(
     entries: ChangelogEntry[] | undefined
   ): boolean {
     if (entries && (entries.length === 0 || entries[0].isInitialCommit())) {
@@ -85,20 +85,13 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     }
   }
 
-  public async handleScroll({
-    abortSignal,
-    filePath
-  }: {
-    abortSignal: AbortSignal;
-    filePath?: string;
-  }): Promise<void> {
-    if (!ChangelogManager.initialCommitReached(this.visibleEntries)) {
-      await this.appendToVisibleEntries({
-        abortSignal,
-        filePath
-      });
-    }
-  }
+  public handleScroll = async (): Promise<void> => {
+    const abortSignal = this.taskManager.getAbortSignal();
+    await this.taskManager.enqueueAndWait(() =>
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      this.loadEntries({ abortSignal }).catch(() => {})
+    );
+  };
 
   public resetSafely(): void {
     // We want to immediately cancel all current operations for the changelog and schedule the operation in a queue.
@@ -263,7 +256,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     }
 
     // After we take versions out of the reserve, we check if the reserve still has enough versions for the next append. But have to limit the queue build-up of this function to a single call because otherwise svelte deep state "limitations" will give outdated values when reading allEntries and make git log produce duplicated entries
-    // eslint-disable-next-line no-magic-numbers
+
     if (this.taskManager.queueSize < 2) {
       this.taskManager.enqueueSafely(() =>
         this.maybeRetrieveReserveEntries({ abortSignal })
@@ -437,7 +430,6 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       let emptyDiffHappened = false;
       while (
         lastCommitsInEachVersion.length > 1 &&
-        // MaxVersionsToGet: so we don't load too many versions
         loadedEntries.length < maxVersionsToGet
       ) {
         if (
@@ -478,7 +470,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       });
     }
 
-    // Final check to see if we still want these results.
+    // Final check to see if these results are still needed.
     if (abortSignal.aborted) {
       throw new AbortError();
     }
@@ -543,6 +535,21 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     this.visibleEntries.splice(0, 1, ...newEntries);
   }
 
+  protected async loadEntries({
+    abortSignal,
+    filePath
+  }: {
+    abortSignal: AbortSignal;
+    filePath?: string;
+  }): Promise<void> {
+    if (!ChangelogManager.initialCommitReached(this.visibleEntries)) {
+      await this.appendToVisibleEntries({
+        abortSignal,
+        filePath
+      });
+    }
+  }
+
   protected cacheHasNoCompleteVersion(): boolean {
     if (
       this.allEntries === undefined ||
@@ -584,7 +591,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       newCommit: currentCommit,
       oldCommit: previousCommit
     });
-    // Generate a new version only if the Git diff shows changes. Versions with no changes can occur frequently if a restrictive additional .gitignore is specified in the plugin settings.
+    // Generate a new version only if the Git diff showed changes.
     if (entry) {
       entries.push(entry);
     }

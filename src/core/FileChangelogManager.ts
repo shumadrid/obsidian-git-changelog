@@ -29,18 +29,6 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
     // This.cachedActiveGitFile = activeGitFile;
   }
 
-  public override async handleScroll({
-    abortSignal
-  }: {
-    abortSignal: AbortSignal;
-  }): Promise<void> {
-    const filePath = this.getOldestVersionGitFilePath();
-    if (filePath === undefined) {
-      throw new Error('No active file');
-    }
-    await super.handleScroll({ abortSignal, filePath });
-  }
-
   /**
    * This should never trigger on user interaction but always automatically
    */
@@ -65,6 +53,18 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
 
     // "false" because this function is only called in the context of triggering a new changelog computation, so we don't want to trigger a check that usually runs for this function (trigger recompute if some changelog generation settings changed).
     await this.plugin.saveSettings(newSettings, false);
+  }
+
+  protected override async loadEntries({
+    abortSignal
+  }: {
+    abortSignal: AbortSignal;
+  }): Promise<void> {
+    const filePath = this.getOldestVersionGitFilePath();
+    if (filePath === undefined) {
+      throw new Error('No active file');
+    }
+    await super.loadEntries({ abortSignal, filePath });
   }
 
   protected override async updateEntries({

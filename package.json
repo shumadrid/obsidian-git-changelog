@@ -30,12 +30,12 @@
     "compare-versions": "^6.1.1",
     "deep-equal": "^2.2.3",
     "esbuild": "^0.25.0",
-    "esbuild-svelte": "^0.9.0",
+    "esbuild-svelte": "^0.9.2",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-exception-handling": "^1.5.4",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-svelte": "^3.0.3",
+    "eslint-plugin-svelte": "^3.2.2",
     "eslint-plugin-unicorn": "^57.0.0",
     "globals": "^16.0.0",
     "jiti": "^2.4.2",
@@ -48,12 +48,12 @@
     "sass": "^1.83.4",
     "simple-git": "^3.27.0",
     "spacetime": "^7.8.0",
-    "svelte": "^5.22.6",
-    "svelte-check": "^4.1.5",
+    "svelte": "^5.23.1",
     "svelte-eslint-parser": "^0.43.0",
     "svelte-preprocess": "^6.0.3",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.25.0"
+    "typescript-eslint": "^8.25.0",
+    "svelte-infinite": "github:shumadrid/svelte-infinite#ndom91/loaderState-per-instance"
   },
   "overrides": {
     "boolean": "npm:dry-uninstall"
