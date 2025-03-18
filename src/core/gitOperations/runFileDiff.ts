@@ -48,8 +48,15 @@ export async function runFileDiff({
 
   if (oldCommit === undefined) {
     const emptyTreeHash = await getEmptyTreeHash({ plugin });
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    numstatArguments.push(emptyTreeHash, newCommit.hash, newCommit.filePath!);
+
+    numstatArguments.push(
+      emptyTreeHash,
+      newCommit.hash,
+      // This part is important. It tells git where is the explicit separation between revisions and the file path. Without it, git will not always be able to parse the file path correctly.
+      '--',
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      newCommit.filePath!
+    );
   } else {
     numstatArguments.push(
       `${oldCommit.hash}:${oldCommit.filePath}`,
