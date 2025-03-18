@@ -203,7 +203,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       });
     }
 
-    // If initial version was reached, append it as an empty version.
+    // If initial version was reached, diff it against an empty state.
     if (extractedVersions.length > 0 && this.cacheHasNoCompleteVersion()) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const lastCommit = extractedVersions.at(-1)!;
@@ -458,7 +458,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       // Only append the initial version if we already loaded everything after it, and the initial version is the only one that's left.
       lastCommitsInEachVersion.length === 1;
 
-    // If initial version reached, then just return an empty version entry for now (TODO: Implement comparing to empty state)
+    // If initial version reached, diff it against an empty state.
     if (nextVersionIsInitialVersion) {
       const lastCommit = lastCommitsInEachVersion[0];
       await this.appendToEntries({

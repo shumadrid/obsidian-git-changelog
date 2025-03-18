@@ -53,7 +53,7 @@
   });
 
   const isClickable = canOpenInDiffView({
-    aReference: previousDayLastCommitHash ?? currentDayCommitHash,
+    aReference: previousDayLastCommitHash ?? plugin.emptyTreeHash,
     bReference: currentDayCommitHash,
     file
   });
@@ -63,7 +63,8 @@
 
     if (!isClickable) return;
     changelogFileClick({
-      aReference: previousDayLastCommitHash ?? currentDayCommitHash,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      aReference: previousDayLastCommitHash ?? plugin.emptyTreeHash!,
       bReference: currentDayCommitHash,
       event,
       file,
@@ -90,7 +91,7 @@
   onauxclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   (event) => {
     event.stopPropagation();
-    // eslint-disable-next-line no-magic-numbers, eqeqeq
+    // eslint-disable-next-line eqeqeq
     if (event.button == 2) {
       const view = plugin.app.workspace.getActiveViewOfType(VaultChangelogView);
       if (view) {

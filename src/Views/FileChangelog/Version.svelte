@@ -20,7 +20,7 @@
       changelogFileClick({
         aReference:
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          previousEntry!.commitHash,
+          previousEntry?.commitHash ?? plugin.emptyTreeHash!,
         bReference: entry.commitHash,
         event,
         file: entry,
@@ -30,8 +30,10 @@
   }
 
   function isVersionClickable(): boolean {
+    const previousCommitHash =
+      previousEntry?.commitHash ?? plugin.emptyTreeHash;
     return canOpenInDiffView({
-      aReference: previousEntry?.commitHash,
+      aReference: previousCommitHash,
       bReference: entry.commitHash,
       file: entry
     });
@@ -73,7 +75,6 @@
           deletions: entry.textDiffStats.baseStats.deletions
         }
       : undefined}
-    inFileExplorer={false}
     file={entry}
     inFileChangelog={true}
   />

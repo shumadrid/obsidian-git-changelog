@@ -2,6 +2,7 @@ import type GitChangelogPlugin from 'main.ts';
 import type { LogEntry } from 'types.ts';
 
 import { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
+import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
 import {
   assignDiffAlgorithm,
   calculateFileStatusRenamedOrMoved
@@ -34,16 +35,7 @@ export async function runFileDiff({
       newCommit.filePath!
     );
   }
-  if (oldCommit === undefined) {
-    const initialFileEntry = new FileChangelogEntry({
-      commitHash: newCommit.hash,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      pathGitRelative: newCommit.filePath!,
-      status: fileStatus,
-      timezoneAdjustedDate: newCommit.timezoneAdjustedDate
-    });
-    return initialFileEntry;
-  }
+
   const numstatArguments = [
     '--numstat',
     '--color-moved=no',
@@ -54,13 +46,21 @@ export async function runFileDiff({
 
   assignDiffAlgorithm(numstatArguments, plugin);
 
-  numstatArguments.push(
-    `${oldCommit.hash}:${oldCommit.filePath}`,
-    `${newCommit.hash}:${newCommit.filePath}`
-  );
+  if (oldCommit === undefined) {
+    const emptyTreeHash = await getEmptyTreeHash({ plugin });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    numstatArguments.push(emptyTreeHash, newCommit.hash, newCommit.filePath!);
+  } else {
+    numstatArguments.push(
+      `${oldCommit.hash}:${oldCommit.filePath}`,
+      `${newCommit.hash}:${newCommit.filePath}`
+    );
+  }
+
   if (abortSignal.aborted) {
     throw new AbortError();
   }
+
   const git = await plugin.getGit();
   const diffNumstatResult = await git.diff(numstatArguments);
 
@@ -80,7 +80,7 @@ export async function runFileDiff({
       });
   const fileEntry = new FileChangelogEntry({
     commitHash: newCommit.hash,
-    fromPathGitRelative: oldCommit.filePath,
+    fromPathGitRelative: oldCommit?.filePath,
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     pathGitRelative: newCommit.filePath!,
     status: fileStatus,

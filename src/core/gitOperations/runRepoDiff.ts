@@ -3,12 +3,13 @@ import type GitChangelogPlugin from 'main.ts';
 import type { DiffFile, FilesSummary, LogEntry, TextDiffFile } from 'types.ts';
 
 import { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
+import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
 import {
   addFileStatusToSummary,
   assignDiffAlgorithm,
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
-import { convertGitIgnoreToPathspec } from 'settings/ui/GitDiffIgnore.ts';
+import { convertGitIgnoreToPathspec } from 'settings/ui/ExcludeFilesAndFolders.ts';
 import { getRenameLimit } from 'settings/ui/RenameDetectionFileLimit.ts';
 import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
@@ -63,27 +64,6 @@ export async function runRepoDiff({
   oldCommit?: LogEntry;
   plugin: GitChangelogPlugin;
 }): Promise<undefined | VaultChangelogEntry> {
-  if (oldCommit === undefined) {
-    return new VaultChangelogEntry({
-      binaryFiles: [],
-      binaryFilesSummaryCached: {
-        addedFiles: 0,
-        deletedFiles: 0,
-        modifiedFiles: 0,
-        renamedFiles: 0
-      },
-      commitHash: newCommit.hash,
-      textFiles: [],
-      textFilesSummaryCached: {
-        addedFiles: 0,
-        deletedFiles: 0,
-        modifiedFiles: 0,
-        renamedFiles: 0
-      },
-      timezoneAdjustedDate: newCommit.timezoneAdjustedDate
-    });
-  }
-  const pathSpec = convertGitIgnoreToPathspec(plugin);
   if (newCommit === undefined) {
     plugin.consoleDebug('newCommit is undefined');
   }
@@ -92,12 +72,7 @@ export async function runRepoDiff({
     throw new AbortError();
   }
 
-  const statusResult = await runRepoDiffStatus({
-    newCommit: newCommit.hash,
-    oldCommit: oldCommit.hash,
-    pathSpec,
-    plugin
-  });
+  const pathSpec = convertGitIgnoreToPathspec(plugin);
 
   const numstatArguments = [
     '--numstat',
@@ -109,11 +84,25 @@ export async function runRepoDiff({
   ];
   assignDiffAlgorithm(numstatArguments, plugin);
 
-  numstatArguments.push(oldCommit.hash, newCommit.hash);
+  let statusResult: Record<string, DiffFileStatus> | undefined;
+
+  if (oldCommit === undefined) {
+    const emptyTreeHash = await getEmptyTreeHash({ plugin });
+    numstatArguments.push(emptyTreeHash, newCommit.hash);
+  } else {
+    statusResult = await runRepoDiffStatus({
+      newCommit: newCommit.hash,
+      oldCommit: oldCommit.hash,
+      pathSpec,
+      plugin
+    });
+    numstatArguments.push(oldCommit.hash, newCommit.hash);
+  }
 
   if (pathSpec.length > 0) {
     numstatArguments.push('--', ...pathSpec);
   }
+
   if (abortSignal.aborted) {
     throw new AbortError();
   }
@@ -218,7 +207,7 @@ export async function runRepoDiff({
     binaryFiles,
     binaryFilesSummaryCached: binaryFilesSummary,
     commitHash: newCommit.hash,
-    previousDayLastCommitHash: oldCommit.hash,
+    previousDayLastCommitHash: oldCommit?.hash,
     textFiles,
     textFilesSummaryCached: textFilesSummary,
     timezoneAdjustedDate: newCommit.timezoneAdjustedDate
