@@ -18,7 +18,10 @@ export class TaskManager {
     this.controller.abort();
   }
 
-  public async enqueueAndWait(task: () => Promise<void>): Promise<void> {
+  public async enqueueAndWait(
+    task: () => Promise<void>,
+    safely = false
+  ): Promise<void> {
     /**
      * Artificially track the vault and file changelog queues,
      * because we need to determine if an empty changelog view is currently
@@ -29,7 +32,21 @@ export class TaskManager {
     // Assuming all error handling is done within the task.
     await addToQueueAndWait(
       this.plugin.app,
-      task,
+      safely
+        ? async (): Promise<void> => {
+            try {
+              await task();
+            } catch (error) {
+              if (error instanceof Error) {
+                this.plugin.consoleDebug(error.message);
+              } else {
+                this.plugin.consoleDebug(`Queue task failed`);
+              }
+            }
+          }
+        : async (): Promise<void> => {
+            await task();
+          },
       GIT_OPERATION_TIMEOUT_MILLISECONDS
     );
     this.queueSize--;
@@ -41,18 +58,18 @@ export class TaskManager {
     // Passing everything in the callback is needed because errors are intercepted before
     addToQueue(
       this.plugin.app,
-      () => {
-        task()
-          .catch((error) => {
-            if (error instanceof Error) {
-              this.plugin.consoleDebug(error.message);
-            } else {
-              this.plugin.consoleDebug(`Queue task failed`);
-            }
-          })
-          .finally(() => {
-            this.queueSize--;
-          });
+      async () => {
+        try {
+          await task();
+        } catch (error) {
+          if (error instanceof Error) {
+            this.plugin.consoleDebug(error.message);
+          } else {
+            this.plugin.consoleDebug(`Queue task failed`);
+          }
+        } finally {
+          this.queueSize--;
+        }
       },
       GIT_OPERATION_TIMEOUT_MILLISECONDS
     );

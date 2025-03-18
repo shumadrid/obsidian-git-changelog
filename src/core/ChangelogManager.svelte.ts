@@ -87,10 +87,9 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
   public handleScroll = async (): Promise<void> => {
     const abortSignal = this.taskManager.getAbortSignal();
-    await this.taskManager.enqueueAndWait(() =>
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      this.loadEntries({ abortSignal }).catch(() => {})
-    );
+    await this.taskManager.enqueueAndWait(async () => {
+      await this.loadEntries({ abortSignal });
+    }, true);
   };
 
   public resetSafely(): void {
@@ -249,19 +248,20 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
         upperBoundaryCommit: undefined
       });
     } else {
-      // Under the assumption that we will always have enough entries in the reserve, unless we reached the initial commit.
+      // If necessary, retrieve additional entries (if there are any left) and then append.
+      if (this.shouldRetrieveMoreReserveEntries()) {
+        await this.maybeRetrieveReserveEntries({ abortSignal });
+      }
+
       this.visibleEntries?.push(
         ...this.reservedEntries.splice(0, this.calculateVersionsToAppend(false))
       );
     }
 
-    // After we take versions out of the reserve, we check if the reserve still has enough versions for the next append. But have to limit the queue build-up of this function to a single call because otherwise svelte deep state "limitations" will give outdated values when reading allEntries and make git log produce duplicated entries
-
-    if (this.taskManager.queueSize < 2) {
-      this.taskManager.enqueueSafely(() =>
-        this.maybeRetrieveReserveEntries({ abortSignal })
-      );
-    }
+    // After taking the versions out of the reserve, check if the reserve has enough versions for the next append, and schedule a task to retrieve more if necessary.
+    this.taskManager.enqueueSafely(async () => {
+      await this.maybeRetrieveReserveEntries({ abortSignal });
+    });
   }
 
   protected async retrieveMoreEntries({
@@ -285,7 +285,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     });
   }
 
-  protected abstract calculateVersionsToAppend(resetCache: boolean): number;
+  protected abstract calculateVersionsToAppend(initialLoad: boolean): number;
 
   protected abstract calculateMaxVersionsToGet(): number;
 
@@ -569,10 +569,16 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       // Can't reserve more entries because there aren't any, since even the main entries list doesn't have sufficient entries.
       return false;
     }
+    return !this.reserveEntriesHaveEnoughVersions();
+  }
 
-    const minVersionsToGet = this.calculateVersionsToAppend(false);
+  protected reserveEntriesHaveEnoughVersions(): boolean {
+    const minVersionsToGet = this.calculateVersionsToAppend(
+      //  This.allEntries === undefined
+      false
+    );
 
-    return this.reservedEntries.length < minVersionsToGet;
+    return this.reservedEntries.length >= minVersionsToGet;
   }
 
   protected async appendToEntries({
