@@ -1,7 +1,7 @@
 {
   "author": "shumadrid",
   "authorUrl": "https://github.com/shumadrid/",
-  "description": "Uses Git to display dynamic vault and file changelogs in the sidebar.",
+  "description": "Uses Git to display dynamic vault and file changelogs in the sidebar, useful for spotting data loss.",
   "id": "git-changelog",
   "isDesktopOnly": true,
   "name": "Git Changelog",
