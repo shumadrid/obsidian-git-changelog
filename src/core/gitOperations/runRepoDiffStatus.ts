@@ -39,7 +39,7 @@ export async function runRepoDiffStatus({
   const changedFilesMap: Record<string, DiffFileStatus> = {};
 
   // Tokens should alternate between the status and the file path.
-  // eslint-disable-next-line no-magic-numbers
+
   for (let index = 0; index < tokens.length; index += 2) {
     const rawStatus = tokens[index];
     const filePath = tokens[index + 1];
@@ -58,6 +58,12 @@ export async function runRepoDiffStatus({
       // All other types are going to be discarded from this list
       default: {
         changedFilesMap[filePath] = DiffFileStatus.Modified;
+        if (!['M', 'R'].contains(changedFilesMap[filePath])) {
+          plugin.consoleDebug(
+            'Unexpected file status:',
+            changedFilesMap[filePath]
+          );
+        }
       }
     }
   }

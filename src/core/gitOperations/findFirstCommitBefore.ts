@@ -13,7 +13,7 @@ export async function findFirstCommitBefore({
   plugin
 }: {
   abortSignal: AbortSignal;
-  filePath: string | undefined;
+  filePath: string;
   minutes: number;
   plugin: GitChangelogPlugin;
 }): Promise<LogEntry | undefined> {
@@ -64,7 +64,7 @@ export async function findFirstCommitBefore({
 
   return result.all.map<LogEntry>((entry) => ({
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    filePath: filePath ? entry.diff?.files.first()!.file : undefined,
+    filePath: entry.diff!.files.first()!.file,
     hash: entry.hash,
     timezoneAdjustedDate: spacetime(entry.date).goto(timezone)
   }))[0];

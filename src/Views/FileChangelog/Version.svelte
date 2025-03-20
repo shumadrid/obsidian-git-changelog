@@ -4,6 +4,7 @@
 
   import { OPEN_FILE_ICON } from 'constants.ts';
   import { setIcon } from 'obsidian';
+  import { DiffFileStatus } from 'types.ts';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
   import { composeAriaLabel, composeVersionTitle } from 'Views/formatters.ts';
   import {
@@ -27,9 +28,9 @@
 
     if (isVersionClickable()) {
       changelogFileClick({
-        aReference:
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          previousEntry?.commitHash ?? plugin.emptyTreeHash!,
+        // Plugin.emptyTreeHash is guaranteed to be initialized. Git plugin throws an error when you pass Plugin.emptyTreeHash but I haven't been able to work around it and it doesn't affect usability.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        aReference: previousEntry?.commitHash ?? plugin.emptyTreeHash!,
         bReference: entry.commitHash,
         event,
         file: entry,
@@ -58,9 +59,13 @@
     }
   });
   function isVersionClickable(): boolean {
-    return canOpenInDiffView({
-      file: entry
-    });
+    return (
+      // Can't open diffs of deleted versions
+      entry.status !== DiffFileStatus.Deleted &&
+      canOpenInDiffView({
+        file: entry
+      })
+    );
   }
 
   const formattedVersionDateLabel = $derived.by(() => {

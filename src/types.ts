@@ -109,6 +109,7 @@ export enum OnFileClick {
   OpenFile = 'Open',
   ShowDiff = 'Diff'
 }
+
 export interface DiffFile {
   fromPathGitRelative?: string; // Only for renamed files
   pathGitRelative: string;
@@ -128,10 +129,15 @@ export interface FilesSummary {
 }
 
 export interface LogEntry {
-  // For file git logs only, to track file renames through history
-  filePath?: string;
+  // Can be null for file logs, if the file was deleted in some commit
   hash: string;
   timezoneAdjustedDate: Spacetime;
+
+  // For file git logs only:
+  // To track file renames through history
+  filePath?: string;
+  // Covers a deleted edge-case
+  fileDeleted?: boolean;
 }
 
 export interface StatEntry {
