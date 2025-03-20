@@ -95,7 +95,7 @@
           {formatDiffFileType(file)}
         </span>
       {:else}
-        {#each stats as stat, index}
+        {#each stats as stat, index (stat.type)}
           {#if statVisibilities[index] || firstAppearingStat < index}
             <StatComponent
               {stat}

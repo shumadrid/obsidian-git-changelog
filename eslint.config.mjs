@@ -34,9 +34,6 @@ export default typescriptEslint.config(
         extraFileExtensions: ['.svelte'],
         projectService: true
       }
-    },
-    rules: {
-      'svelte/require-each-key': 'off'
     }
   },
   {

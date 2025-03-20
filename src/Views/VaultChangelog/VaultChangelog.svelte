@@ -8,6 +8,7 @@
   import { onDestroy, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
   import { FilesSummariesDisplayMode } from 'types.ts';
+  import { getIntervalAdjectiveString } from 'Views/formatters.ts';
 
   import ChangeIntervalButton from '../components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from '../components/DependenciesStatusCheck.svelte';
@@ -19,14 +20,17 @@
   enum VaultChangelogState {
     EmptyHistory = 'emptyHistory',
     HasEntries = 'hasEntries',
-    Recomputing = 'recomputing'
+    Recomputing = 'recomputing',
+    Initializing = 'initializing'
   }
 
   interface Properties {
     plugin: GitChangelogPlugin;
   }
+
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
   const loaderState = new LoaderState();
+  let intervalAdjective = $state<string>();
 
   const { plugin }: Properties = $props();
   let collapseButton: HTMLElement | undefined;
@@ -39,12 +43,13 @@
   const changelogManager = $derived(plugin.vaultChangelogManager);
 
   const changelogState = $derived.by(() => {
-    // Not entirely accurate, but works for the use case.
-    if (!plugin.dependenciesReady) {
-      return VaultChangelogState.Recomputing;
+    // The only practical difference between the "initializing" and "recomputing" status is what string to display for loading state because if the changelog isn't initialized we can't show which exact interval is used for computing the versions.
+    if (!changelogManager) {
+      return VaultChangelogState.Initializing;
     }
 
-    if (!changelogManager) {
+    // Not entirely accurate, but works for the use case.
+    if (!plugin.dependenciesReady) {
       return VaultChangelogState.Recomputing;
     }
 
@@ -81,6 +86,7 @@
   vaultChangelogSettingsChangedReference = plugin.app.workspace.on(
     'git-changelog:vault-changelog-generation-settings-changed',
     () => {
+      setIntervalAdjective();
       changelogManager?.resetSafely();
     }
   );
@@ -99,6 +105,18 @@
       });
     }
   });
+
+  $effect.pre(() => {
+    setIntervalAdjective();
+  });
+
+  function setIntervalAdjective(): void {
+    if (changelogManager) {
+      intervalAdjective = getIntervalAdjectiveString(
+        changelogManager.getInterval()
+      );
+    }
+  }
 
   $effect(() => {
     if (collapseButton) {
@@ -163,9 +181,9 @@
           : undefined}
       ></div>
       <ChangeIntervalButton
-        enabled={changelogState === VaultChangelogState.HasEntries}
+        enabled={changelogState !== VaultChangelogState.Initializing &&
+          plugin.dependenciesReady === true}
         {changelogManager}
-        {plugin}
       ></ChangeIntervalButton>
       <div
         id="filesSummaryChange"
@@ -193,7 +211,7 @@
           changelogManager!.handleScroll}
         >
           <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-          {#each changelogManager!.visibleEntries! as version}
+          {#each changelogManager!.visibleEntries! as version (version.commitHash)}
             <VersionComponent
               {version}
               {plugin}
@@ -202,7 +220,9 @@
           {/each}
         </InfiniteScroller>
       {:else if changelogState === VaultChangelogState.Recomputing}
-        <div class="pane-empty">Loading...</div>
+        <div class="pane-empty">
+          Loading {intervalAdjective} versions...
+        </div>
       {:else if changelogState === VaultChangelogState.EmptyHistory}
         <div class="pane-empty">No commits detected.</div>
       {/if}

@@ -35,6 +35,24 @@ export function composeAriaLabel(file: DiffFile): string {
     return '';
   }
 }
+export function getIntervalAdjectiveString(
+  interval: ChangelogInterval
+): string {
+  switch (interval) {
+    case ChangelogInterval.Hourly: {
+      return 'hourly';
+    }
+    case ChangelogInterval.Daily: {
+      return 'daily';
+    }
+    case ChangelogInterval.Weekly: {
+      return 'weekly';
+    }
+    case ChangelogInterval.Monthly: {
+      return 'monthly';
+    }
+  }
+}
 
 export function composeDailyVersionDisplayText({
   fullyAdjustedCurrentDate,

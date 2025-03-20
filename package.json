@@ -53,7 +53,7 @@
     "svelte-preprocess": "^6.0.3",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.25.0",
-    "svelte-infinite": "github:shumadrid/svelte-infinite#ndom91/loaderState-per-instance"
+    "svelte-infinite": "^0.5.0"
   },
   "overrides": {
     "boolean": "npm:dry-uninstall"

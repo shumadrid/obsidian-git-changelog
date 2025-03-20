@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { ChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type { ChangelogManager } from 'core/ChangelogManager.svelte.ts';
-  import type GitChangelogPlugin from 'main.ts';
 
   import { CHANGE_INTERVAL_ICON } from 'constants.ts';
   import { setIcon } from 'obsidian';
@@ -10,12 +9,10 @@
   interface Properties {
     changelogManager: ChangelogManager<ChangelogEntry> | undefined;
     enabled: boolean;
-    plugin: GitChangelogPlugin;
   }
 
-  const { changelogManager, enabled, plugin }: Properties = $props();
+  const { changelogManager, enabled }: Properties = $props();
 
-  let isChangingInterval = $state(false);
   let button: HTMLElement | undefined;
 
   $effect(() => {
@@ -29,24 +26,12 @@
   });
 
   async function onClick(): Promise<void> {
-    if (!changelogManager) return;
-    const abortSignal = changelogManager.resetAndGetSignal();
-    await changelogManager.taskManager.enqueueAndWait(async () => {
-      if (isChangingInterval) return;
-      isChangingInterval = true;
-      try {
-        await changelogManager.setNextInterval();
-        await changelogManager.computeChangelog(abortSignal);
-      } catch (error) {
-        if (error instanceof Error) {
-          plugin.consoleDebug(error.message);
-        }
-      } finally {
-        // If onClick can’t run concurrently (e.g. always in a queue), then it's ok to modify isChangingInterval like this.
-        // eslint-disable-next-line require-atomic-updates
-        isChangingInterval = false;
-      }
-    });
+    try {
+      // This triggers the settings changed event and resetSafely() is called. This comes before resetting the entries  because otherwise there would be a very brief flash that could be noticeable between the setting the loading state and changing the interval resulting in the interval string getting updated in the UI.
+      await changelogManager?.setNextInterval();
+    } catch {
+      /* Empty */
+    }
   }
 </script>
 
@@ -57,9 +42,9 @@
   class="clickable-icon nav-action-button"
   data-icon={CHANGE_INTERVAL_ICON}
   aria-label="Change interval"
-  aria-disabled={isChangingInterval || !enabled}
+  aria-disabled={!enabled}
   bind:this={button}
-  onclick={isChangingInterval || !enabled ? undefined : onClick}
+  onclick={enabled ? onClick : undefined}
 ></div>
 
 <style lang="scss">

@@ -7,6 +7,7 @@
   import ChangeIntervalButton from 'Views/components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from 'Views/components/DependenciesStatusCheck.svelte';
   import InfiniteScroller from 'Views/components/InfiniteScroller.svelte';
+  import { getIntervalAdjectiveString } from 'Views/formatters.ts';
 
   import Version from './Version.svelte';
 
@@ -17,7 +18,8 @@
     GitIgnoredFileOpen = 'gitIgnoredFileOpen',
     HasEntries = 'hasEntries',
     NoMarkdownFileOpen = 'noMarkdownFileOpen',
-    Recomputing = 'recomputing'
+    Recomputing = 'recomputing',
+    Initializing = 'initializing'
   }
 
   interface Properties {
@@ -31,13 +33,14 @@
   const changelogManager = $derived(plugin.fileChangelogManager);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const loaderState = new LoaderState();
+  let intervalAdjective = $state<string>();
 
   const changelogState = $derived.by(() => {
-    if (!plugin.dependenciesReady) {
-      return FileChangelogState.Recomputing;
+    if (!changelogManager) {
+      return FileChangelogState.Initializing;
     }
 
-    if (!changelogManager) {
+    if (!plugin.dependenciesReady) {
       return FileChangelogState.Recomputing;
     }
 
@@ -68,6 +71,8 @@
   fileChangelogSettingsChangedReference = plugin.app.workspace.on(
     'git-changelog:file-changelog-generation-settings-changed',
     () => {
+      // This event is fired when the interval is changed, so this keeps the interval string in the loading state UI updated.
+      setIntervalAdjective();
       changelogManager?.resetSafely();
     }
   );
@@ -94,6 +99,18 @@
     }
   });
 
+  $effect.pre(() => {
+    setIntervalAdjective();
+  });
+
+  function setIntervalAdjective(): void {
+    if (changelogManager) {
+      intervalAdjective = getIntervalAdjectiveString(
+        changelogManager.getInterval()
+      );
+    }
+  }
+
   onDestroy(() => {
     plugin.app.workspace.offref(activeFileChangedReference);
 
@@ -109,8 +126,8 @@
     <div class="nav-buttons-container">
       <ChangeIntervalButton
         {changelogManager}
-        enabled={changelogState === FileChangelogState.HasEntries}
-        {plugin}
+        enabled={changelogState !== FileChangelogState.Initializing &&
+          plugin.dependenciesReady === true}
       ></ChangeIntervalButton>
     </div>
   </div>
@@ -127,7 +144,7 @@
           changelogManager!.handleScroll}
         >
           <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-          {#each changelogManager!.visibleEntries! as entry, index}
+          {#each changelogManager!.visibleEntries! as entry, index (entry.commitHash)}
             <Version
               previousEntry={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               changelogManager!.visibleEntries!.at(index + 1)}
@@ -138,12 +155,16 @@
           {/each}
         </InfiniteScroller>
       {:else if changelogState === FileChangelogState.Recomputing}
-        <div class="pane-empty">Loading...</div>
+        <div class="pane-empty">
+          <!-- composes into "Loading daily versions..." -->
+          Loading {intervalAdjective} versions...
+        </div>
       {:else if changelogState === FileChangelogState.NoMarkdownFileOpen}
         <div class="pane-empty">No markdown file opened.</div>
-      {:else}
+      {:else if changelogState === FileChangelogState.EmptyHistory}
         <div class="pane-empty">File has no Git history.</div>
       {/if}
+      <!-- if changelogState === FileChangelogState.Initializing, show nothing -->
     </div>
   </DependenciesStatusCheck>
 </div>
