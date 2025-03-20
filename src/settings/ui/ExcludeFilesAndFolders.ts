@@ -19,19 +19,20 @@ export class ExcludeFilesAndFolders extends GitChangelogSetting {
             text: 'syntax'
           });
           fragment.appendText(
-            ' as .gitignore, but note that negation patterns are not yet supported. The main .gitignore file still applies.'
+            " as .gitignore, but note that negation patterns are not yet supported. The main .gitignore file still applies. Don't forget to put .md for markdown files."
           );
         })
       )
       .addTextArea((text) => {
         text
           .setValue(
-            this.plugin.settings.changelogGenerationSettings.gitDiffIgnore ??
-              DEFAULT_SETTINGS.changelogGenerationSettings.gitDiffIgnore
+            this.plugin.settings.vaultChangelogGenerationSettings
+              .gitDiffIgnore ??
+              DEFAULT_SETTINGS.vaultChangelogGenerationSettings.gitDiffIgnore
           )
           .onChange((value) => {
             const newSettings = this.plugin.settingsClone;
-            newSettings.changelogGenerationSettings.gitDiffIgnore = value;
+            newSettings.vaultChangelogGenerationSettings.gitDiffIgnore = value;
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.plugin.saveSettings(newSettings);
           });
@@ -98,7 +99,7 @@ export function convertGitIgnoreToPathspec(
   plugin: GitChangelogPlugin
 ): string[] {
   const gitDiffIgnore =
-    plugin.settings.changelogGenerationSettings.gitDiffIgnore;
+    plugin.settings.vaultChangelogGenerationSettings.gitDiffIgnore;
   try {
     // Always exclude .git directory
     const excludes: string[] = [':(exclude,glob)**/.git/**'];
@@ -164,12 +165,22 @@ export function isValidGitIgnoreRule(rule: string): boolean {
     return false;
   }
 
+  // Hardcoded checking for problematic patterns
+  if (
+    /^[./]*$/.test(rule) || // Matches '.', '..', '/', './', '../', etc.
+    rule === '/' || // Root directory
+    /^\.{2,}\/.*$/.test(rule) // Anything starting with multiple dots and slash
+  ) {
+    return false;
+  }
+
   return true;
 }
 
 function formatGitIgnoreToPathspec(pattern: string): string {
   pattern = pattern.trim();
 
+  // Handle root-relative paths
   let rootRelative = false;
   if (pattern.startsWith('/')) {
     rootRelative = true;
