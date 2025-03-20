@@ -16,10 +16,10 @@ export class StatusBarStatsToggle extends GitChangelogSetting {
             this.plugin.saveSettings(newSettings);
 
             if (value) {
-              this.plugin.assignStatusBar();
+              this.plugin.initStatusBar();
             } else {
-              this.plugin.statusBar?.remove();
-              this.plugin.statusBar = undefined;
+              this.plugin.statusBarStats?.destroy?.();
+              this.plugin.statusBarStats = undefined;
             }
           })
       );

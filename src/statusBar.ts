@@ -1,5 +1,6 @@
 import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
+import type { ReadonlyDeep } from 'type-fest';
 
 import { findFirstCommitBefore } from 'core/gitOperations/findFirstCommitBefore.ts';
 import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
@@ -14,7 +15,7 @@ import { getGitRelativeFilePath } from 'Views/helper.ts';
 
 import type GitChangelogPlugin from './main.ts';
 
-export class StatusBar {
+export class StatusBarStats {
   public constructor(
     private statusBarElement: HTMLElement,
     private readonly plugin: GitChangelogPlugin,
@@ -66,7 +67,7 @@ export class StatusBar {
   }
 
   public static generationSettingsChanged(
-    oldSettings: GitChangelogPluginSettings,
+    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
     newSettings: GitChangelogPluginSettings
   ): boolean {
     return (
@@ -74,7 +75,7 @@ export class StatusBar {
     );
   }
 
-  public remove(): void {
+  public destroy(): void {
     this.statusBarElement.remove();
     this.taskManager.abort();
   }

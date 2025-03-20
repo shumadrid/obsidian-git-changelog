@@ -29,7 +29,7 @@ import {
 
 import { addCommands } from './commands.ts';
 import { GitChangelogSettingsTab } from './settings/settingsTab.ts';
-import { StatusBar } from './statusBar.ts';
+import { StatusBarStats } from './statusBar.ts';
 import {
   GitPluginIncompatibleVersionError,
   GitPluginMissingError,
@@ -65,7 +65,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
 
   public fileChangelogManager = $state<FileChangelogManager>();
   public settingsOfComputedCache?: ChangelogGenerationSettings;
-  public statusBar?: StatusBar;
+  public statusBarStats?: StatusBarStats;
 
   public cachedActiveGitFile: string | undefined;
 
@@ -85,9 +85,9 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     );
   }
 
-  public assignStatusBar(): void {
+  public initStatusBar(): void {
     const statusBarElement = this.addStatusBarItem();
-    this.statusBar = new StatusBar(
+    this.statusBarStats = new StatusBarStats(
       statusBarElement,
       this,
       new TaskManager(this)
@@ -140,12 +140,14 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
 
   public override async saveSettings(
     newSettings: GitChangelogPluginSettings,
-    checkForChanges = true
+    debounceOnSettingsSave = true
   ): Promise<void> {
     const oldSettings = this.settings;
     await super.saveSettings(newSettings);
-    if (checkForChanges) {
+    if (debounceOnSettingsSave) {
       this.debouncedChangelogSettingsChangedCheck?.(oldSettings, newSettings);
+    } else {
+      this.onSettingsSave(oldSettings, newSettings);
     }
   }
 
@@ -167,7 +169,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       this.debouncedChangelogSettingsChangedCheck?.cancel();
       this.fileChangelogManager?.taskManager.abort();
       this.vaultChangelogManager?.taskManager.abort();
-      this.statusBar?.remove();
+      this.statusBarStats?.destroy();
     });
 
     this.registerView(VAULT_CHANGELOG_VIEW_CONFIG.type, (leaf) => {
@@ -205,7 +207,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     });
 
     if (this.settings.statusBarStats) {
-      this.assignStatusBar();
+      this.initStatusBar();
     }
 
     this.registerEvent(
@@ -261,7 +263,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
    * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
    */
   private onSettingsSave(
-    oldSettings: GitChangelogPluginSettings,
+    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
     newSettings: GitChangelogPluginSettings
   ): void {
     if (
@@ -286,8 +288,8 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
         );
       }
       if (
-        this.statusBar &&
-        StatusBar.generationSettingsChanged(oldSettings, newSettings) &&
+        this.statusBarStats &&
+        StatusBarStats.generationSettingsChanged(oldSettings, newSettings) &&
         this.cachedActiveGitFile
       ) {
         this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
