@@ -22,12 +22,16 @@ export interface ChangelogGenerationSettings {
   // Diff settings
   detectMovedContent: boolean;
   diffAlgorithm: DiffAlgorithm;
-  gitDiffIgnore: string;
   measurementUnit: DiffMeasurementUnit;
   renameDetectionSensitivity: number;
   renameLimit: string;
   timezone: string;
   locale: string;
+}
+
+export interface VaultChangelogGenerationSettings {
+  gitDiffIgnore: string;
+  interval: ChangelogInterval;
 }
 
 export interface IGitChangelogSettings {
@@ -45,7 +49,7 @@ export interface IGitChangelogSettings {
   notifyOnFilesChangesThresholdReached: boolean;
   statusBarInterval: string;
   statusBarStats: boolean;
-  vaultChangelogInterval: ChangelogInterval;
+  vaultChangelogGenerationSettings: VaultChangelogGenerationSettings;
 }
 
 export class GitChangelogPluginSettings
@@ -97,8 +101,8 @@ export class GitChangelogPluginSettings
   public statusBarInterval: string = DEFAULT_SETTINGS.statusBarInterval;
   public statusBarStats: boolean = DEFAULT_SETTINGS.statusBarStats;
   // Specific Changelog Generation Settings
-  public vaultChangelogInterval: ChangelogInterval =
-    DEFAULT_SETTINGS.vaultChangelogInterval;
+  public vaultChangelogGenerationSettings: VaultChangelogGenerationSettings =
+    DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS;
 
   public constructor(data: unknown) {
     super();
@@ -108,12 +112,17 @@ export class GitChangelogPluginSettings
   }
 }
 
+export const DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS: VaultChangelogGenerationSettings =
+  {
+    gitDiffIgnore: '',
+    interval: ChangelogInterval.Daily
+  } as const;
+
 export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings =
   {
     dayStartHour: 0,
     detectMovedContent: true,
     diffAlgorithm: DiffAlgorithm.Inherit,
-    gitDiffIgnore: '',
     measurementUnit: DiffMeasurementUnit.Words,
     renameDetectionSensitivity: 50,
     renameLimit: '1000',
@@ -123,6 +132,7 @@ export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings 
 export const DEFAULT_SETTINGS: IGitChangelogSettings = {
   autoCommitDisabledWarningDismissed: false,
   changelogGenerationSettings: DEFAULT_CHANGELOG_GENERATION_SETTINGS,
+  vaultChangelogGenerationSettings: DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS,
   contentDeletionsAndMovesWarningThreshold: '2000',
   dedicatedFileTypeSummaries: [] as const,
   fileChangelogInterval: ChangelogInterval.Daily,
@@ -134,6 +144,5 @@ export const DEFAULT_SETTINGS: IGitChangelogSettings = {
   notifyOnContentDeletionsAndMovesThresholdReached: true,
   notifyOnFilesChangesThresholdReached: false,
   statusBarInterval: '30', // In mins
-  statusBarStats: false,
-  vaultChangelogInterval: ChangelogInterval.Daily
+  statusBarStats: false
 } as const;

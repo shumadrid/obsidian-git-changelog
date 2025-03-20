@@ -3,7 +3,7 @@ import type GitChangelogPlugin from 'main.ts';
 import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
-import type { ChangelogInterval, LogEntry } from 'types.ts';
+import type { ChangelogInterval, FileLogEntry } from 'types.ts';
 
 import {
   CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER,
@@ -51,8 +51,19 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
 
     newSettings.fileChangelogInterval = this.getNextInterval();
 
-    // "false" because this function is only called in the context of triggering a new changelog computation, so we don't want to trigger a check that usually runs for this function (trigger recompute if some changelog generation settings changed).
     await this.plugin.saveSettings(newSettings, false);
+  }
+
+  public override getInterval(
+    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
+  ): ChangelogInterval {
+    const interval = settings.fileChangelogInterval;
+
+    if (!validateChangelogInterval(interval)) {
+      return DEFAULT_SETTINGS.fileChangelogInterval;
+    }
+
+    return interval;
   }
 
   protected override async loadEntries({
@@ -104,28 +115,16 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
     );
   }
 
-  protected override getInterval(
-    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
-  ): ChangelogInterval {
-    const interval = settings.fileChangelogInterval;
-
-    if (!validateChangelogInterval(interval)) {
-      return DEFAULT_SETTINGS.fileChangelogInterval;
-    }
-
-    return interval;
-  }
-
   protected override async runDiff({
     abortSignal,
     newCommit,
     oldCommit
   }: {
     abortSignal: AbortSignal;
-    newCommit: LogEntry;
-    oldCommit?: LogEntry;
-  }): Promise<FileChangelogEntry> {
-    return runFileDiff({
+    newCommit: FileLogEntry;
+    oldCommit?: FileLogEntry;
+  }): Promise<FileChangelogEntry | undefined> {
+    return await runFileDiff({
       abortSignal,
       newCommit,
       oldCommit,

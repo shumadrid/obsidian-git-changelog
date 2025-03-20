@@ -119,13 +119,14 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   }
 
   public generationSettingsChanged(
-    oldSettings: GitChangelogPluginSettings,
+    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
     newSettings: GitChangelogPluginSettings
   ): boolean {
     return this.getInterval(oldSettings) !== this.getInterval(newSettings);
   }
 
   public resetAndGetSignal(): AbortSignal {
+    // Reset `visibleEntries` to undefined each time when you schedule a recompute so that the UI correctly updates to "loading" state while it waits for the stats to compute.
     this.visibleEntries = undefined;
     this.reservedEntries = [];
     return this.taskManager.abortPreviousTasksAndGetSignal();
@@ -137,6 +138,10 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   public abstract computeChangelog(abortSignal: AbortSignal): Promise<void>;
 
   public abstract setNextInterval(): Promise<void>;
+
+  public abstract getInterval(
+    settings?: ReadonlyDeep<GitChangelogPluginSettings>
+  ): ChangelogInterval;
 
   protected abstract updateEntries({
     abortSignal
@@ -287,14 +292,10 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
   protected abstract calculateVersionsToAppend(initialLoad: boolean): number;
 
-  protected abstract calculateMaxVersionsToGet(): number;
-
   /**
    *   */
 
-  protected abstract getInterval(
-    settings?: ReadonlyDeep<GitChangelogPluginSettings>
-  ): ChangelogInterval;
+  protected abstract calculateMaxVersionsToGet(): number;
 
   protected abstract runDiff({
     abortSignal,
@@ -369,11 +370,8 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     let startingFilePath: string | undefined = filePath;
     const lastCommitsInEachVersion: LogEntry[] = [];
     const loadedEntries: T[] = [];
-    // Const loadedFileEntries: FileChangelogEntry[] = [];
 
     let upperBoundaryVersionRemoved = false;
-
-    // This needs to be cached so that if the original reference in the changelogTaskManager gets reassigned because the queue was cleared, this still points to the old signal.
 
     let logCycles = 0;
     while (
@@ -443,8 +441,8 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
         }
       }
 
-      // If an empty diff happened (entry === undefined), it is most likely a sign of a very exclusive "Exclude files and folders" setting. Adapt to this by doubling the amount of logs to get for the next git log run.
-      if (emptyDiffHappened) {
+      // If an empty diff happened (entry === undefined), it is most likely a sign of a very exclusive "Exclude files and folders" setting. Adapt to this by doubling the amount of logs to get for the next git log run. Doesn't apply to file changelog operations.
+      if (emptyDiffHappened && !filePath) {
         logMaxCount *= 2;
       }
     }

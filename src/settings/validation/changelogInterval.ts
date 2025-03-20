@@ -11,12 +11,12 @@ export function getChangelogIntervalFromSettings(
   const interval =
     fileOrVault === 'file'
       ? plugin.settings.fileChangelogInterval
-      : plugin.settings.vaultChangelogInterval;
+      : plugin.settings.vaultChangelogGenerationSettings.interval;
 
   if (!validateChangelogInterval(interval)) {
     return fileOrVault === 'file'
       ? DEFAULT_SETTINGS.fileChangelogInterval
-      : DEFAULT_SETTINGS.vaultChangelogInterval;
+      : DEFAULT_SETTINGS.vaultChangelogGenerationSettings.interval;
   }
 
   return interval;

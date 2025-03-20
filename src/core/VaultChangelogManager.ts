@@ -45,10 +45,35 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   public override async setNextInterval(): Promise<void> {
     const newSettings = this.plugin.settingsClone;
 
-    newSettings.vaultChangelogInterval = this.getNextInterval();
+    newSettings.vaultChangelogGenerationSettings.interval =
+      this.getNextInterval();
 
-    // "false" because this function is only called in the context of triggering a new changelog computation, so we don't want to trigger a check that usually runs for this function (trigger recompute if some changelog generation settings changed).
     await this.plugin.saveSettings(newSettings, false);
+  }
+
+  public override generationSettingsChanged(
+    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
+    newSettings: GitChangelogPluginSettings
+  ): boolean {
+    if (
+      oldSettings.vaultChangelogGenerationSettings.gitDiffIgnore !==
+      newSettings.vaultChangelogGenerationSettings.gitDiffIgnore
+    ) {
+      return true;
+    }
+    return super.generationSettingsChanged(oldSettings, newSettings);
+  }
+
+  public override getInterval(
+    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
+  ): ChangelogInterval {
+    const interval = settings.vaultChangelogGenerationSettings.interval;
+
+    if (!validateChangelogInterval(interval)) {
+      return DEFAULT_SETTINGS.vaultChangelogGenerationSettings.interval;
+    }
+
+    return interval;
   }
 
   protected override calculateVersionsToAppend(resetCache: boolean): number {
@@ -57,7 +82,7 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     return Math.ceil(initialLoadMultiplier * CHANGELOG_LOAD_AMOUNT_VERSIONS);
   }
 
-  protected override runDiff({
+  protected override async runDiff({
     abortSignal,
     newCommit,
     oldCommit
@@ -66,7 +91,7 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     newCommit: LogEntry;
     oldCommit?: LogEntry;
   }): Promise<undefined | VaultChangelogEntry> {
-    return runRepoDiff({
+    return await runRepoDiff({
       abortSignal,
       newCommit,
       oldCommit,
@@ -77,18 +102,6 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   protected override calculateMaxVersionsToGet(): number {
     // eslint-disable-next-line no-magic-numbers
     return Math.ceil(3 * CHANGELOG_LOAD_AMOUNT_VERSIONS);
-  }
-
-  protected override getInterval(
-    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
-  ): ChangelogInterval {
-    const interval = settings.vaultChangelogInterval;
-
-    if (!validateChangelogInterval(interval)) {
-      return DEFAULT_SETTINGS.vaultChangelogInterval;
-    }
-
-    return interval;
   }
 
   protected override async updateEntries({

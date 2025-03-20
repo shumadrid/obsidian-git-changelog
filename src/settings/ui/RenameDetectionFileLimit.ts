@@ -14,7 +14,7 @@ export class RenameDetectionFileLimit extends GitChangelogSetting {
       )
       .addText((text) => {
         text.inputEl.pattern = '[0-9]*';
-        // eslint-disable-next-line no-magic-numbers
+
         text.inputEl.maxLength = 20;
         text.inputEl.inputMode = 'numeric';
         text

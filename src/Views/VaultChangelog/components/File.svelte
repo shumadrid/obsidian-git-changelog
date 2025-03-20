@@ -18,17 +18,17 @@
   import DiffStatsComponent from '../../components/DiffStats.svelte';
 
   interface Properties {
-    currentDayCommitHash: string;
+    currentVersionCommitHash: string;
     file: DiffFile;
     plugin: GitChangelogPlugin;
-    previousDayLastCommitHash?: string;
+    previousVersionCommitHash?: string;
   }
 
   const {
-    currentDayCommitHash,
+    currentVersionCommitHash,
     file,
     plugin,
-    previousDayLastCommitHash
+    previousVersionCommitHash
   }: Properties = $props();
   const buttons: HTMLElement[] = $state([]);
 
@@ -55,8 +55,8 @@
     if (!isClickable) return;
     changelogFileClick({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      aReference: previousDayLastCommitHash ?? plugin.emptyTreeHash!,
-      bReference: currentDayCommitHash,
+      aReference: previousVersionCommitHash ?? plugin.emptyTreeHash!,
+      bReference: currentVersionCommitHash,
       event,
       file,
       plugin

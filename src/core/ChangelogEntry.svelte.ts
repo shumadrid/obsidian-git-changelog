@@ -1,7 +1,10 @@
 import type { Spacetime } from 'spacetime';
-import type { DiffFile, FilesSummary, TextDiffStats } from 'types.ts';
-
-import { DiffFileStatus } from 'types.ts';
+import type {
+  DiffFile,
+  DiffFileStatus,
+  FilesSummary,
+  TextDiffStats
+} from 'types.ts';
 
 export abstract class ChangelogEntry {
   public constructor(
@@ -47,7 +50,7 @@ export class FileChangelogEntry extends ChangelogEntry implements DiffFile {
   }
 
   public override isInitialCommit(): boolean {
-    return this.status === DiffFileStatus.Added;
+    return this.fromPathGitRelative === undefined;
   }
 
   public override getPotentialGitFilePath(): string {
@@ -60,7 +63,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
   public binaryFiles: DiffFile[];
   public binaryFilesSummaryCached: FilesSummary;
   public isCollapsed = $state<boolean>(true);
-  public previousDayLastCommitHash?: string; // Empty on the first version
+  public previousVersionCommitHash?: string; // Empty on the first version
   public textFiles: DiffFile[];
   public textFilesSummaryCached: FilesSummary;
 
@@ -90,7 +93,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
     this.binaryFiles = binaryFiles;
     this.textFilesSummaryCached = textFilesSummaryCached;
     this.binaryFilesSummaryCached = binaryFilesSummaryCached;
-    this.previousDayLastCommitHash = previousDayLastCommitHash;
+    this.previousVersionCommitHash = previousDayLastCommitHash;
   }
 
   public override getPotentialGitFilePath(): undefined {
@@ -147,6 +150,6 @@ export class VaultChangelogEntry extends ChangelogEntry {
   }
 
   public override isInitialCommit(): boolean {
-    return this.previousDayLastCommitHash === undefined;
+    return this.previousVersionCommitHash === undefined;
   }
 }

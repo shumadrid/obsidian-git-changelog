@@ -23,7 +23,7 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const currentDay = plugin.currentDay;
     return composeVersionTitle({
-      interval: plugin.settings.vaultChangelogInterval,
+      interval: plugin.settings.vaultChangelogGenerationSettings.interval,
       plugin,
       timezoneAdjustedEntryDate: version.timezoneAdjustedDate
     });
@@ -61,7 +61,7 @@
     <div class="file-stats git-changelog-files-summaries-stats">
       <div class="git-changelog-entry-title">
         <div>{formattedVersionDateLabel}</div>
-        {#if !version.previousDayLastCommitHash}
+        {#if !version.previousVersionCommitHash}
           <div>
             <span class="nav-file-tag git-changelog-initial-version-tag"
               >Initial</span
@@ -102,6 +102,7 @@
           </div>
         {/if}
       {/if}
+
       <DiffStatsComponent
         inFileChangelog={false}
         baseStats={{
@@ -113,23 +114,23 @@
   </div>
   {#if !version.isCollapsed}
     <div class="tree-item-children" transition:slide|local={{ duration: 150 }}>
-      {#each version.textFiles as file}
+      {#each version.textFiles as file (file.pathGitRelative)}
         {#if file !== undefined && file !== undefined}
           <FileComponent
             {file}
-            currentDayCommitHash={version.commitHash}
-            previousDayLastCommitHash={version.previousDayLastCommitHash}
+            currentVersionCommitHash={version.commitHash}
+            previousVersionCommitHash={version.previousVersionCommitHash}
             {plugin}
           />
         {/if}
       {/each}
 
-      {#each version.binaryFiles as file}
+      {#each version.binaryFiles as file (file.pathGitRelative)}
         {#if file !== undefined && file !== undefined}
           <FileComponent
             {file}
-            currentDayCommitHash={version.commitHash}
-            previousDayLastCommitHash={version.previousDayLastCommitHash}
+            currentVersionCommitHash={version.commitHash}
+            previousVersionCommitHash={version.previousVersionCommitHash}
             {plugin}
           />
         {/if}
