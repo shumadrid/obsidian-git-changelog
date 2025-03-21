@@ -13,9 +13,9 @@ export class DiffAlgorithmOptions extends GitChangelogSetting {
       )
       .addDropdown((dropdown) => {
         const options: Record<DiffAlgorithm, string> = {
-          Default: 'Default (Faster)', // Myers
+          Default: 'Default (faster)', // Myers
           Inherit: 'Use git config',
-          Minimal: 'Minimal (More Precise)'
+          Minimal: 'Minimal (more precise)'
         };
         dropdown.addOptions(options);
 

@@ -93,7 +93,7 @@ export enum FileExplorerStats {
 }
 
 export enum FilesSummariesDisplayMode {
-  TextAndBinary = 'Text And Binary',
+  TextAndBinary = 'Text and binary',
   Total = 'Total'
   // Binary = "Binary",
 }
