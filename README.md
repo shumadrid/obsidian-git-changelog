@@ -4,7 +4,7 @@ A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to
 
 ## Installation
 
-This plugin is currently in beta. To install the plugin, follow these steps:
+To install the plugin, follow these steps:
 
 1. Make sure to have the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) installed and enabled.
 2. Paste this link in your browser and press enter:
@@ -18,6 +18,9 @@ The plugin is NOT yet available in [the official Community Plugins repository](h
 > [!IMPORTANT]
 > Requires the [Git plugin](https://github.com/Vinzent03/obsidian-git) to be installed. Installing it and maintaining a Git repository can be beneficial, even if you rely on other syncing services.
 
+> [!NOTE]
+> This plugin is currently in beta and still under development, so your existing settings may break after each update.
+
 ## Features
 
 ### Vault Changelog View
@@ -26,7 +29,7 @@ The plugin is NOT yet available in [the official Community Plugins repository](h
 - Shows the total count of lines added and deleted.
 - Displays counts of files added, modified, deleted, and moved/renamed (total or text and non-text separately). If a file is both renamed/moved and modified, it will contribute towards the renamed files stats.
 - Lists per file lines added and deleted, along with additional file statuses (**A**dded, **R**enamed, **M**oved, or **D**eleted).
-- **Exclude Files and Folders**:
+- **Exclude Files and Folders:**
 
   Usually you specify files and folders you want to exclude from your Git repository in the `.gitignore` file.
 
@@ -46,11 +49,18 @@ The plugin is NOT yet available in [the official Community Plugins repository](h
 > [!WARNING]
 > Using the "Expand all" toggle will reduce view performance. This will be fixed soon.
 
-### Changelog Settings
+### Changelog Customizability
 
 - Set a custom day start time (if you're a night owl and want to track your actual days).
 - Set a custom timezone to base the intervals on or detect it automatically.
 - Choose to view hourly, daily, weekly, or monthly intervals.
+- **Adjust file rename detection strictness:**
+
+  Git can't actually track which files you renamed. Instead, it tries to detect renames by comparing the file contents of the old and new files.
+
+  It can falsely mark new files as some old file getting renamed, and it can miss actual renames and mark them as separate files getting deleted and created.
+
+  Higher strictness results in detecting less renames.
 
 ### Live Stats in the Status Bar for the Current Note
 
@@ -97,6 +107,8 @@ But if some version of a file wasn't committed, you can still rely on the [File 
 - By Git design, files/folders specified in `.gitignore` aren't watched for changes.
 - Git decides if a file is binary (non-text) or a text file by analyzing the file contents rather than looking at the file extension. If you rename a text file to have a `.png` extension, Git will still count its lines and treat it as a text file.
 - If some data loss is only a few words/lines in a heavily edited file, you probably won't notice it. Even though those few lines could have been important.
+- When using this plugin, the Git plugin status bar branch indicator may get duplicated. (weird)
+- Interaction with submodules isn't tested yet!
 
 ## Roadmap
 
@@ -114,7 +126,7 @@ But if some version of a file wasn't committed, you can still rely on the [File 
 - [ ] Command to compare the current state of the vault (repo) to any point in history.
 - [ ] Extensive per-file type stats.
 - [ ] Optimize computing stats performance.
-- [ ] Integrate the status bar with the [Git plugin's](https://github.com/Vinzent03/obsidian-git) diff views.
+- [ ] Integrate the status bar and the file changelog view with [Git plugin's](https://github.com/Vinzent03/obsidian-git) diff views.
 - [ ] Notify if the amount of changes between neighboring commits exceeds a threshold.
 - [ ] File & folder stats inside the File explorer view.
 
