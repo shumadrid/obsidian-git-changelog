@@ -34,10 +34,17 @@ export function fileOpenableInObsidian(
   // This isn't perfect because some old file path could match an unrelated file's current path in the current state of the vault.
   const existingFile =
     plugin.app.vault.getAbstractFileByPath(relativeVaultPath);
-  return (
-    existingFile instanceof TFile &&
-    !!plugin.app.viewRegistry?.getTypeByExtension(existingFile.extension)
-  );
+  if (!(existingFile instanceof TFile)) {
+    return false;
+  }
+
+  try {
+    // Internal Obsidian API function
+    return !!plugin.app.viewRegistry.getTypeByExtension(existingFile.extension);
+  } catch {
+    // If the function doesn't exist anymore, it will throw an error. In that case, just skip the check.
+    return true;
+  }
 }
 
 export function canOpenInDiffView({ file }: { file: DiffFile }): boolean {
