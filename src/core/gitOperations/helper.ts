@@ -23,17 +23,17 @@ export function addFileStatusToSummary(
 }
 
 export function assignDiffAlgorithm(
-  arguments_: string[],
+  options: Record<string, unknown>,
   plugin: GitChangelogPlugin
 ): void {
   switch (getDiffAlgorithm(plugin.settings.changelogGenerationSettings)) {
     case DiffAlgorithm.Default: {
-      arguments_.push('--diff-algorithm=default');
+      options['--diff-algorithm'] = 'default';
       break;
     }
 
     case DiffAlgorithm.Minimal: {
-      arguments_.push('--diff-algorithm=minimal');
+      options['--diff-algorithm'] = 'minimal';
       break;
     }
 

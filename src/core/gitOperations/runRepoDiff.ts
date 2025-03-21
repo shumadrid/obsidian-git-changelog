@@ -1,6 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import type GitChangelogPlugin from 'main.ts';
-import type { DiffFile, FilesSummary, LogEntry, TextDiffFile } from 'types.ts';
+import type {
+  DiffFile,
+  FilesSummary,
+  LogEntry,
+  TextDiffFile,
+  TextDiffStats
+} from 'types.ts';
 
 import { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
@@ -9,13 +15,12 @@ import {
   assignDiffAlgorithm,
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
+import { runRepoDiffStatus } from 'core/gitOperations/runRepoDiffStatus.ts';
 import { convertGitIgnoreToPathspec } from 'settings/ui/ExcludeFilesAndFolders.ts';
 import { getRenameLimit } from 'settings/ui/RenameDetectionFileLimit.ts';
 import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
-import { insertSorted, parseContentChange } from 'utils.ts';
-
-import { runRepoDiffStatus } from './runRepoDiffStatus.ts';
+import { insertSorted } from 'utils.ts';
 
 export function compareBinaryFiles(
   leftFile: DiffFile,
@@ -79,8 +84,7 @@ export async function runRepoDiff({
     `-l${getRenameLimit(plugin.settings.changelogGenerationSettings)}`,
     `--find-renames=${getRenameDetectionSensitivity(plugin.settings.changelogGenerationSettings)}%`,
     '--color-moved=no',
-    '--no-rename-empty',
-    '-z'
+    '--no-rename-empty'
   ];
   assignDiffAlgorithm(numstatArguments, plugin);
 
@@ -107,11 +111,9 @@ export async function runRepoDiff({
     throw new AbortError();
   }
   const git = await plugin.getGit();
-  const diffNumstatResult = await git.diff(numstatArguments);
+  const diffNumstatResult = await git.diffSummary(numstatArguments);
 
-  const records = diffNumstatResult.split('\0').filter((token) => token !== '');
-
-  if (records.length === 0) {
+  if (diffNumstatResult.files.length === 0) {
     return undefined;
   }
 
@@ -131,68 +133,41 @@ export async function runRepoDiff({
   const textFiles: DiffFile[] = [];
   const binaryFiles: DiffFile[] = [];
 
-  let index = 0;
-
-  while (index < records.length) {
-    // The header token always contains the added/deleted counts.
-    const header = records[index++];
-    const parts = header.split('\t');
-    const addedString = parts[0];
-    const deletedString = parts[1];
-    let filePath: string;
-    let oldPath: string | undefined = undefined;
-
-    if (parts.length === 3 && parts[2] !== '') {
-      // Simple case: a single file record.
-      filePath = parts[2];
-    } else {
-      // Renamed file case:
-      // The header ends with an empty field, so we expect two additional tokens:
-      // First token: the preImage path, second token: the postImage path.
-      const preImage = records[index++];
-      const postImage = records[index++];
-      oldPath = preImage;
-      filePath = postImage;
-    }
-
-    // Determine if this is a binary file or submodule.
-    const isBinary = addedString === '-' && deletedString === '-';
-
+  for (const logFile of diffNumstatResult.files) {
     // Get the file change status from the "git status" results (defaulting to Modified).
     let status: DiffFileStatus;
     if (oldCommit === undefined) {
       status = DiffFileStatus.Added;
-    } else if (oldPath) {
-      if (typeof oldPath !== 'string') {
-        plugin.consoleDebug('oldPath is not a string!', oldPath);
-      }
-      status = calculateFileStatusRenamedOrMoved(oldPath, filePath);
+    } else if (logFile) {
+      status = calculateFileStatusRenamedOrMoved(logFile.from, logFile.file);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    } else if (statusResult![filePath]) {
+    } else if (statusResult![logFile.file]) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      status = statusResult![filePath];
+      status = statusResult![logFile.file];
     } else {
       status = DiffFileStatus.Modified;
     }
 
     // Update counters based on file type (binary vs text) and status.
-    if (isBinary) {
+    if (logFile.binary) {
       addFileStatusToSummary(status, binaryFilesSummary);
     } else {
       addFileStatusToSummary(status, textFilesSummary);
     }
 
     // Parse numeric values for text files.
-    const textDiffStats = isBinary
+    const textDiffStats: TextDiffStats | undefined = logFile.binary
       ? undefined
-      : parseContentChange({
-          addedStr: addedString,
-          deletedStr: deletedString
-        });
+      : {
+          baseStats: {
+            additions: logFile.insertions,
+            deletions: logFile.deletions
+          }
+        };
 
     const file: DiffFile = {
-      fromPathGitRelative: oldPath,
-      pathGitRelative: filePath,
+      fromPathGitRelative: logFile.from,
+      pathGitRelative: logFile.file,
       status,
       textDiffStats
     };

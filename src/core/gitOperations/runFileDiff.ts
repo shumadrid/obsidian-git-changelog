@@ -1,4 +1,5 @@
 import type GitChangelogPlugin from 'main.ts';
+import type { TaskOptions } from 'simple-git';
 import type { FileLogEntry } from 'types.ts';
 
 import { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
@@ -8,7 +9,6 @@ import {
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
-import { parseContentChange } from 'utils.ts';
 
 export async function runFileDiff({
   abortSignal,
@@ -49,34 +49,26 @@ export async function runFileDiff({
     );
   }
 
-  const numstatArguments = [
-    '--numstat',
-    '--color-moved=no',
-    '-z',
-    '--no-renames'
-    // `--exit-code`,
-  ];
+  const options: TaskOptions = {
+    '--numstat': null,
+    '--color-moved': 'no',
+    '--no-renames': null
+  };
 
-  assignDiffAlgorithm(numstatArguments, plugin);
+  assignDiffAlgorithm(options, plugin);
 
   // Only one of these can be true at the same time since we are returning early if they are both true.
   if (isInitialVersion || newCommit.fileDeleted) {
     const emptyTreeHash = await getEmptyTreeHash({ plugin });
+    options[emptyTreeHash] = null;
+    options[isInitialVersion ? newCommit.hash : oldCommit.hash] = null;
+    options.file = isInitialVersion ? newCommit.filePath : oldCommit.filePath;
 
-    numstatArguments.push(
-      emptyTreeHash,
-      isInitialVersion ? newCommit.hash : oldCommit.hash,
-      // This part is important. It tells git where is the explicit separation between revisions and the file path. Without it, git will not always be able to parse the file path correctly.
-      '--',
-      // We can pass oldCommit.filePath if the new commit is just a deletion of that file, meaning the file names are the same. We just inverse the result later to count the showed additions as deletions.
-
-      isInitialVersion ? newCommit.filePath : oldCommit.filePath
-    );
+    // This part is important. It tells git where is the explicit separation between revisions and the file path. Without it, git will not always be able to parse the file path correctly.
+    // We can pass oldCommit.filePath if the new commit is just a deletion of that file, meaning the file names are the same. We just inverse the result later to count the showed additions as deletions.
   } else {
-    numstatArguments.push(
-      `${oldCommit.hash}:${oldCommit.filePath}`,
-      `${newCommit.hash}:${newCommit.filePath}`
-    );
+    options[`${oldCommit.hash}:${oldCommit.filePath}`] = null;
+    options[`${newCommit.hash}:${newCommit.filePath}`] = null;
   }
 
   if (abortSignal.aborted) {
@@ -84,22 +76,17 @@ export async function runFileDiff({
   }
 
   const git = await plugin.getGit();
-  const diffNumstatResult = await git.diff(numstatArguments);
-
-  const parts = diffNumstatResult.split('\t');
-  const addedString = parts[0];
-  const deletedString = parts[1];
-
-  // Determine if this is a binary file or submodule.
-  const isBinary = addedString === '-' && deletedString === '-';
+  const diffNumstatResult = await git.diffSummary(options);
 
   // Parse numeric values for text files.
-  const textDiffStats = isBinary
+  const textDiffStats = diffNumstatResult.files[0].binary
     ? undefined
-    : parseContentChange({
-        addedStr: newCommit.fileDeleted ? deletedString : addedString,
-        deletedStr: newCommit.fileDeleted ? addedString : deletedString
-      });
+    : {
+        baseStats: {
+          additions: diffNumstatResult.insertions,
+          deletions: diffNumstatResult.deletions
+        }
+      };
   const fileEntry = new FileChangelogEntry({
     commitHash: newCommit.hash,
     fromPathGitRelative: oldCommit?.filePath,
