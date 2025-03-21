@@ -63,7 +63,7 @@
   }
 </script>
 
-{#each stats as stat}
+{#each stats as stat (stat.type)}
   <span class="git-changelog-stat-item">
     <span
       class="icon git-changelog-stat-color"

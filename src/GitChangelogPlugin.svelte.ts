@@ -329,7 +329,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
         const currentActiveView =
           this.app.workspace.getActiveViewOfType(ItemView);
 
-        // If a DiffView is active, don't clear the active git file, but keep it, so that the file changelog still shows stats for that previously active file.
+        // If a DiffView is active, don't clear the active git file, but keep it, so that the file changelog still shows stats for that previously active file. Only works if the diff view is also focused.
         if (isDiffView(currentActiveView)) {
           return;
         }
