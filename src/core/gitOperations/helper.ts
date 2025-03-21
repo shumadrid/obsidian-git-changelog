@@ -127,3 +127,13 @@ export function isFileRenamedOrMoved(file: DiffFileStatus): boolean {
     file === DiffFileStatus.RenamedAndMoved
   );
 }
+
+export function unescapeGitFileOutput(escapedFilePath: string): string {
+  // If a file name contains a quote, git encloses the entire file-name with quotes.
+  // Actual file-name quotes are always escaped. Quotes at the start and the end of the file path without a backslash before them are added by git, and we want to remove them.
+  // "\" can't exist in filenames.
+  if (escapedFilePath.at(0) === '"') {
+    escapedFilePath = escapedFilePath.slice(1, -1);
+  }
+  return escapedFilePath.replaceAll(`\\"`, '"');
+}

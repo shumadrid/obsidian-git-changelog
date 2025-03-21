@@ -2,6 +2,7 @@ import type GitChangelogPlugin from 'main.ts';
 import type { DiffResultNameStatusFile } from 'simple-git';
 import type { LogEntry } from 'types.ts';
 
+import { unescapeGitFileOutput } from 'core/gitOperations/helper.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
 import { DiffNameStatus } from 'simple-git';
@@ -96,8 +97,10 @@ export async function runLog({
     }
 
     logs.push({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      filePath: filePath ? entry.diff!.files.at(0)!.file : undefined,
+      filePath: filePath
+        ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          unescapeGitFileOutput(entry.diff!.files.at(0)!.file)
+        : undefined,
       hash: entry.hash,
       fileDeleted,
       timezoneAdjustedDate: spacetime(entry.date).goto(timezone)
