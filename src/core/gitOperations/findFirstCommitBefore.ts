@@ -2,7 +2,7 @@ import type GitChangelogPlugin from 'main.ts';
 import type { LogEntry } from 'types.ts';
 
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
-import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
+import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
 
@@ -37,10 +37,10 @@ export async function findFirstCommitBefore({
     // --name-only
     options['--follow'] = null;
 
-    const renameDetectionSensitivity = getRenameDetectionSensitivity(
+    const renameDetectionStrictness = getRenameDetectionStrictness(
       plugin.settings.changelogGenerationSettings
     );
-    options['--find-renames'] = `${renameDetectionSensitivity.toString()}%`;
+    options['--find-renames'] = `${renameDetectionStrictness.toString()}%`;
   }
 
   if (abortSignal.aborted) {

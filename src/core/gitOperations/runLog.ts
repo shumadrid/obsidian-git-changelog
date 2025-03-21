@@ -4,7 +4,7 @@ import type { LogEntry } from 'types.ts';
 
 import { unescapeGitFileOutput } from 'core/gitOperations/helper.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
-import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
+import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import { DiffNameStatus } from 'simple-git';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
@@ -47,7 +47,7 @@ export async function runLog({
     // --name-only
     options['--follow'] = null;
     options['--find-renames'] =
-      `${getRenameDetectionSensitivity(plugin.settings.changelogGenerationSettings)}%`;
+      `${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`;
   }
 
   if (upperBoundaryCommit) {

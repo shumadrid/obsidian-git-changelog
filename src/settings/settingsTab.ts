@@ -12,7 +12,7 @@ import { DiffAlgorithmOptions } from './ui/DiffAlgorithmOptions.ts';
 import { ExcludeFilesAndFolders } from './ui/ExcludeFilesAndFolders.ts';
 import { GitPluginWarning } from './ui/GitPluginWarning.ts';
 import { RenameDetectionFileLimit } from './ui/RenameDetectionFileLimit.ts';
-import { RenameDetectionSensitivitySlider } from './ui/RenameDetectionSensitivitySlider.ts';
+import { RenameDetectionStrictnessSlider } from './ui/RenameDetectionStrictnessSlider.ts';
 import { StatusBarInterval } from './ui/StatusBarInterval.ts';
 import { StatusBarStatsToggle } from './ui/StatusBarStatsToggle.ts';
 
@@ -65,7 +65,7 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     // ).display();
     new ExcludeFilesAndFolders({ containerEl, plugin }).display();
 
-    new RenameDetectionSensitivitySlider({
+    new RenameDetectionStrictnessSlider({
       containerEl,
       plugin
     }).display();

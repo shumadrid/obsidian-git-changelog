@@ -23,7 +23,7 @@ export interface ChangelogGenerationSettings {
   detectMovedContent: boolean;
   diffAlgorithm: DiffAlgorithm;
   measurementUnit: DiffMeasurementUnit;
-  renameDetectionSensitivity: number;
+  renameDetectionStrictness: number;
   renameLimit: string;
   timezone: string;
   locale: string;
@@ -124,7 +124,7 @@ export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings 
     detectMovedContent: true,
     diffAlgorithm: DiffAlgorithm.Inherit,
     measurementUnit: DiffMeasurementUnit.Words,
-    renameDetectionSensitivity: 50,
+    renameDetectionStrictness: 50,
     renameLimit: '1000',
     timezone: AUTO_DETECT_PLACEHOLDER,
     locale: AUTO_DETECT_PLACEHOLDER

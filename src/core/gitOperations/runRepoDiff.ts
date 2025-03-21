@@ -11,7 +11,7 @@ import {
 } from 'core/gitOperations/helper.ts';
 import { convertGitIgnoreToPathspec } from 'settings/ui/ExcludeFilesAndFolders.ts';
 import { getRenameLimit } from 'settings/ui/RenameDetectionFileLimit.ts';
-import { getRenameDetectionSensitivity } from 'settings/ui/RenameDetectionSensitivitySlider.ts';
+import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
 import { insertSorted, parseContentChange } from 'utils.ts';
 
@@ -77,7 +77,7 @@ export async function runRepoDiff({
   const numstatArguments = [
     '--numstat',
     `-l${getRenameLimit(plugin.settings.changelogGenerationSettings)}`,
-    `--find-renames=${getRenameDetectionSensitivity(plugin.settings.changelogGenerationSettings)}%`,
+    `--find-renames=${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`,
     '--color-moved=no',
     '--no-rename-empty',
     '-z'
