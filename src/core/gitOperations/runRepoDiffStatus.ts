@@ -1,5 +1,7 @@
 import type GitChangelogPlugin from 'main.ts';
+import type { DiffResultNameStatusFile } from 'simple-git';
 
+import { DiffNameStatus } from 'simple-git';
 import { DiffFileStatus } from 'types.ts';
 
 /**
@@ -24,44 +26,37 @@ export async function runRepoDiffStatus({
     newCommit,
     '--name-status',
     // Turns off rename detection, even when the configuration file gives the default to run rename detection.
-    '--no-renames',
-    '-z'
+    '--no-renames'
   ];
   if (pathSpec.length > 0) {
     diffStatusArguments.push('--', ...pathSpec);
   }
   const git = await plugin.getGit();
-  const diffStatusResult = await git.diff(diffStatusArguments);
+  const diffStatusResult = await git.diffSummary(diffStatusArguments);
 
-  const tokens = diffStatusResult
-    .split('\0')
-    .filter((token) => token.length > 0);
   const changedFilesMap: Record<string, DiffFileStatus> = {};
 
-  // Tokens should alternate between the status and the file path.
-
-  for (let index = 0; index < tokens.length; index += 2) {
-    const rawStatus = tokens[index];
-    const filePath = tokens[index + 1];
-    const statusSymbol = rawStatus.charAt(0);
-
-    // BUG:?
-    switch (statusSymbol) {
-      case 'A': {
-        changedFilesMap[filePath] = DiffFileStatus.Added;
+  for (const file of diffStatusResult.files as DiffResultNameStatusFile[]) {
+    switch (file.status) {
+      case DiffNameStatus.ADDED: {
+        changedFilesMap[file.file] = DiffFileStatus.Added;
         break;
       }
-      case 'D': {
-        changedFilesMap[filePath] = DiffFileStatus.Deleted;
+      case DiffNameStatus.DELETED: {
+        changedFilesMap[file.file] = DiffFileStatus.Deleted;
         break;
       }
       // All other types are going to be discarded from this list
       default: {
-        changedFilesMap[filePath] = DiffFileStatus.Modified;
-        if (!['M', 'R'].contains(changedFilesMap[filePath])) {
+        changedFilesMap[file.file] = DiffFileStatus.Modified;
+        if (
+          ![DiffNameStatus.MODIFIED, DiffNameStatus.RENAMED].contains(
+            file.status ?? DiffNameStatus.MODIFIED
+          )
+        ) {
           plugin.consoleDebug(
-            'Unexpected file status:',
-            changedFilesMap[filePath]
+            `Unexpected file status of ${file.file}:`,
+            file.status
           );
         }
       }
