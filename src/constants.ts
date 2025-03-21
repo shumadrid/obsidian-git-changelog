@@ -1,6 +1,6 @@
 export const PLUGIN_NAME = 'Git Changelog';
 export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
-export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.0';
+export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.1';
 
 // Icons
 export const ADDITIONS_ICON = 'list-plus';
