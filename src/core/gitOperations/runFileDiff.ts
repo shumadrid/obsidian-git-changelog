@@ -92,8 +92,7 @@ export async function runFileDiff({
   }
 
   const textDiffStats =
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    (newCommit.binary ?? diffNumstatResult.files.at(0)!.binary)
+    diffNumstatResult.files.at(0)?.binary === true
       ? undefined
       : {
           baseStats: {
