@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 0.2.1
+
+### Bug Fixes
+
+- Convert text to sentence case
+- Fix changelog list items getting shifted, leading to the stats representing the wrong versions.
+- Rename "Rename detection sensitivity" to "Rename detection strictness".
+- Fix file changelog failing on file names with quotes.
+- Handle file changelog versions in which the file was deleted.
+- Don't disable "Change interval" button while the stats are loading.
+- Make tiny improvements to "Exclude files and folders" logic.
+
 ## 0.2.0
 
 ### Features
