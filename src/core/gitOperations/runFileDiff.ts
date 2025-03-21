@@ -8,7 +8,6 @@ import {
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
-import { parseContentChange } from 'utils.ts';
 
 export async function runFileDiff({
   abortSignal,
@@ -33,30 +32,12 @@ export async function runFileDiff({
     return undefined;
   }
 
-  let fileStatus: DiffFileStatus;
-
-  if (isInitialVersion) {
-    fileStatus = DiffFileStatus.Added;
-  } else if (newCommit.fileDeleted) {
-    fileStatus = DiffFileStatus.Deleted;
-  } else if (oldCommit.filePath === newCommit.filePath) {
-    fileStatus = DiffFileStatus.Modified;
-  } else {
-    fileStatus = calculateFileStatusRenamedOrMoved(
-      oldCommit.filePath,
-
-      newCommit.filePath
-    );
-  }
-
   const numstatArguments = [
     '--numstat',
     '--color-moved=no',
-    '-z',
     '--no-renames'
     // `--exit-code`,
   ];
-
   assignDiffAlgorithm(numstatArguments, plugin);
 
   // Only one of these can be true at the same time since we are returning early if they are both true.
@@ -79,27 +60,51 @@ export async function runFileDiff({
     );
   }
 
+  let fileStatus: DiffFileStatus;
+
+  if (isInitialVersion) {
+    fileStatus = DiffFileStatus.Added;
+  } else if (newCommit.fileDeleted) {
+    fileStatus = DiffFileStatus.Deleted;
+  } else if (oldCommit.filePath === newCommit.filePath) {
+    fileStatus = DiffFileStatus.Modified;
+  } else {
+    fileStatus = calculateFileStatusRenamedOrMoved(
+      oldCommit.filePath,
+      newCommit.filePath
+    );
+  }
+
   if (abortSignal.aborted) {
     throw new AbortError();
   }
 
   const git = await plugin.getGit();
-  const diffNumstatResult = await git.diff(numstatArguments);
+  const diffNumstatResult = await git.diffSummary(numstatArguments);
 
-  const parts = diffNumstatResult.split('\t');
-  const addedString = parts[0];
-  const deletedString = parts[1];
+  if (
+    // If the file contents in some two commits are the same, there won't be any git diff output, even if they have different names, so we can't determine exclusively from the diff command output if some file is a binary or not. No diff flag exists that can be passed to fix this.
+    diffNumstatResult.files.length === 0 &&
+    // If the file wasn't renamed, added or deleted, the file is exactly the same in the two commits and there is no new version.
+    fileStatus === DiffFileStatus.Modified
+  ) {
+    return undefined;
+  }
 
-  // Determine if this is a binary file or submodule.
-  const isBinary = addedString === '-' && deletedString === '-';
-
-  // Parse numeric values for text files.
-  const textDiffStats = isBinary
-    ? undefined
-    : parseContentChange({
-        addedStr: newCommit.fileDeleted ? deletedString : addedString,
-        deletedStr: newCommit.fileDeleted ? addedString : deletedString
-      });
+  const textDiffStats =
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    (newCommit.binary ?? diffNumstatResult.files.at(0)!.binary)
+      ? undefined
+      : {
+          baseStats: {
+            additions: newCommit.fileDeleted
+              ? diffNumstatResult.deletions
+              : diffNumstatResult.insertions,
+            deletions: newCommit.fileDeleted
+              ? diffNumstatResult.insertions
+              : diffNumstatResult.deletions
+          }
+        };
   const fileEntry = new FileChangelogEntry({
     commitHash: newCommit.hash,
     fromPathGitRelative: oldCommit?.filePath,

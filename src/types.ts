@@ -138,6 +138,7 @@ export interface LogEntry {
   filePath?: string;
   // Covers a deleted edge-case
   fileDeleted?: boolean;
+  binary?: boolean;
 }
 
 export interface StatEntry {

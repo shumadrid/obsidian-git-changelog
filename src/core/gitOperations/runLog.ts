@@ -103,6 +103,8 @@ export async function runLog({
         : undefined,
       hash: entry.hash,
       fileDeleted,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      binary: filePath ? entry.diff!.files.at(0)!.binary : undefined,
       timezoneAdjustedDate: spacetime(entry.date).goto(timezone)
     });
   }
