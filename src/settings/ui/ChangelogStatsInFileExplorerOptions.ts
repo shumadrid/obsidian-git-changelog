@@ -21,7 +21,7 @@ export class ChangelogStatsInFileExplorerOptions extends GitChangelogSetting {
           const option =
             FileExplorerStats[value as keyof typeof FileExplorerStats];
 
-          this.refreshDisplaySmooth(0);
+          this.refreshDisplayDelayed(0);
 
           const newSettings = this.plugin.settingsClone;
           newSettings.fileExplorerStats = option;

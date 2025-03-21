@@ -49,8 +49,7 @@ export abstract class GitChangelogSetting {
   /**
    * It delays the update of the associated ui state of the conditional setting enabled or disabled state, so that the toggle animation can end its animation smoother.
    */
-  // eslint-disable-next-line no-magic-numbers
-  protected refreshDisplaySmooth(timeout = 80): void {
+  protected refreshDisplayDelayed(timeout = 80): void {
     if (this.settingTab) {
       setTimeout(() => this.settingTab?.display(), timeout);
     }

@@ -39,7 +39,6 @@ export function insertSorted<T>(
   let right = array.length;
 
   while (left < right) {
-    // eslint-disable-next-line no-magic-numbers
     const mid = Math.floor((left + right) / 2);
     if (compareFunction(array[mid], value) < 0) {
       left = mid + 1;
@@ -78,7 +77,7 @@ export function mayTriggerFileMenu({
   source: string;
   view: WorkspaceLeaf;
 }): void {
-  // eslint-disable-next-line eqeqeq, no-magic-numbers
+  // eslint-disable-next-line eqeqeq
   if (event.button == 2) {
     const file = app.vault.getAbstractFileByPath(filePath);
     // eslint-disable-next-line eqeqeq
