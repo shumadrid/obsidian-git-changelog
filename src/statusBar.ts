@@ -6,11 +6,9 @@ import { findFirstCommitBefore } from 'core/gitOperations/findFirstCommitBefore.
 import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
 import { runWorkingDirFileDiff } from 'core/gitOperations/runWorkingDirFileDiff.ts';
 import { MarkdownView } from 'obsidian';
-import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
-import { clearPendingQueueItems } from 'obsidian-dev-utils/obsidian/Queue';
 import { getMeasurementUnit } from 'settings/ui/ChangelogMeasurementUnit.ts';
 import { getStatusBarInterval } from 'settings/ui/StatusBarInterval.ts';
-import { DiffMeasurementUnit } from 'types.ts';
+import { AbortError, DiffMeasurementUnit } from 'types.ts';
 import { getGitRelativeFilePath } from 'Views/helper.ts';
 
 import type GitChangelogPlugin from './main.ts';
@@ -52,8 +50,7 @@ export class StatusBarStats {
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on('editor-change', () => {
-        // Previous operations aren't aborted because this will be triggered often, and the results will lag behind if new calls ones keep getting scheduled and resetting the previous calls before they finish.
-        this.recompute(false);
+        this.recompute();
       })
     );
 
@@ -86,6 +83,9 @@ export class StatusBarStats {
 
   private async updateStats(abortSignal: AbortSignal): Promise<void> {
     try {
+      if (abortSignal.aborted) {
+        throw new AbortError();
+      }
       if (this.plugin.settings.statusBarStats) {
         const result = await this.calculateStatsForActiveFile(
           this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
@@ -102,19 +102,12 @@ export class StatusBarStats {
     }
   }
 
-  private recompute(reset = true): void {
-    // Stop the massive build-up of updateStats() calls when the user is typing
-    clearPendingQueueItems(this.plugin.app);
+  private recompute(): void {
+    const abortSignal = this.taskManager.abortPreviousTasksAndGetSignal();
 
-    const abortSignal = reset
-      ? this.taskManager.abortPreviousTasksAndGetSignal()
-      : this.taskManager.getAbortSignal();
-
-    invokeAsyncSafely(() =>
-      this.taskManager.enqueueAndWait(async () => {
-        await this.updateStats(abortSignal);
-      })
-    );
+    this.taskManager.enqueueSafely(async () => {
+      await this.updateStats(abortSignal);
+    });
   }
 
   private async calculateStatsForActiveFile(
