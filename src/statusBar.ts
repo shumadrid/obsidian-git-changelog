@@ -97,8 +97,11 @@ export class StatusBarStats {
           this.setText('');
         }
       }
-    } catch {
-      this.setText('');
+    } catch (error) {
+      // If the error was an AbortError, don't do anything. Otherwise, remove the status bar stats.
+      if (!(error instanceof AbortError)) {
+        this.setText('');
+      }
     }
   }
 
