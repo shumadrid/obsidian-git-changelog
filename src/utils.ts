@@ -67,32 +67,31 @@ export function isRenamed(file: DiffFile): boolean {
 export function mayTriggerFileMenu({
   app,
   event,
-  filePath,
+  vaultRelativeFilePath,
   source,
   view
 }: {
   app: App;
   event: MouseEvent;
-  filePath: string;
+  vaultRelativeFilePath: string;
   source: string;
   view: WorkspaceLeaf;
 }): void {
   // eslint-disable-next-line eqeqeq
   if (event.button == 2) {
-    const file = app.vault.getAbstractFileByPath(filePath);
+    const file = app.vault.getAbstractFileByPath(vaultRelativeFilePath);
+    const fileMenu = new Menu();
     // eslint-disable-next-line eqeqeq
     if (file == undefined) {
-      const fileMenu = new Menu();
       app.workspace.trigger(
         'obsidian-git:menu',
         fileMenu,
-        filePath,
+        vaultRelativeFilePath,
         source,
         view
       );
       fileMenu.showAtPosition({ x: event.pageX, y: event.pageY });
     } else {
-      const fileMenu = new Menu();
       app.workspace.trigger('file-menu', fileMenu, file, source, view);
       fileMenu.showAtPosition({ x: event.pageX, y: event.pageY });
     }

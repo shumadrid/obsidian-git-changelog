@@ -6,6 +6,7 @@ import type { ReadonlyDeep } from 'type-fest';
 
 import { FileChangelogManager } from 'core/FileChangelogManager.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
+import { addFileMenuItems } from 'menu.ts';
 import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { changelogGenerationSettingsChanged } from 'settings/helper.ts';
@@ -181,6 +182,8 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     });
 
     addCommands(this);
+
+    addFileMenuItems(this);
 
     this.debouncedChangelogSettingsChangedCheck = debounce(
       (

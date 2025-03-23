@@ -97,7 +97,7 @@
         mayTriggerFileMenu({
           app: plugin.app,
           event,
-          filePath: getRelativeVaultPath(),
+          vaultRelativeFilePath: getRelativeVaultPath(),
           source: 'git-source-control',
           view: view.leaf
         });
