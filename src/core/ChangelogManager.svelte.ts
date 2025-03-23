@@ -245,6 +245,10 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     abortSignal: AbortSignal;
     filePath: string | undefined;
   }): Promise<void> {
+    if (abortSignal.aborted) {
+      throw new AbortError();
+    }
+
     // If we are re-computing or initially loading we can't rely on the reserved entries because there aren't any (that are valid).
     if (this.visibleEntries === undefined) {
       await this.retrieveMoreEntries({

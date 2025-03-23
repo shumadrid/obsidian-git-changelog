@@ -269,44 +269,50 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
     newSettings: GitChangelogPluginSettings
   ): void {
-    if (
-      changelogGenerationSettingsChanged({
-        newChangelogSettings: newSettings.changelogGenerationSettings,
-        oldChangelogSettings: oldSettings.changelogGenerationSettings,
-        plugin: this
-      })
-    ) {
-      // The main settings, that trigger recalculation for all stats when they change.
-      this.app.workspace.trigger('git-changelog:generation-settings-changed');
-    } else {
+    try {
       if (
-        this.fileChangelogManager?.generationSettingsChanged(
-          oldSettings,
-          newSettings
-        ) &&
-        this.cachedActiveGitFile
+        changelogGenerationSettingsChanged({
+          newChangelogSettings: newSettings.changelogGenerationSettings,
+          oldChangelogSettings: oldSettings.changelogGenerationSettings,
+          plugin: this
+        })
       ) {
-        this.app.workspace.trigger(
-          'git-changelog:file-changelog-generation-settings-changed'
-        );
+        // The main settings, that trigger recalculation for all stats when they change.
+        this.app.workspace.trigger('git-changelog:generation-settings-changed');
+      } else {
+        if (
+          this.fileChangelogManager?.generationSettingsChanged(
+            oldSettings,
+            newSettings
+          ) &&
+          this.cachedActiveGitFile
+        ) {
+          this.app.workspace.trigger(
+            'git-changelog:file-changelog-generation-settings-changed'
+          );
+        }
+        if (
+          this.statusBarStats &&
+          StatusBarStats.generationSettingsChanged(oldSettings, newSettings) &&
+          this.cachedActiveGitFile
+        ) {
+          this.app.workspace.trigger(
+            'git-changelog:status-bar-settings-changed'
+          );
+        }
+        if (
+          this.vaultChangelogManager?.generationSettingsChanged(
+            oldSettings,
+            newSettings
+          )
+        ) {
+          this.app.workspace.trigger(
+            'git-changelog:vault-changelog-generation-settings-changed'
+          );
+        }
       }
-      if (
-        this.statusBarStats &&
-        StatusBarStats.generationSettingsChanged(oldSettings, newSettings) &&
-        this.cachedActiveGitFile
-      ) {
-        this.app.workspace.trigger('git-changelog:status-bar-settings-changed');
-      }
-      if (
-        this.vaultChangelogManager?.generationSettingsChanged(
-          oldSettings,
-          newSettings
-        )
-      ) {
-        this.app.workspace.trigger(
-          'git-changelog:vault-changelog-generation-settings-changed'
-        );
-      }
+    } catch {
+      /* Empty */
     }
   }
 
