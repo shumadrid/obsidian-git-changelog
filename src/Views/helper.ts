@@ -1,11 +1,10 @@
 import type { ItemView } from 'obsidian';
 
 import { MarkdownView, TFile } from 'obsidian';
+import { getNewLeaf } from 'utils.ts';
 
 import type GitChangelogPlugin from '../main.ts';
 import type { DiffFile } from '../types.ts';
-
-import { getNewLeaf } from '../utils.ts';
 
 export function changelogFileClick({
   aReference,
@@ -27,10 +26,16 @@ export function changelogFileClick({
   }
 }
 
-export function fileOpenableInObsidian(
-  relativeVaultPath: string,
-  plugin: GitChangelogPlugin
-): boolean {
+export function fileOpenableInObsidian({
+  relativeVaultPath,
+  plugin
+}: {
+  relativeVaultPath?: string;
+  plugin: GitChangelogPlugin;
+}): boolean {
+  if (!relativeVaultPath) {
+    return false;
+  }
   // This isn't perfect because some old file path could match an unrelated file's current path in the current state of the vault.
   const existingFile =
     plugin.app.vault.getAbstractFileByPath(relativeVaultPath);

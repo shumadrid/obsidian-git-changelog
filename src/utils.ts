@@ -3,7 +3,7 @@ import type { App, WorkspaceLeaf } from 'obsidian';
 import type { DiffFile, TextDiffStats } from 'types.ts';
 
 // Import * as cssColorConverter from "css-color-converter";
-import { Keymap, Menu } from 'obsidian';
+import { Keymap } from 'obsidian';
 import { DiffFileStatus } from 'types.ts';
 
 export function getFileNameFromPath({
@@ -62,40 +62,6 @@ export function isRenamed(file: DiffFile): boolean {
     file.status === DiffFileStatus.Renamed ||
     file.status === DiffFileStatus.RenamedAndMoved
   );
-}
-
-export function mayTriggerFileMenu({
-  app,
-  event,
-  vaultRelativeFilePath,
-  source,
-  view
-}: {
-  app: App;
-  event: MouseEvent;
-  vaultRelativeFilePath: string;
-  source: string;
-  view: WorkspaceLeaf;
-}): void {
-  // eslint-disable-next-line eqeqeq
-  if (event.button == 2) {
-    const file = app.vault.getAbstractFileByPath(vaultRelativeFilePath);
-    const fileMenu = new Menu();
-    // eslint-disable-next-line eqeqeq
-    if (file == undefined) {
-      app.workspace.trigger(
-        'obsidian-git:menu',
-        fileMenu,
-        vaultRelativeFilePath,
-        source,
-        view
-      );
-      fileMenu.showAtPosition({ x: event.pageX, y: event.pageY });
-    } else {
-      app.workspace.trigger('file-menu', fileMenu, file, source, view);
-      fileMenu.showAtPosition({ x: event.pageX, y: event.pageY });
-    }
-  }
 }
 
 export function parseContentChange({

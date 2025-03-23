@@ -2,9 +2,11 @@
   import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type GitChangelogPlugin from 'main.ts';
 
+  import { mayTriggerChangelogMenu } from 'menu.ts';
   import { slide } from 'svelte/transition';
   import { FilesSummariesDisplayMode } from 'types.ts';
   import { composeVersionTitle } from 'Views/formatters.ts';
+  import { VaultChangelogView } from 'Views/VaultChangelog/VaultChangelog.ts';
 
   import DiffStatsComponent from '../../components/DiffStats.svelte';
   import FileComponent from './File.svelte';
@@ -39,6 +41,24 @@
     onclick={/* eslint-disable-next-line @typescript-eslint/explicit-function-return-type */
     () => {
       version.isCollapsed = !version.isCollapsed;
+    }}
+    onauxclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    (event) => {
+      event.stopPropagation();
+      // eslint-disable-next-line eqeqeq
+      if (event.button == 2) {
+        const view =
+          plugin.app.workspace.getActiveViewOfType(VaultChangelogView);
+        if (view) {
+          mayTriggerChangelogMenu({
+            event,
+            commitHash: version.commitHash,
+            // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
+            view: view.leaf,
+            plugin
+          });
+        }
+      }
     }}
   >
     <div

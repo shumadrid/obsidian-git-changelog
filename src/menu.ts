@@ -1,33 +1,212 @@
 import type GitChangelogPlugin from 'main.ts';
-import type { MenuItem } from 'obsidian';
+import type { MenuItem, WorkspaceLeaf } from 'obsidian';
 
-import { PLUGIN_NAME_SENTENCE_CASE } from 'constants.ts';
-import { TFolder } from 'obsidian';
+import { COPY_COMMIT_HASH_ICON, PLUGIN_NAME_SENTENCE_CASE } from 'constants.ts';
+import { Menu, TFolder } from 'obsidian';
 import {
   convertPathToGitIgnoreRule,
   parseGitIgnoreLine
 } from 'settings/ui/ExcludeFilesAndFolders.ts';
+import { fileOpenableInObsidian } from 'Views/helper.ts';
 import { VAULT_CHANGELOG_VIEW_CONFIG } from 'Views/VaultChangelog/VaultChangelog.ts';
 
-export async function addExcludeFilesAndFoldersItem({
-  path,
-  isFolder,
+export function addFileMenuItems(plugin: GitChangelogPlugin): void {
+  plugin.registerEvent(
+    plugin.app.workspace.on('file-menu', (menu, file) => {
+      menu.addItem((item) => {
+        const gitRelativePath = plugin
+          .getGitPlugin()
+          .gitManager.getRelativeRepoPath(file.path, true);
+
+        addExcludeMenuItem({
+          item,
+          isFolder: file instanceof TFolder,
+          gitRelativePath,
+          plugin
+        });
+      });
+    })
+  );
+
+  plugin.registerEvent(
+    plugin.app.workspace.on(
+      'git-changelog:menu',
+      (menu, gitRelativePath, commitHash) => {
+        handleChangelogViewContextMenu({
+          menu,
+          gitRelativePath,
+          commitHash,
+          plugin
+        });
+      }
+    )
+  );
+}
+
+export function mayTriggerChangelogMenu({
+  event,
+  gitRelativePath,
+  commitHash,
+  view,
   plugin
 }: {
-  path: string;
-  isFolder: boolean;
+  event: MouseEvent;
+  gitRelativePath?: string;
+  commitHash?: string;
+  view: WorkspaceLeaf;
   plugin: GitChangelogPlugin;
-}): Promise<void> {
-  const gitIgnoreRule = composeAbsoluteGitIgnoreRuleFromPath({
-    path,
-    isFolder
-  });
+}): void {
+  // eslint-disable-next-line eqeqeq
+  if (event.button == 2) {
+    const fileMenu = new Menu();
+    let showFileMenu = false;
+    // Check if it's a file right click.
+    if (gitRelativePath !== undefined) {
+      const vaultRelativePath = plugin
+        .getGitPlugin()
+        .gitManager.getRelativeVaultPath(gitRelativePath);
+      const tFile = plugin.app.vault.getAbstractFileByPath(vaultRelativePath);
 
-  const newSettings = plugin.settingsClone;
-  newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines.push(
-    gitIgnoreRule
-  );
-  await plugin.saveSettings(newSettings);
+      // If the target file is a file that currently exists in the vault, open the usual file menu.
+      showFileMenu = fileOpenableInObsidian({
+        relativeVaultPath: tFile?.path,
+        plugin
+      });
+      if (showFileMenu) {
+        plugin.app.workspace.trigger('file-menu', fileMenu, tFile, view);
+      }
+    }
+
+    // Append the git-changelog menu items to the file menu.
+    plugin.app.workspace.trigger(
+      'git-changelog:menu',
+      fileMenu,
+      // Skip adding the "Git changelog: Exclude" item again if the usual file menu is shown.
+      showFileMenu ? undefined : gitRelativePath,
+      commitHash
+    );
+    fileMenu.showAtPosition({ x: event.pageX, y: event.pageY });
+  }
+}
+
+export function addExcludeMenuItem({
+  item,
+  isFolder,
+  plugin,
+  gitRelativePath
+}: {
+  item: MenuItem;
+  isFolder: boolean;
+  gitRelativePath: string;
+  plugin: GitChangelogPlugin;
+}): void {
+  // The ExcludeFilesAndFolders rules are applied relative to the git repo.
+
+  // Only check absolute rules, we don't want to modify any relative rules that also affect other files
+  const lineNumber = isAbsolutePathInExcludeFilesAndFolders({
+    isFolder,
+    gitRelativePath,
+    plugin
+  });
+  const ruleAlreadyExists = lineNumber !== -1;
+  const actionTitle = ruleAlreadyExists ? 'reinclude' : 'exclude';
+
+  item
+    .setSection('action')
+    .setTitle(`${PLUGIN_NAME_SENTENCE_CASE}: ${actionTitle}`)
+    .setIcon(VAULT_CHANGELOG_VIEW_CONFIG.icon)
+    .onClick(async () => {
+      await (ruleAlreadyExists
+        ? removeExcludeFilesAndFoldersItem(lineNumber, plugin)
+        : addExcludeFilesAndFoldersItem({
+            gitRelativePath,
+            isFolder,
+            plugin
+          }));
+    });
+}
+
+export function handleChangelogViewContextMenu({
+  menu,
+  gitRelativePath,
+  commitHash,
+  plugin
+}: {
+  menu: Menu;
+  gitRelativePath?: string;
+  commitHash?: string;
+  plugin: GitChangelogPlugin;
+}): void {
+  if (gitRelativePath) {
+    menu.addItem((item) => {
+      addExcludeMenuItem({
+        item,
+        isFolder: false,
+        gitRelativePath,
+        plugin
+      });
+    });
+  }
+
+  if (commitHash) {
+    menu.addItem((item) => {
+      item
+        .setTitle('Copy commit hash')
+        .setSection('action')
+        .setIcon(COPY_COMMIT_HASH_ICON)
+        .onClick(async () => {
+          await navigator.clipboard.writeText(commitHash);
+          plugin.displayNotice(
+            `Commit hash ${commitHash} copied to clipboard.`,
+            // eslint-disable-next-line no-magic-numbers
+            1000
+          );
+        });
+    });
+  }
+}
+
+export function composeAbsoluteGitIgnoreRuleFromPath({
+  isFolder,
+  gitRelativePath
+}: {
+  isFolder: boolean;
+  gitRelativePath: string;
+}): string {
+  // Add a leading slash to set the rule as absolute from root, so it only excludes that exact path
+  let composedPath = '/';
+
+  composedPath += gitRelativePath;
+
+  // Add an explicit folder rule, so that the same path doesn't also apply for files with that same name
+  if (isFolder) {
+    composedPath += '/';
+  }
+
+  return convertPathToGitIgnoreRule(composedPath);
+}
+
+export function isAbsolutePathInExcludeFilesAndFolders({
+  isFolder,
+  gitRelativePath,
+  plugin
+}: {
+  isFolder: boolean;
+  gitRelativePath: string;
+  plugin: GitChangelogPlugin;
+}): number {
+  const gitIgnoreAbsoluteRule = composeAbsoluteGitIgnoreRuleFromPath({
+    isFolder,
+    gitRelativePath
+  });
+  const existingLines =
+    plugin.settingsClone.vaultChangelogGenerationSettings
+      .excludeFilesAndFoldersLines;
+
+  // Trim unescaped trailing white space from existing lines, since it gets trimmed by git anyways.
+  // By doing this we won't miss already existing lines that only differ in trailing white space.
+  const existingRules = existingLines.map((line) => parseGitIgnoreLine(line));
+  return existingRules.indexOf(gitIgnoreAbsoluteRule);
 }
 
 export async function removeExcludeFilesAndFoldersItem(
@@ -42,112 +221,24 @@ export async function removeExcludeFilesAndFoldersItem(
   await plugin.saveSettings(newSettings);
 }
 
-export function composeAbsoluteGitIgnoreRuleFromPath({
+export async function addExcludeFilesAndFoldersItem({
+  gitRelativePath,
   isFolder,
-  path
-}: {
-  isFolder: boolean;
-  path: string;
-}): string {
-  // Add a leading slash to set the rule as absolute from root, so it only excludes that exact path
-  let composedPath = '/';
-
-  composedPath += path;
-
-  // Add an explicit folder rule, so that the same path doesn't also apply for files with that same name
-  if (isFolder) {
-    composedPath += '/';
-  }
-
-  return convertPathToGitIgnoreRule(composedPath);
-}
-
-export function isAbsolutePathInExcludeFilesAndFolders({
-  isFolder,
-  path,
   plugin
 }: {
+  gitRelativePath: string;
   isFolder: boolean;
-  path: string;
   plugin: GitChangelogPlugin;
-}): number {
-  const gitIgnoreAbsoluteRule = composeAbsoluteGitIgnoreRuleFromPath({
-    isFolder,
-    path
+}): Promise<void> {
+  const gitIgnoreRule = composeAbsoluteGitIgnoreRuleFromPath({
+    gitRelativePath,
+    isFolder
   });
-  const existingLines =
-    plugin.settingsClone.vaultChangelogGenerationSettings
-      .excludeFilesAndFoldersLines;
 
-  // Trim unescaped trailing white space from existing lines, since it gets trimmed by git anyways.
-  // By doing this we won't miss already existing lines that only differ in trailing white space.
-  const existingRules = existingLines.map((line) => parseGitIgnoreLine(line));
-  return existingRules.indexOf(gitIgnoreAbsoluteRule);
-}
-
-export function addFileMenuItems(plugin: GitChangelogPlugin): void {
-  plugin.registerEvent(
-    plugin.app.workspace.on('file-menu', (menu, file) => {
-      menu.addItem((item) => {
-        addExcludeMenuItem({
-          item,
-          isFolder: file instanceof TFolder,
-          vaultRelativePath: file.path,
-          plugin
-        });
-      });
-    })
+  const newSettings = plugin.settingsClone;
+  newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines.push(
+    gitIgnoreRule
   );
 
-  plugin.registerEvent(
-    plugin.app.workspace.on('obsidian-git:menu', (menu, path) => {
-      menu.addItem((item) => {
-        addExcludeMenuItem({
-          item,
-          isFolder: false,
-          vaultRelativePath: path,
-          plugin
-        });
-      });
-    })
-  );
-}
-
-export function addExcludeMenuItem({
-  item,
-  isFolder,
-  plugin,
-  vaultRelativePath
-}: {
-  item: MenuItem;
-  isFolder: boolean;
-  vaultRelativePath: string;
-  plugin: GitChangelogPlugin;
-}): void {
-  // The ExcludeFilesAndFolders rules are applied relative to the git repo.
-  const path = plugin
-    .getGitPlugin()
-    .gitManager.getRelativeRepoPath(vaultRelativePath, true);
-  // Only check absolute rules, we don't want to modify any relative rules that also affect other files
-  const lineNumber = isAbsolutePathInExcludeFilesAndFolders({
-    isFolder,
-    path,
-    plugin
-  });
-  const ruleAlreadyExists = lineNumber !== -1;
-  const actionTitle = ruleAlreadyExists ? 'Reinclude' : 'Exclude';
-
-  item
-    .setSection('action')
-    .setTitle(`${PLUGIN_NAME_SENTENCE_CASE}: ${actionTitle}`)
-    .setIcon(VAULT_CHANGELOG_VIEW_CONFIG.icon)
-    .onClick(async () => {
-      await (ruleAlreadyExists
-        ? removeExcludeFilesAndFoldersItem(lineNumber, plugin)
-        : addExcludeFilesAndFoldersItem({
-            path,
-            isFolder,
-            plugin
-          }));
-    });
+  await plugin.saveSettings(newSettings);
 }

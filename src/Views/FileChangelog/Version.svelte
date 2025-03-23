@@ -3,9 +3,11 @@
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 
   import { OPEN_FILE_ICON } from 'constants.ts';
+  import { mayTriggerChangelogMenu } from 'menu.ts';
   import { setIcon } from 'obsidian';
   import { DiffFileStatus } from 'types.ts';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
+  import { FileChangelogView } from 'Views/FileChangelog/FileChangelog.ts';
   import { composeAriaLabel, composeVersionTitle } from 'Views/formatters.ts';
   import {
     canOpenInDiffView,
@@ -87,6 +89,25 @@
   aria-label={composeAriaLabel(entry)}
   data-tooltip-position="bottom"
   onclick={primaryClick}
+  onauxclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+  (event) => {
+    event.stopPropagation();
+    // eslint-disable-next-line eqeqeq
+    if (event.button == 2) {
+      const view = plugin.app.workspace.getActiveViewOfType(FileChangelogView);
+      if (view) {
+        mayTriggerChangelogMenu({
+          event,
+          // Since it isn't a live file, unless its the latest version.
+          gitRelativePath: index === 0 ? entry.pathGitRelative : undefined,
+          commitHash: entry.commitHash,
+          // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
+          view: view.leaf,
+          plugin
+        });
+      }
+    }
+  }}
 >
   <div class="git-changelog-file-name-container">
     <div

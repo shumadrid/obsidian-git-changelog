@@ -62,25 +62,6 @@ declare module 'obsidian' {
       callback: () => void,
       context?: unknown
     ): EventRef;
-
-    on(
-      name: 'obsidian-git:menu',
-      callback: (
-        menu: Menu,
-        path: string,
-        source: string,
-        leaf?: WorkspaceLeaf
-      ) => unknown,
-      context?: unknown
-    ): EventRef;
     trigger(name: string, ...data: unknown[]): void;
-
-    trigger(
-      name: 'obsidian-git:menu',
-      menu: Menu,
-      path: string,
-      source: string,
-      leaf?: WorkspaceLeaf
-    ): void;
   }
 }

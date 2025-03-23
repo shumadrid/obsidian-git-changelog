@@ -4,8 +4,8 @@
 
   import { OPEN_FILE_ICON } from 'constants.ts';
   import { isFileRenamedOrMoved } from 'core/gitOperations/helper.ts';
+  import { mayTriggerChangelogMenu } from 'menu.ts';
   import { setIcon } from 'obsidian';
-  import { mayTriggerFileMenu } from 'utils.ts';
   import {
     canOpenInDiffView,
     changelogFileClick,
@@ -69,7 +69,10 @@
       .gitManager.getRelativeVaultPath(file.pathGitRelative);
   }
 
-  const fileOpenable = fileOpenableInObsidian(getRelativeVaultPath(), plugin);
+  const fileOpenable = fileOpenableInObsidian({
+    relativeVaultPath: getRelativeVaultPath(),
+    plugin
+  });
 
   function openVaultFile(event: MouseEvent): void {
     event.stopPropagation();
@@ -94,12 +97,13 @@
     if (event.button == 2) {
       const view = plugin.app.workspace.getActiveViewOfType(VaultChangelogView);
       if (view) {
-        mayTriggerFileMenu({
-          app: plugin.app,
+        mayTriggerChangelogMenu({
           event,
-          vaultRelativeFilePath: getRelativeVaultPath(),
-          source: 'git-source-control',
-          view: view.leaf
+          gitRelativePath: file.pathGitRelative,
+          commitHash: currentVersionCommitHash,
+          // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
+          view: view.leaf,
+          plugin
         });
       }
     } else {

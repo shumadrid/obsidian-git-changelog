@@ -41,8 +41,15 @@ declare module 'obsidian' {
       callback: () => void,
       context?: unknown
     ): EventRef;
-
-    // BUG:? Read directly from settings instead of passing as arguments?
+    on(
+      name: 'git-changelog:menu',
+      callback: (
+        menu: Menu,
+        gitRelativePath?: string,
+        commitHash?: string
+      ) => void,
+      context?: unknown
+    ): EventRef;
     trigger(
       name:
         | 'git-changelog:active-git-file-changed'
@@ -50,6 +57,12 @@ declare module 'obsidian' {
         | 'git-changelog:generation-settings-changed'
         | 'git-changelog:status-bar-settings-changed'
         | 'git-changelog:vault-changelog-generation-settings-changed'
+    ): void;
+    trigger(
+      name: 'git-changelog:menu',
+      menu: Menu,
+      gitRelativePath?: string,
+      commitHash?: string
     ): void;
   }
 }
