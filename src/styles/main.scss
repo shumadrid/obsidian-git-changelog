@@ -97,9 +97,10 @@
 // Layout components
 .git-changelog-text-area {
   width: 100%;
-  max-width: 500px;
-  min-width: 250px;
-  min-height: 5em;
+  max-width: 480px;
+  min-width: 260px;
+  min-height: 6em;
+  height: auto;
 }
 
 .git-changelog-view {

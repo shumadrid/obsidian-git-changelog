@@ -72,7 +72,9 @@ export async function runRepoDiff({
     throw new AbortError();
   }
 
-  const pathSpec = convertGitIgnoreToPathspec(plugin);
+  const pathSpec = convertGitIgnoreToPathspec(
+    plugin.settings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines
+  );
 
   const numstatArguments = [
     '--numstat',

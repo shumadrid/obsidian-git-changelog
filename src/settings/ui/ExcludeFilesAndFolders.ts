@@ -1,6 +1,6 @@
 // Import { compile } from "@gerhobbelt/gitignore-parser";
 
-import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
+import type { ReadonlyDeep } from 'type-fest';
 
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 import { DEFAULT_SETTINGS } from 'settings/settings.ts';
@@ -26,13 +26,17 @@ export class ExcludeFilesAndFolders extends GitChangelogSetting {
       .addTextArea((text) => {
         text
           .setValue(
-            this.plugin.settings.vaultChangelogGenerationSettings
-              .gitDiffIgnore ??
-              DEFAULT_SETTINGS.vaultChangelogGenerationSettings.gitDiffIgnore
+            joinExcludeItems(
+              this.plugin.settingsClone.vaultChangelogGenerationSettings
+                .excludeFilesAndFoldersLines ??
+                DEFAULT_SETTINGS.vaultChangelogGenerationSettings
+                  .excludeFilesAndFoldersLines
+            )
           )
           .onChange((value) => {
             const newSettings = this.plugin.settingsClone;
-            newSettings.vaultChangelogGenerationSettings.gitDiffIgnore = value;
+            newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines =
+              splitExcludeItems(value);
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.plugin.saveSettings(newSettings);
           });
@@ -41,78 +45,46 @@ export class ExcludeFilesAndFolders extends GitChangelogSetting {
   }
 }
 
-/**
- * Doesn't work properly, using same gitignore for all submodules for now
- */
-export function adjustGitignoreForSubmodule(
-  gitignoreContent: string,
-  submodulePath: string
-): string {
-  // Ensure submodulePath ends with a slash for matching purposes.
-  if (!submodulePath.endsWith('/')) {
-    submodulePath += '/';
-  }
+export function convertPathToGitIgnoreRule(path: string): string {
+  // First escape special characters (except whitespace)
+  const escaped = path.replaceAll(/(?<temp1>[\\!#*?[\]])/g, String.raw`\$1`);
 
-  // Regex for detecting glob characters.
-  const globRegex = /[*?[\]]/;
+  // Then escape each trailing whitespace character individually, because git trims trailing whitespace
+  // This scenario is possible if Obsidian's "Detect all file extensions" setting is turned on.
+  return escaped.replaceAll(/\s(?=\s*$)/g, String.raw`\ `);
+}
 
-  const lines = gitignoreContent.split('\n');
-  const adjustedLines: string[] = [];
+export function joinExcludeItems(items: string[]): string {
+  return items.join('\n');
+}
 
-  for (const line of lines) {
-    const trimmed = line.trim();
+export function splitExcludeItems(items: string): string[] {
+  return items.split('\n');
+}
 
-    // Keep blank lines and comments unchanged.
-    if (trimmed === '' || trimmed.startsWith('#')) {
-      adjustedLines.push(line);
-      continue;
-    }
-
-    let isNegation = false;
-    let rule = trimmed;
-
-    // Handle negation: remove the leading "!" for processing.
-    if (rule.startsWith('!')) {
-      isNegation = true;
-      rule = rule.slice(1).trim();
-    }
-
-    // If the rule explicitly starts with the submodule path,
-    // Remove that prefix so it is relative to the submodule.
-    if (rule.startsWith(submodulePath)) {
-      const adjustedRule = rule.slice(submodulePath.length);
-      adjustedLines.push(isNegation ? `!${adjustedRule}` : adjustedRule);
-    } else if (globRegex.test(rule)) {
-      // If the rule doesn't start with the submodule path...
-      // - If it is hardcoded (no glob characters), drop it.
-      // - If it contains globs, leave it intact.
-      adjustedLines.push(line); // Leave the original rule unchanged.
-      // Else: hardcoded rule outside the submodule is omitted.
-    }
-  }
-
-  // Remove any empty lines which might have resulted from omitting rules.
-  return adjustedLines.filter((l) => l.trim() !== '').join('\n');
+// Trim trailing spaces that aren't preceded by a backslash before you apply gitignore to pathspec transformations.
+export function parseGitIgnoreLine(gitIgnoreLine: string): string {
+  // This regex will match trailing spaces that are not preceded by a backslash and stop trimming when a backslash is encountered
+  return gitIgnoreLine
+    .replace(/(?<!\\)\s+$/, '')
+    .replace(/\\\s*$/, String.raw`\ `);
 }
 
 export function convertGitIgnoreToPathspec(
-  plugin: GitChangelogPlugin
+  gitIgnoreRules: ReadonlyDeep<string[]>
 ): string[] {
-  const gitDiffIgnore =
-    plugin.settings.vaultChangelogGenerationSettings.gitDiffIgnore;
   try {
     // Always exclude .git directory
     const excludes: string[] = [':(exclude,glob)**/.git/**'];
-    const includes: string[] = [];
 
-    for (const line of gitDiffIgnore
-      .split('\n')
-      .map((diffLine) => diffLine.trim())) {
-      if (!(isValidGitIgnoreRule(line) && !line.startsWith('!'))) {
+    for (const line of gitIgnoreRules.map((element) =>
+      parseGitIgnoreLine(element)
+    )) {
+      if (!isValidGitIgnoreRule(line) || line.startsWith('!')) {
         continue;
       }
 
-      const formatted = formatGitIgnoreToPathspec(line);
+      const formatted = convertGitIgnoreRuleToPathspec(line);
 
       // Handle patterns differently based on their format:
       if (line.endsWith('/*')) {
@@ -131,45 +103,35 @@ export function convertGitIgnoreToPathspec(
       }
     }
 
-    return [...excludes, ...includes];
-  } catch (error) {
-    plugin.consoleDebug(`Error converting gitignore to pathspec: ${error}`);
+    return excludes;
+  } catch {
     return [];
   }
 }
 
-export function isValidGitIgnoreRule(rule: string): boolean {
-  if (!rule || rule.trim().length === 0) {
-    return false;
-  }
-  if (rule.startsWith('#')) {
-    return false;
-  }
-
-  // Strip leading negation if present
-  const patternToCheck = rule.startsWith('!') ? rule.slice(1) : rule;
-  const parts = patternToCheck.split('\\');
-  for (let index = 0; index < parts.length - 1; index++) {
-    if (/\s/.test(parts[index])) {
-      return false;
-    }
-  }
-  if (patternToCheck.includes('//') || patternToCheck.includes('**/**')) {
+export function isValidGitIgnoreRule(parsedGitIgnoreLine: string): boolean {
+  // Empty lines are not valid rules
+  if (!parsedGitIgnoreLine || parsedGitIgnoreLine.trim().length === 0) {
     return false;
   }
 
-  // Quick check for square bracket balance
-  const openBrackets = (patternToCheck.match(/\[/g) ?? []).length;
-  const closeBrackets = (patternToCheck.match(/\]/g) ?? []).length;
-  if (openBrackets !== closeBrackets) {
+  // Comments are not valid rules
+  if (parsedGitIgnoreLine.startsWith('#')) {
+    return false;
+  }
+
+  if (
+    parsedGitIgnoreLine.includes('//') ||
+    parsedGitIgnoreLine.includes('**/**')
+  ) {
     return false;
   }
 
   // Hardcoded checking for problematic patterns
   if (
-    /^[./]*$/.test(rule) || // Matches '.', '..', '/', './', '../', etc.
-    rule === '/' || // Root directory
-    /^\.{2,}\/.*$/.test(rule) // Anything starting with multiple dots and slash
+    /^[./]*$/.test(parsedGitIgnoreLine) || // Matches '.', '..', '/', './', '../', etc.
+    parsedGitIgnoreLine === '/' || // Root directory
+    /^\.{2,}\/.*$/.test(parsedGitIgnoreLine) // Anything starting with multiple dots and slash
   ) {
     return false;
   }
@@ -177,29 +139,31 @@ export function isValidGitIgnoreRule(rule: string): boolean {
   return true;
 }
 
-function formatGitIgnoreToPathspec(pattern: string): string {
-  pattern = pattern.trim();
-
+// Works well for the usual cases. Doesn't try to handle all edge cases yet.
+function convertGitIgnoreRuleToPathspec(parsedGitIgnoreLine: string): string {
   // Handle root-relative paths
   let rootRelative = false;
-  if (pattern.startsWith('/')) {
+  if (parsedGitIgnoreLine.startsWith('/')) {
     rootRelative = true;
-    pattern = pattern.slice(1);
+    parsedGitIgnoreLine = parsedGitIgnoreLine.slice(1);
   }
 
   // For non-root patterns, prefix with **/ for a recursive match
   if (
     !rootRelative &&
-    !pattern.startsWith('*/') &&
-    !pattern.startsWith('**/')
+    !parsedGitIgnoreLine.startsWith('*/') &&
+    !parsedGitIgnoreLine.startsWith('**/')
   ) {
-    pattern = `**/${pattern}`;
+    parsedGitIgnoreLine = `**/${parsedGitIgnoreLine}`;
   }
 
   // If the pattern ends with a slash, add '**' for directory contents
-  if (pattern.endsWith('/') && !pattern.endsWith('*/')) {
-    pattern += '**';
+  if (
+    parsedGitIgnoreLine.endsWith('/') &&
+    !parsedGitIgnoreLine.endsWith('*/')
+  ) {
+    parsedGitIgnoreLine += '**';
   }
 
-  return pattern;
+  return parsedGitIgnoreLine;
 }

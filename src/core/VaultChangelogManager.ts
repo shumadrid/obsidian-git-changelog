@@ -12,6 +12,7 @@ import {
 } from 'constants.ts';
 import { ChangelogManager } from 'core/ChangelogManager.svelte.ts';
 import { runRepoDiff } from 'core/gitOperations/runRepoDiff.ts';
+import { deepEqual } from 'obsidian-dev-utils/Object';
 import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 import { validateChangelogInterval } from 'settings/validation/changelogInterval.ts';
 
@@ -56,8 +57,11 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     newSettings: GitChangelogPluginSettings
   ): boolean {
     if (
-      oldSettings.vaultChangelogGenerationSettings.gitDiffIgnore !==
-      newSettings.vaultChangelogGenerationSettings.gitDiffIgnore
+      !deepEqual(
+        oldSettings.vaultChangelogGenerationSettings
+          .excludeFilesAndFoldersLines,
+        newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines
+      )
     ) {
       return true;
     }
