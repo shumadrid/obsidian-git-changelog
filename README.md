@@ -2,6 +2,8 @@
 
 A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to display dynamic changelogs in your sidebar. Also usable as a practical data loss monitoring tool.
 
+![Showcase](.github/showcase.gif)
+
 ## Installation
 
 To install the plugin, follow these steps:
@@ -36,6 +38,13 @@ The plugin is NOT yet available in [the official Community Plugins repository](h
   But this setting is useful if you want to keep some files in your repository but exclude them from appearing in the vault changelog.
 
   Common examples for this: `.trash` and `.obsidian` folders, `.canvas` files, or syncing service conflict files that can clutter the changelog stats.
+
+  Also use this setting to filter files and folders that already exist in previous commits, since specifying files in .gitignore doesn't remove them from previous commits.
+
+  **Context menu integration:** To exclude a file or folder, just right-click on it inside the File explorer and select "Git changelog: Exclude" from the context menu, no need to manually define paths.
+
+  > [!NOTE]
+  > For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
 
 ![Vault Changelog View](.github/vault-changelog-view.webp)
 
@@ -91,6 +100,8 @@ For example, if you add a block of text, delete it, re-add it, then delete it ag
 This is because this plugin only compares neighboring versions (intervals) directly, and if a block of text didn't exist in the previous interval and is also absent in the latest interval, zero changes have occurred.
 
 Consequently, if you add text that gets lost within the same interval, you can detect this data loss **not** by seeing a high 'lines deleted' count, but by noticing a lack of expected additions.
+
+A "Copy commit hash" context menu option is provided so that you can further investigate the commit tied to some suspicious version.
 
 If some lost data was never committed, it won't be recoverable by Git. So it's recommended to configure a frequent (< 5 minutes) auto-commit interval (no need to manually stage and commit files).
 
