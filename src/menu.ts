@@ -109,7 +109,7 @@ export function addExcludeMenuItem({
     plugin
   });
   const ruleAlreadyExists = lineNumber !== -1;
-  const actionTitle = ruleAlreadyExists ? 'reinclude' : 'exclude';
+  const actionTitle = ruleAlreadyExists ? 'Reinclude' : 'Exclude';
 
   item
     .setSection('action')

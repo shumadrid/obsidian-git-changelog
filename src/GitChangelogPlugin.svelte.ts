@@ -105,7 +105,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
 
   // eslint-disable-next-line no-magic-numbers
   public displayNotice(message: string, timeout: number = 3 * 1000): void {
-    new Notice(`${this.manifest.name}\n${message}`, timeout);
+    new Notice(`${this.manifest.name}:\n${message}`, timeout);
   }
 
   public async getGit(): Promise<SimpleGit> {

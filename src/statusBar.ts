@@ -20,6 +20,7 @@ export class StatusBarStats {
     public taskManager: TaskManager
   ) {
     // Initialize immediately
+    this.setText('+... -...');
     this.recompute();
 
     // It doesn't listen to obsidian-git:head-change event because it always compares the working directory to some past commit anyway.
@@ -35,6 +36,9 @@ export class StatusBarStats {
 
     this.plugin.registerEvent(
       this.plugin.app.workspace.on('file-open', () => {
+        // Set loading state
+        this.setText('+... -...');
+        // Then schedule a recompute
         this.recompute();
       })
     );
@@ -159,7 +163,7 @@ export class StatusBarStats {
       });
 
       if (fileIsGitIgnored) {
-        return;
+        return 'In .gitignore';
       }
       const measurementUnit = getMeasurementUnit(
         this.plugin.settings.changelogGenerationSettings
