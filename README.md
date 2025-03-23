@@ -43,8 +43,8 @@ The plugin is NOT yet available in [the official Community Plugins repository](h
 
   **Context menu integration:** To exclude a file or folder, just right-click on it inside the File explorer and select "Git changelog: Exclude" from the context menu, no need to manually define paths.
 
-  > [!NOTE]
-  > For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
+> [!NOTE]
+> For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
 
 ![Vault Changelog View](.github/vault-changelog-view.webp)
 
