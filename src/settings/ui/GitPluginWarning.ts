@@ -4,8 +4,7 @@ import type { Setting } from 'obsidian';
 import { compareVersions } from 'compare-versions';
 import {
   MAX_TESTED_GIT_PLUGIN_VERSION,
-  MIN_COMPATIBLE_GIT_PLUGIN_VERSION,
-  PLUGIN_NAME
+  MIN_COMPATIBLE_GIT_PLUGIN_VERSION
 } from 'constants.ts';
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 import { GitPluginState } from 'types.ts';
@@ -33,7 +32,7 @@ export class GitPluginWarning extends GitChangelogSetting {
       }
       default: {
         desc = createFragment((fragment) => {
-          fragment.appendText(`⚠️ ${PLUGIN_NAME} requires the `);
+          fragment.appendText(`⚠️ This plugin requires the `);
           fragment.createEl('a', {
             href: 'https://github.com/Vinzent03/obsidian-git',
             text: 'Obsidian Git'

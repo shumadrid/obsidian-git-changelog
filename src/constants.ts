@@ -1,4 +1,6 @@
 export const PLUGIN_NAME = 'Git Changelog';
+export const PLUGIN_NAME_SENTENCE_CASE =
+  PLUGIN_NAME.charAt(0).toUpperCase() + PLUGIN_NAME.slice(1).toLowerCase();
 export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
 export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.1';
 
