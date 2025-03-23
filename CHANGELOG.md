@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 0.3.0
+
+### Features
+
+- Add "Copy commit hash" context menu item.
+- Add "Git changelog: Exclude/Reinclude" context menu item.
+
+### Bug Fixes
+
+- Show loading state when status bar stats are computing.
+- Improve ExcludeFilesAndFolders parsing logic.
+- Fix faulty status bar's queue logic that was sabotaging other tasks.
+- Revert faulty "is binary file" check.
+
 ## 0.2.1
 
 ### Bug Fixes
