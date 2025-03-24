@@ -81,6 +81,7 @@ export async function runRepoDiff({
     `-l${getRenameLimit(plugin.settings.changelogGenerationSettings)}`,
     `--find-renames=${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`,
     '--color-moved=no',
+    // Don't use empty files as rename candidates. If you delete any empty file and add a new empty file, that file will be considered a rename unless this flag is used.
     '--no-rename-empty',
     '-z'
   ];
