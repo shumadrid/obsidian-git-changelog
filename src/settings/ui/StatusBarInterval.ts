@@ -29,7 +29,7 @@ export class StatusBarInterval extends GitChangelogSetting {
             this.plugin.saveSettings(newSettings);
           });
 
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           settingsProperty: 'statusBarInterval',
           text
         });

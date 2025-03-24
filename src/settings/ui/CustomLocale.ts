@@ -19,7 +19,7 @@ export class CustomLocale extends GitChangelogSetting {
             this.plugin.saveSettings(newSettings);
           });
 
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           settingsProperty: 'changelogGenerationSettings',
           diffSettingsProperty: 'locale',
           text

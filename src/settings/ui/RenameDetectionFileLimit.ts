@@ -29,7 +29,7 @@ export class RenameDetectionFileLimit extends GitChangelogSetting {
           });
         // This.restrictToPositiveIntegerInput(text);
 
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           diffSettingsProperty: 'renameLimit',
           settingsProperty: 'changelogGenerationSettings',
           text

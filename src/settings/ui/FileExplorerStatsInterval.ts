@@ -20,7 +20,7 @@ export class FileExplorerStatsInterval extends GitChangelogSetting {
         });
 
         // This.restrictToPositiveIntegerInput(text, 5);
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           settingsProperty: 'fileExplorerInterval',
           text
         });

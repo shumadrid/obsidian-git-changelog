@@ -18,7 +18,7 @@ export class FileChangesNotificationThreshold extends GitChangelogSetting {
         });
         // This.restrictToPositiveIntegerInput(text);
 
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           settingsProperty: 'filesChangesWarningThreshold',
           text
         });

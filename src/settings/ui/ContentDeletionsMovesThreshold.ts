@@ -20,7 +20,7 @@ export class ContentDeletionsMovesThreshold extends GitChangelogSetting {
         });
         // This.restrictToPositiveIntegerInput(text);
 
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           settingsProperty: 'contentDeletionsAndMovesWarningThreshold',
           text
         });

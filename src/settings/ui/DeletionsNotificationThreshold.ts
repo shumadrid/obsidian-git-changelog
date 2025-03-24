@@ -20,7 +20,7 @@ export class DeletionsNotificationThreshold extends GitChangelogSetting {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             this.plugin.saveSettings(newSettings);
 
-            this.refreshDisplayDelayed();
+            this.refreshDisplayWithDelay();
           })
       );
   }

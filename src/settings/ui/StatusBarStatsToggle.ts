@@ -8,7 +8,7 @@ export class StatusBarStatsToggle extends GitChangelogSetting {
         toggle
           .setValue(this.plugin.settings.statusBarStats)
           .onChange((value) => {
-            this.refreshDisplayDelayed();
+            this.refreshDisplayWithDelay();
 
             const newSettings = this.plugin.settingsClone;
             newSettings.statusBarStats = value;

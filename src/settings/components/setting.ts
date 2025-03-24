@@ -47,15 +47,21 @@ export abstract class GitChangelogSetting {
   }
 
   /**
-   * It delays the update of the associated ui state of the conditional setting enabled or disabled state, so that the toggle animation can end its animation smoother.
+   * Delays the update of the settings UI.
+   * Used when the user toggles one of the settings that control enabled states of other settings. Delaying the update
+   * allows most of the toggle animation to run, instead of abruptly jumping between enabled/disabled states.
    */
-  protected refreshDisplayDelayed(timeout = 80): void {
+  protected refreshDisplayWithDelay(timeout = 80): void {
     if (this.settingTab) {
       setTimeout(() => this.settingTab?.display(), timeout);
     }
   }
 
-  protected setValueIfNonDefaultSetting({
+  /**
+   * Sets the value in the textbox for a given setting only if the saved value differs from the default value.
+   * If the saved value is the default value, it probably wasn't defined by the user, so it's better to display it as a placeholder.
+   */
+  protected setNonDefaultValue({
     diffSettingsProperty,
     settingsProperty,
     text

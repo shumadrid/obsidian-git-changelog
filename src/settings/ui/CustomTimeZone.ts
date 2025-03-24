@@ -20,7 +20,7 @@ export class CustomTimeZone extends GitChangelogSetting {
             this.plugin.saveSettings(newSettings);
           });
 
-        this.setValueIfNonDefaultSetting({
+        this.setNonDefaultValue({
           diffSettingsProperty: 'timezone',
           settingsProperty: 'changelogGenerationSettings',
           text
