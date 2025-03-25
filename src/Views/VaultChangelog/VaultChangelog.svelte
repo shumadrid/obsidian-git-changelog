@@ -155,9 +155,23 @@
   function toggleCollapsedState(): void {
     // AllEntriesCollapsed needs to be cached because it is a reactive derived value that won't have a consistent state across the whole loop.
     const everythingCollapsed = allEntriesCollapsed;
-    if (changelogManager?.visibleEntries)
-      for (const entry of changelogManager.visibleEntries)
-        entry.isCollapsed = !everythingCollapsed;
+    if (changelogManager?.visibleEntries) {
+      // Temporary workaround to stop freezing when trying to expand a large number of versions.
+      if (
+        // eslint-disable-next-line no-magic-numbers
+        changelogManager?.visibleEntries?.length < 80 ||
+        everythingCollapsed !== true
+      ) {
+        for (const entry of changelogManager.visibleEntries)
+          entry.isCollapsed = !everythingCollapsed;
+      } else {
+        plugin.displayNotice(
+          `Too many entries. Can't expand all because of performance reasons.`,
+          // eslint-disable-next-line no-magic-numbers
+          1500
+        );
+      }
+    }
   }
 </script>
 
