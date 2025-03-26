@@ -1,0 +1,11 @@
+name: Question
+description: Ask a question about the plugin
+title: '[Q] '
+labels: question
+body:
+  - type: textarea
+    attributes:
+      label: Question
+      description: Write your question here.
+    validations:
+      required: true
