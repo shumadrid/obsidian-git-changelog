@@ -50,10 +50,10 @@
     "spacetime": "^7.8.0",
     "svelte": "^5.23.1",
     "svelte-eslint-parser": "^0.43.0",
+    "svelte-infinite": "^0.5.0",
     "svelte-preprocess": "^6.0.3",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.25.0",
-    "svelte-infinite": "^0.5.0"
+    "typescript-eslint": "^8.25.0"
   },
   "overrides": {
     "boolean": "npm:dry-uninstall"

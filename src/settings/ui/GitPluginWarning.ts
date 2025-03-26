@@ -21,12 +21,15 @@ export class GitPluginWarning extends GitChangelogSetting {
         break;
       }
       case GitPluginState.IncompatibleVersion: {
-        desc = '⚠️ The installed Git plugin version is incompatible.';
+        desc = `⚠️ The installed Git plugin version is incompatible. Oldest compatible version is ${
+          MIN_COMPATIBLE_GIT_PLUGIN_VERSION
+        }`;
         break;
       }
       case GitPluginState.UntestedVersion: {
-        desc =
-          'Compatibility with the installed Git plugin version is not tested.';
+        desc = `Compatibility with the installed Git plugin version is not tested. Latest tested version is ${
+          MAX_TESTED_GIT_PLUGIN_VERSION
+        }`;
         // A button to continue using at your own risk
         break;
       }
