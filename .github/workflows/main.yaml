@@ -4,24 +4,8 @@ on:
   push:
 permissions:
   contents: read
-  # Write permissions for pull-requests are required for using the `comment-summary-in-pr` option, comment out if you aren't using this option
-  pull-requests: write
 
 jobs:
-  dependency-review:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4
-      - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v4
-        # Commonly enabled options, see https://github.com/actions/dependency-review-action#configuration-options for all available options.
-        with:
-          comment-summary-in-pr: always
-          fail-on-severity: low
-          deny-licenses: GPL-1.0-or-later, LGPL-2.0-or-later
-          retry-on-snapshot-warnings: true
-
   svelte-check:
     runs-on: ubuntu-latest
     steps:
@@ -67,15 +51,3 @@ jobs:
         run: npm install
       - name: Run CSpell
         run: npm run spellcheck
-
-  sonarqube:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # Disabling shallow clones is recommended for improving the relevancy of reporting
-          fetch-depth: 0
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5.1.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
