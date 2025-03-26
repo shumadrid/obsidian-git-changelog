@@ -53,6 +53,9 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   public gitRepoReady = $state<boolean>();
   // Used for keeping relative interval labels like "today" and "yesterday" up to date
   public currentDay = $state<string>();
+  /**
+   * If we were to persist this, it would be less flexible if the user changes his repo or the hashing algorithm and we would need to either manually have a database of all possible empty tree hashes or validate it in runtime
+   */
   public emptyTreeHash: string | undefined;
 
   public dependenciesReady = $derived(
@@ -255,10 +258,9 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
       newSettings.firstStartup = false;
       await this.saveSettings(newSettings, false);
     }
-    this.updateActiveGitFile();
 
-    // Check status of the Git plugin
-    this.getGitPlugin();
+    // Also checks the status of the Git plugin
+    this.updateActiveGitFile();
   }
 
   /**
