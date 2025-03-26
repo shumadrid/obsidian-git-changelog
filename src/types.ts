@@ -74,6 +74,9 @@ export enum ChangelogInterval {
   Weekly = 'week'
 }
 
+/**
+ * Patience and Histogram algorithms don't make sense for this use case.
+ */
 export enum DiffAlgorithm {
   Default = 'Default', // Myers algorithm
   Inherit = 'Inherit',

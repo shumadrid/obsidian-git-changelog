@@ -5,7 +5,7 @@ import {
   addToQueueAndWait
 } from 'obsidian-dev-utils/obsidian/Queue';
 
-export const GIT_OPERATION_TIMEOUT_MILLISECONDS = 80_000;
+export const GIT_OPERATION_TIMEOUT_MILLISECONDS = 59_000;
 
 export class TaskManager {
   public queueSize = $state(0);

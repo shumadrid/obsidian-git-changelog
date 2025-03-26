@@ -45,6 +45,7 @@ export async function runLog({
     options['--name-status'] = null;
 
     // --name-only
+    // `--follow` does not work well on non-linear history
     options['--follow'] = null;
     options['--find-renames'] =
       `${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`;

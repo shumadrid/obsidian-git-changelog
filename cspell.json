@@ -4,6 +4,7 @@
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [
+    "allownonascii",
     "binaryop",
     "callouts",
     "currencyformat",
@@ -78,6 +79,7 @@
     "Reinitiate",
     "Repr",
     "shumadrid",
+    "sonarqube",
     "sourcemaps",
     "striptime",
     "subsources",

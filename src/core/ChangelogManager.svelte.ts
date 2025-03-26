@@ -20,7 +20,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
   public hasEntries = $derived((this.visibleEntries?.length ?? 0) > 0);
 
-  protected reservedEntries = $state<T[]>([]);
+  protected reservedEntries: T[] = [];
 
   protected plugin: GitChangelogPlugin;
 
