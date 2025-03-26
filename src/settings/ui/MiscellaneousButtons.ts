@@ -1,4 +1,3 @@
-import { Notice } from 'obsidian';
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 
 export class MiscellaneousButtons extends GitChangelogSetting {
@@ -26,7 +25,7 @@ export class MiscellaneousButtons extends GitChangelogSetting {
             4
           )
         );
-        new Notice(
+        this.plugin.displayNotice(
           'Debug information copied to clipboard. May contain sensitive information!'
         );
       });
