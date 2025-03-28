@@ -6,16 +6,7 @@ A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to
 
 ## Installation
 
-To install the plugin, follow these steps:
-
-1. Make sure to have the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) installed and enabled.
-2. Paste this link in your browser and press enter:
-
-   `obsidian://brat?plugin=https://github.com/shumadrid/obsidian-git-changelog`
-
-3. An Obsidian pop-up window should appear. In the window, click the 'Add plugin' button once and wait a few seconds for the plugin to install.
-
-The plugin is NOT yet available in [the official Community Plugins repository](https://obsidian.md/plugins).
+Install the plugin from [the official Community Plugins repository](https://obsidian.md/plugins?id=git-changelog).
 
 > [!IMPORTANT]
 > Requires the [Git plugin](https://github.com/Vinzent03/obsidian-git) to be installed. Installing it and maintaining a Git repository can be beneficial, even if you rely on other syncing services.
@@ -174,7 +165,7 @@ By default, debug messages for this plugin are hidden. They aren't intended for 
 
 To show them, enable `Verbose` mode in the console and run the following command:
 
-```js
+```bash
 window.DEBUG.enable('git-changelog');
 ```
 

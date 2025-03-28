@@ -5,6 +5,7 @@ import {
   addToQueueAndWait
 } from 'obsidian-dev-utils/obsidian/Queue';
 
+// Obsidian default behavior is to timeout long running tasks after 60 seconds
 export const GIT_OPERATION_TIMEOUT_MILLISECONDS = 59_000;
 
 export class TaskManager {
