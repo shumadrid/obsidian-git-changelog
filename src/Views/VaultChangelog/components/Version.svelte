@@ -34,9 +34,12 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class:is-collapsed={version.isCollapsed}>
+<div
+  class:is-collapsed={version.isCollapsed}
+  class="git-changelog-bottom-padding"
+>
   <div
-    class="tree-item-self is-clickable git-changelog-bottom-padding"
+    class="tree-item-self is-clickable git-changelog-no-margin-bottom"
     data-tooltip-position="bottom"
     onclick={/* eslint-disable-next-line @typescript-eslint/explicit-function-return-type */
     () => {
@@ -179,5 +182,9 @@
 
   .git-changelog-bottom-padding {
     padding-bottom: var(--size-2-1);
+  }
+
+  .git-changelog-no-margin-bottom {
+    margin-bottom: 0px;
   }
 </style>
