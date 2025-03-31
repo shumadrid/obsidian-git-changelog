@@ -81,7 +81,8 @@ export function composeDailyVersionDisplayText({
 
   return formatDate(
     fullyAdjustedEntryDate.toNativeDate(),
-    getUserLocale(plugin)
+    getUserLocale(plugin),
+    getTimeZone(plugin.settings.changelogGenerationSettings, plugin)
   );
 }
 
@@ -120,10 +121,16 @@ export function composeHourlyVersionDisplayText({
 
   const userLocale = getUserLocale(plugin);
 
+  const timeZone = getTimeZone(
+    plugin.settings.changelogGenerationSettings,
+    plugin
+  );
+
   // Replaces the day part of the date time string with today or yesterday labels.
   if (isToday || isYesterday) {
     const timeFormatter = new Intl.DateTimeFormat(userLocale, {
-      timeStyle: 'short'
+      timeStyle: 'short',
+      timeZone
     });
     const timeString = timeFormatter.format(
       timezoneAdjustedEntryDate.startOf('hour').toNativeDate()
@@ -133,7 +140,8 @@ export function composeHourlyVersionDisplayText({
 
   const formatter = new Intl.DateTimeFormat(userLocale, {
     dateStyle: 'short',
-    timeStyle: 'short'
+    timeStyle: 'short',
+    timeZone
   });
 
   // Use the timezoneAdjustedEntryDate in the UI and just potentially subtract a day if it crosses the dayStartTime boundary. Don't show the fake fullyAdjustedEntryDate that has the dayStartTime offset applied to hours.
@@ -156,7 +164,8 @@ export function composeMonthlyVersionDisplayText({
 }): string {
   return formatMonthYear(
     fullyAdjustedEntryDate.toNativeDate(),
-    getUserLocale(plugin)
+    getUserLocale(plugin),
+    getTimeZone(plugin.settings.changelogGenerationSettings, plugin)
   );
 }
 
@@ -247,24 +256,36 @@ export function composeWeeklyVersionDisplayText({
   );
 
   const nativeFullyAdjustedEntryWeek = fullyAdjustedEntryWeek.toNativeDate();
+  const timeZone = getTimeZone(
+    plugin.settings.changelogGenerationSettings,
+    plugin
+  );
 
   if (isCurrentYear) {
     const monthString = new Intl.DateTimeFormat(userLocale, {
-      month: 'short'
+      month: 'short',
+      timeZone
     }).format(nativeFullyAdjustedEntryWeek);
     return `Week ${weekNumber}, ${monthString}`;
   }
 
   const monthAndYearString = new Intl.DateTimeFormat(userLocale, {
     month: 'short',
-    year: '2-digit'
+    year: '2-digit',
+    timeZone
   }).format(nativeFullyAdjustedEntryWeek);
 
   return `Week ${weekNumber}, ${monthAndYearString}`;
 }
 
-export function formatDate(date: Date, locale: string): string {
-  const formatter = new Intl.DateTimeFormat(locale);
+export function formatDate(
+  date: Date,
+  locale: string,
+  timeZone: string
+): string {
+  const formatter = new Intl.DateTimeFormat(locale, {
+    timeZone
+  });
   return formatter.format(date);
 }
 
@@ -278,10 +299,15 @@ export function formatDiffFileType(file: DiffFile): string {
   return fileExtension.toLocaleUpperCase();
 }
 
-export function formatMonthYear(date: Date, locale: string): string {
+export function formatMonthYear(
+  date: Date,
+  locale: string,
+  timeZone: string
+): string {
   return new Intl.DateTimeFormat(locale, {
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone
   }).format(date);
 }
 

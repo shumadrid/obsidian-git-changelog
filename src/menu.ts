@@ -166,7 +166,7 @@ export function handleChangelogViewContextMenu({
   }
 }
 
-export function composeAbsoluteGitIgnoreRuleFromPath({
+export function convertPathToAbsoluteGitIgnoreRule({
   isFolder,
   gitRelativePath
 }: {
@@ -195,7 +195,7 @@ export function isAbsolutePathInExcludeFilesAndFolders({
   gitRelativePath: string;
   plugin: GitChangelogPlugin;
 }): number {
-  const gitIgnoreAbsoluteRule = composeAbsoluteGitIgnoreRuleFromPath({
+  const gitIgnoreAbsoluteRule = convertPathToAbsoluteGitIgnoreRule({
     isFolder,
     gitRelativePath
   });
@@ -230,7 +230,7 @@ export async function addExcludeFilesAndFoldersItem({
   isFolder: boolean;
   plugin: GitChangelogPlugin;
 }): Promise<void> {
-  const gitIgnoreRule = composeAbsoluteGitIgnoreRuleFromPath({
+  const gitIgnoreRule = convertPathToAbsoluteGitIgnoreRule({
     gitRelativePath,
     isFolder
   });
