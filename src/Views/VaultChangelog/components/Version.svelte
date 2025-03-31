@@ -39,7 +39,7 @@
   class="git-changelog-bottom-padding"
 >
   <div
-    class="tree-item-self is-clickable git-changelog-no-margin-bottom"
+    class="tree-item-self is-clickable"
     data-tooltip-position="bottom"
     onclick={/* eslint-disable-next-line @typescript-eslint/explicit-function-return-type */
     () => {
@@ -182,9 +182,5 @@
 
   .git-changelog-bottom-padding {
     padding-bottom: var(--size-2-1);
-  }
-
-  .git-changelog-no-margin-bottom {
-    margin-bottom: 0px;
   }
 </style>
