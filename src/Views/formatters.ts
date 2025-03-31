@@ -9,21 +9,26 @@ import { getDayStartTime } from 'settings/ui/DayStartTime.ts';
 import spacetime from 'spacetime';
 import { applyDayStartTimeSetting } from 'timeUtils.ts';
 import { ChangelogInterval } from 'types.ts';
-import { getFileNameFromPath, isMoved, isRenamed } from 'utils.ts';
+import {
+  assertNotNull,
+  getFileNameFromPath,
+  isMoved,
+  isRenamed
+} from 'utils.ts';
 
 export function composeAriaLabel(file: DiffFile): string {
   try {
     let ariaString = '';
     if (isMoved(file)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      ariaString += file.fromPathGitRelative!;
+      ariaString += assertNotNull(file.fromPathGitRelative);
       ariaString += ' →';
       ariaString += '\n';
       ariaString += file.pathGitRelative;
     } else if (isRenamed(file)) {
       ariaString += getFileNameFromPath({
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        normalizedFilePath: normalizePath(file.fromPathGitRelative!)
+        normalizedFilePath: normalizePath(
+          assertNotNull(file.fromPathGitRelative)
+        )
       });
       ariaString += ' → ';
       ariaString += getFileNameFromPath({

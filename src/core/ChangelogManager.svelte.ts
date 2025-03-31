@@ -13,6 +13,7 @@ import {
   GIT_MAX_CONCURRENT_PROCESSES
 } from 'core/helper.ts';
 import { AbortError, ChangelogInterval } from 'types.ts';
+import { assertNotNull } from 'utils.ts';
 
 export abstract class ChangelogManager<T extends ChangelogEntry> {
   public visibleEntries = $state<T[] | undefined>();
@@ -202,8 +203,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
     // If initial version was reached, diff it against an empty state.
     if (extractedVersions.length > 0 && this.cacheHasNoCompleteVersion()) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const lastCommit = extractedVersions.at(-1)!;
+      const lastCommit = assertNotNull(extractedVersions.at(-1));
       await this.appendToEntries({
         abortSignal,
         currentCommit: lastCommit,
@@ -492,10 +492,12 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     if (this.shouldRetrieveMoreReserveEntries()) {
       await this.retrieveMoreEntries({
         abortSignal,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        filePath: this.oldestCachedVersion!.getPotentialGitFilePath(),
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        upperBoundaryCommit: this.oldestCachedVersion!.commitHash
+
+        filePath: assertNotNull(
+          this.oldestCachedVersion
+        ).getPotentialGitFilePath(),
+
+        upperBoundaryCommit: assertNotNull(this.oldestCachedVersion).commitHash
       });
     }
   }
@@ -523,8 +525,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const oldestNewEntry = newEntries.at(-1)!;
+    const oldestNewEntry = assertNotNull(newEntries.at(-1));
     // If updating the latest incomplete version, keep the isCollapsed state from current view. (File changelog entries aren't collapsible)
     if (
       oldestNewEntry instanceof VaultChangelogEntry &&

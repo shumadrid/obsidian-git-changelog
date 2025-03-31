@@ -13,7 +13,7 @@ import { convertGitIgnoreToPathspec } from 'settings/ui/ExcludeFilesAndFolders.t
 import { getRenameLimit } from 'settings/ui/RenameDetectionFileLimit.ts';
 import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
-import { insertSorted, parseContentChange } from 'utils.ts';
+import { assertNotNull, insertSorted, parseContentChange } from 'utils.ts';
 
 import { runRepoDiffStatus } from './runRepoDiffStatus.ts';
 
@@ -167,13 +167,11 @@ export async function runRepoDiff({
       status = DiffFileStatus.Added;
     } else if (oldPath) {
       if (typeof oldPath !== 'string') {
-        plugin.consoleDebug('oldPath is not a string!', oldPath);
+        plugin.consoleDebug('oldPath is not a string', oldPath);
       }
       status = calculateFileStatusRenamedOrMoved(oldPath, filePath);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    } else if (statusResult![filePath]) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      status = statusResult![filePath];
+    } else if (assertNotNull(statusResult)[filePath]) {
+      status = assertNotNull(statusResult)[filePath];
     } else {
       status = DiffFileStatus.Modified;
     }

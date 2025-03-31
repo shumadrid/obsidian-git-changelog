@@ -61,6 +61,8 @@ export default typescriptEslint.config(
       // overrides
       'default-case': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
+      'no-unused-labels': 'off',
+      'no-labels': 'off',
       '@typescript-eslint/restrict-template-expressions': [
         'error',
         { allowNumber: true }

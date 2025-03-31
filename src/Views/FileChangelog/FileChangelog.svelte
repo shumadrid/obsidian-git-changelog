@@ -4,6 +4,7 @@
 
   import { onDestroy, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
+  import { assertNotNull } from 'utils.ts';
   import ChangeIntervalButton from 'Views/components/ChangeIntervalButton.svelte';
   import DependenciesStatusCheck from 'Views/components/DependenciesStatusCheck.svelte';
   import InfiniteScroller from 'Views/components/InfiniteScroller.svelte';
@@ -138,17 +139,15 @@
   <DependenciesStatusCheck {plugin}>
     <div class="nav-files-container">
       {#if changelogState === FileChangelogState.HasEntries}
-        <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
         <InfiniteScroller
           {loaderState}
-          triggerLoad={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          changelogManager!.handleScroll}
+          triggerLoad={assertNotNull(changelogManager).handleScroll}
         >
-          <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-          {#each changelogManager!.visibleEntries! as entry, index (entry.commitHash)}
+          {#each assertNotNull(assertNotNull(changelogManager).visibleEntries) as entry, index (entry.commitHash)}
             <Version
-              previousEntry={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              changelogManager!.visibleEntries!.at(index + 1)}
+              previousEntry={assertNotNull(
+                assertNotNull(changelogManager).visibleEntries
+              ).at(index + 1)}
               {entry}
               {plugin}
               {index}

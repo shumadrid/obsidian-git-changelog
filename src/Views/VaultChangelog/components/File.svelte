@@ -6,6 +6,7 @@
   import { isFileRenamedOrMoved } from 'core/gitOperations/helper.ts';
   import { mayTriggerChangelogMenu } from 'menu.ts';
   import { setIcon } from 'obsidian';
+  import { assertNotNull } from 'utils.ts';
   import {
     canOpenInDiffView,
     changelogFileClick,
@@ -39,8 +40,7 @@
   $effect(() => {
     for (const b of buttons) {
       if (b) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        setIcon(b, b.getAttr('data-icon')!);
+        setIcon(b, assertNotNull(b.getAttr('data-icon')));
       }
     }
   });
@@ -54,8 +54,8 @@
 
     if (!isClickable) return;
     changelogFileClick({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      aReference: previousVersionCommitHash ?? plugin.emptyTreeHash!,
+      aReference:
+        previousVersionCommitHash ?? assertNotNull(plugin.emptyTreeHash),
       bReference: currentVersionCommitHash,
       event,
       file,

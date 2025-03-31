@@ -6,6 +6,7 @@
   import { mayTriggerChangelogMenu } from 'menu.ts';
   import { setIcon } from 'obsidian';
   import { DiffFileStatus } from 'types.ts';
+  import { assertNotNull } from 'utils.ts';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
   import { FileChangelogView } from 'Views/FileChangelog/FileChangelog.ts';
   import { composeAriaLabel, composeVersionTitle } from 'Views/formatters.ts';
@@ -31,8 +32,9 @@
     if (isVersionClickable()) {
       changelogFileClick({
         // Plugin.emptyTreeHash is guaranteed to be initialized. Git plugin throws an error when you pass Plugin.emptyTreeHash but I haven't been able to work around it and it doesn't affect usability.
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        aReference: previousEntry?.commitHash ?? plugin.emptyTreeHash!,
+
+        aReference:
+          previousEntry?.commitHash ?? assertNotNull(plugin.emptyTreeHash),
         bReference: entry.commitHash,
         event,
         file: entry,
@@ -56,8 +58,10 @@
 
   $effect(() => {
     if (openFileButton) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setIcon(openFileButton, openFileButton.getAttr('data-icon')!);
+      setIcon(
+        openFileButton,
+        assertNotNull(openFileButton.getAttr('data-icon'))
+      );
     }
   });
   function isVersionClickable(): boolean {

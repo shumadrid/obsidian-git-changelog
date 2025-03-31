@@ -29,6 +29,13 @@ export class AbortError extends Error {
   }
 }
 
+export class NullValueError extends Error {
+  public constructor() {
+    super('Non-nullable value is null or undefined');
+    this.name = 'NullValueError';
+  }
+}
+
 declare module 'obsidian' {
   interface Workspace {
     on(

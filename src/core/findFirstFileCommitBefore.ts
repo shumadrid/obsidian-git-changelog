@@ -5,6 +5,7 @@ import { runLog } from 'core/gitOperations/runLog.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
+import { assertNotNull } from 'utils.ts';
 
 // Assumes the average neighboring commits are 5 minutes apart
 const AVERAGE_COMMIT_FREQUENCY_MINUTES = 5;
@@ -34,8 +35,8 @@ export async function findFirstFileCommitBefore({
     // If it's the first run
     !firstEntriesOutsideInterval.at(-1) ||
     // Only continue if commit(s) that happened before the specified interval aren't reached yet.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    firstEntriesOutsideInterval.at(-1)!.timezoneAdjustedDate.diff(
+
+    assertNotNull(firstEntriesOutsideInterval.at(-1)).timezoneAdjustedDate.diff(
       currentTime,
 
       'minutes'
@@ -58,11 +59,12 @@ export async function findFirstFileCommitBefore({
     }
 
     // If getting file changelog versions and need to loop many times, we need to track the file path across renames so that we can follow the target file across its whole history.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    startingFilePath = firstEntriesOutsideInterval.at(-1)!.filePath!;
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    startingCommit = firstEntriesOutsideInterval.at(-1)!.hash;
+    startingFilePath = assertNotNull(
+      assertNotNull(firstEntriesOutsideInterval.at(-1)).filePath
+    );
+
+    startingCommit = assertNotNull(firstEntriesOutsideInterval.at(-1)).hash;
   }
 
   if (abortSignal.aborted) {

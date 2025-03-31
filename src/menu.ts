@@ -7,6 +7,7 @@ import {
   convertPathToGitIgnoreRule,
   parseGitIgnoreLine
 } from 'settings/ui/ExcludeFilesAndFolders.ts';
+import { assertNotNull } from 'utils.ts';
 import { fileOpenableInObsidian } from 'Views/helper.ts';
 import { VAULT_CHANGELOG_VIEW_CONFIG } from 'Views/VaultChangelog/VaultChangelog.ts';
 
@@ -77,8 +78,8 @@ export function mayTriggerChangelogMenu({
         plugin.app.workspace.trigger(
           'file-menu',
           fileMenu,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          tFile!,
+
+          assertNotNull(tFile),
           view.view.getViewType(),
           view
         );

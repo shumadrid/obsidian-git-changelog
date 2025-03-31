@@ -4,7 +4,7 @@ import type { DiffFile, TextDiffStats } from 'types.ts';
 
 // Import * as cssColorConverter from "css-color-converter";
 import { Keymap } from 'obsidian';
-import { DiffFileStatus } from 'types.ts';
+import { DiffFileStatus, NullValueError } from 'types.ts';
 
 export function getFileNameFromPath({
   normalizedFilePath
@@ -88,4 +88,12 @@ export function parseContentChange({
   };
 
   return textDiffStats;
+}
+
+export function assertNotNull<T>(value: null | T | undefined): T {
+  DEV: if (value === null || value === undefined) {
+    console.error('Non-nullable value is null or undefined');
+    throw new NullValueError();
+  }
+  return value;
 }

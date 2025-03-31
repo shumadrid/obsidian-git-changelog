@@ -9,6 +9,9 @@ export async function buildWithSvelte(
   developmentMode: boolean
 ): Promise<CliTaskResult> {
   return await buildObsidianPlugin({
+    customEsbuildOptions: {
+      dropLabels: developmentMode ? undefined : ['DEV']
+    },
     customEsbuildPlugins: [
       {
         name: 'add-condition',

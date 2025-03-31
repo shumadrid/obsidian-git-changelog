@@ -8,6 +8,7 @@
   import { onDestroy, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
   import { FilesSummariesDisplayMode } from 'types.ts';
+  import { assertNotNull } from 'utils.ts';
   import { getIntervalAdjectiveString } from 'Views/formatters.ts';
 
   import ChangeIntervalButton from '../components/ChangeIntervalButton.svelte';
@@ -221,11 +222,9 @@
       {#if changelogState === VaultChangelogState.HasEntries}
         <InfiniteScroller
           {loaderState}
-          triggerLoad={// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          changelogManager!.handleScroll}
+          triggerLoad={assertNotNull(changelogManager).handleScroll}
         >
-          <!-- eslint-disable-next-line @typescript-eslint/no-non-null-assertion -->
-          {#each changelogManager!.visibleEntries! as version (version.commitHash)}
+          {#each assertNotNull(assertNotNull(changelogManager).visibleEntries) as version (version.commitHash)}
             <VersionComponent
               {version}
               {plugin}

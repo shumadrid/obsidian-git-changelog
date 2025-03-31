@@ -8,6 +8,7 @@ import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictn
 import { DiffNameStatus } from 'simple-git';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
+import { assertNotNull } from 'utils.ts';
 
 // Less efficient than running raw?
 export async function runLog({
@@ -72,8 +73,9 @@ export async function runLog({
     let fileDeleted: boolean | undefined;
 
     if (filePath) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const file = entry.diff!.files.at(0) as DiffResultNameStatusFile;
+      const file = assertNotNull(entry.diff).files.at(
+        0
+      ) as DiffResultNameStatusFile;
 
       // Include X (Unknown) statuses and show error states instead of silently ignoring them. (Caused by repository corruption or other issues)
       //
@@ -99,8 +101,9 @@ export async function runLog({
 
     logs.push({
       filePath: filePath
-        ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          unescapeGitFileOutput(entry.diff!.files.at(0)!.file)
+        ? unescapeGitFileOutput(
+            assertNotNull(assertNotNull(entry.diff).files.at(0)).file
+          )
         : undefined,
       hash: entry.hash,
       fileDeleted,
