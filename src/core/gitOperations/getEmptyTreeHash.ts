@@ -27,8 +27,6 @@ export async function getEmptyTreeHash({
   }
 
   const emptyTreeHash = await runHashObjectEmptyTree({ plugin });
-  if (!plugin.emptyTreeHash) {
-    plugin.emptyTreeHash = emptyTreeHash;
-  }
+  plugin.emptyTreeHash ??= emptyTreeHash;
   return plugin.emptyTreeHash;
 }

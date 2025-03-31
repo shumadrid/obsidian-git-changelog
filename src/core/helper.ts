@@ -13,7 +13,7 @@ export function addStatsToSummary(
 ): void {
   mainSummary.addedFiles += stats.addedFiles;
   mainSummary.deletedFiles += stats.deletedFiles;
-  mainSummary.renamedFiles += stats.renamedFiles;
+  mainSummary.renamedAndMovedFiles += stats.renamedAndMovedFiles;
   mainSummary.modifiedFiles += stats.modifiedFiles;
 }
 

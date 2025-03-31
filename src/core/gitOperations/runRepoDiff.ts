@@ -122,13 +122,13 @@ export async function runRepoDiff({
     addedFiles: 0,
     deletedFiles: 0,
     modifiedFiles: 0,
-    renamedFiles: 0
+    renamedAndMovedFiles: 0
   };
   const binaryFilesSummary: FilesSummary = {
     addedFiles: 0,
     deletedFiles: 0,
     modifiedFiles: 0,
-    renamedFiles: 0
+    renamedAndMovedFiles: 0
   };
 
   const textFiles: DiffFile[] = [];

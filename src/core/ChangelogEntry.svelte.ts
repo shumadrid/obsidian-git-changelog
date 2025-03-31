@@ -143,9 +143,9 @@ export class VaultChangelogEntry extends ChangelogEntry {
       modifiedFiles:
         this.textFilesSummaryCached.modifiedFiles +
         this.binaryFilesSummaryCached.modifiedFiles,
-      renamedFiles:
-        this.textFilesSummaryCached.renamedFiles +
-        this.binaryFilesSummaryCached.renamedFiles
+      renamedAndMovedFiles:
+        this.textFilesSummaryCached.renamedAndMovedFiles +
+        this.binaryFilesSummaryCached.renamedAndMovedFiles
     };
   }
 

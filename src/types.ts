@@ -151,7 +151,7 @@ export interface FilesSummary {
   addedFiles: number;
   deletedFiles: number;
   modifiedFiles: number;
-  renamedFiles: number;
+  renamedAndMovedFiles: number;
 }
 
 export interface LogEntry {

@@ -16,7 +16,7 @@ export function addFileStatusToSummary(
   } else if (status === DiffFileStatus.Deleted) {
     file.deletedFiles++;
   } else if (isFileRenamedOrMoved(status)) {
-    file.renamedFiles++;
+    file.renamedAndMovedFiles++;
   } else {
     file.modifiedFiles++;
   }
@@ -81,7 +81,7 @@ export function calculatePerFileTypeSummaries({
         addedFiles: 0,
         deletedFiles: 0,
         modifiedFiles: 0,
-        renamedFiles: 0
+        renamedAndMovedFiles: 0
       };
     }
 

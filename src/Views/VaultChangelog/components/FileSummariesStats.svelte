@@ -37,7 +37,7 @@
       type: DiffFileStatus.Modified
     },
     {
-      count: filesSummary.renamedFiles,
+      count: filesSummary.renamedAndMovedFiles,
       icon: FILE_RENAMED_ICON,
       type: DiffFileStatus.Renamed
     },
