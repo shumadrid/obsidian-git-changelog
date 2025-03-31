@@ -62,6 +62,5 @@ declare module 'obsidian' {
       callback: () => void,
       context?: unknown
     ): EventRef;
-    trigger(name: string, ...data: unknown[]): void;
   }
 }

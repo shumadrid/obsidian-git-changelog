@@ -74,7 +74,14 @@ export function mayTriggerChangelogMenu({
         plugin
       });
       if (showFileMenu) {
-        plugin.app.workspace.trigger('file-menu', fileMenu, tFile, view);
+        plugin.app.workspace.trigger(
+          'file-menu',
+          fileMenu,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          tFile!,
+          view.view.getViewType(),
+          view
+        );
       }
     }
 

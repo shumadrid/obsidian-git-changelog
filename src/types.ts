@@ -67,6 +67,13 @@ declare module 'obsidian' {
       gitRelativePath?: string,
       commitHash?: string
     ): void;
+    trigger(
+      name: 'file-menu',
+      menu: Menu,
+      file: TAbstractFile,
+      source: string,
+      leaf?: WorkspaceLeaf
+    ): void;
   }
 }
 
