@@ -45,6 +45,7 @@ declare module 'obsidian' {
       name: 'git-changelog:menu',
       callback: (
         menu: Menu,
+        inFileMenu: boolean,
         gitRelativePath?: string,
         commitHash?: string
       ) => void,
@@ -61,6 +62,8 @@ declare module 'obsidian' {
     trigger(
       name: 'git-changelog:menu',
       menu: Menu,
+      // Is the menu standalone, or are it's items added to the existing file menu?
+      inFileMenu: boolean,
       gitRelativePath?: string,
       commitHash?: string
     ): void;

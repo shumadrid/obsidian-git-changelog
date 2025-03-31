@@ -10,7 +10,7 @@ import {
 import { fileOpenableInObsidian } from 'Views/helper.ts';
 import { VAULT_CHANGELOG_VIEW_CONFIG } from 'Views/VaultChangelog/VaultChangelog.ts';
 
-export function addFileMenuItems(plugin: GitChangelogPlugin): void {
+export function addContextMenuItems(plugin: GitChangelogPlugin): void {
   plugin.registerEvent(
     plugin.app.workspace.on('file-menu', (menu, file) => {
       menu.addItem((item) => {
@@ -31,9 +31,10 @@ export function addFileMenuItems(plugin: GitChangelogPlugin): void {
   plugin.registerEvent(
     plugin.app.workspace.on(
       'git-changelog:menu',
-      (menu, gitRelativePath, commitHash) => {
+      (menu, inFileMenu, gitRelativePath, commitHash) => {
         handleChangelogViewContextMenu({
           menu,
+          inFileMenu,
           gitRelativePath,
           commitHash,
           plugin
@@ -81,8 +82,8 @@ export function mayTriggerChangelogMenu({
     plugin.app.workspace.trigger(
       'git-changelog:menu',
       fileMenu,
-      // Skip adding the "Git changelog: Exclude" item again if the usual file menu is shown.
-      showFileMenu ? undefined : gitRelativePath,
+      showFileMenu,
+      gitRelativePath,
       commitHash
     );
     fileMenu.showAtPosition({ x: event.pageX, y: event.pageY });
@@ -128,16 +129,19 @@ export function addExcludeMenuItem({
 
 export function handleChangelogViewContextMenu({
   menu,
+  inFileMenu,
   gitRelativePath,
   commitHash,
   plugin
 }: {
   menu: Menu;
+  inFileMenu: boolean;
   gitRelativePath?: string;
   commitHash?: string;
   plugin: GitChangelogPlugin;
 }): void {
-  if (gitRelativePath) {
+  // Skip adding the "Git changelog: Exclude" item again if the usual file menu is shown.
+  if (!inFileMenu && gitRelativePath) {
     menu.addItem((item) => {
       addExcludeMenuItem({
         item,
@@ -149,15 +153,23 @@ export function handleChangelogViewContextMenu({
   }
 
   if (commitHash) {
+    let itemTitle = 'Copy commit hash';
+    let contentToCopy = commitHash;
+
+    // If used on a file tile inside changelog versions.
+    if (gitRelativePath) {
+      itemTitle += `:path`;
+      contentToCopy += `:${gitRelativePath}`;
+    }
     menu.addItem((item) => {
       item
-        .setTitle('Copy commit hash')
+        .setTitle(itemTitle)
         .setSection('action')
         .setIcon(COPY_COMMIT_HASH_ICON)
         .onClick(async () => {
-          await navigator.clipboard.writeText(commitHash);
+          await navigator.clipboard.writeText(contentToCopy);
           plugin.displayNotice(
-            `Commit hash ${commitHash} copied to clipboard.`,
+            `Commit information ${contentToCopy} copied to clipboard.`,
             // eslint-disable-next-line no-magic-numbers
             1000
           );

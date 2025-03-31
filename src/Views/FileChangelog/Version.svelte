@@ -98,8 +98,7 @@
       if (view) {
         mayTriggerChangelogMenu({
           event,
-          // Since it isn't a live file, unless its the latest version.
-          gitRelativePath: index === 0 ? entry.pathGitRelative : undefined,
+          gitRelativePath: entry.pathGitRelative,
           commitHash: entry.commitHash,
           // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
           view: view.leaf,

@@ -6,7 +6,7 @@ import type { ReadonlyDeep } from 'type-fest';
 
 import { FileChangelogManager } from 'core/FileChangelogManager.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
-import { addFileMenuItems } from 'menu.ts';
+import { addContextMenuItems } from 'menu.ts';
 import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { changelogGenerationSettingsChanged } from 'settings/helper.ts';
@@ -186,7 +186,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
 
     addCommands(this);
 
-    addFileMenuItems(this);
+    addContextMenuItems(this);
 
     this.debouncedChangelogSettingsChangedCheck = debounce(
       (
@@ -319,7 +319,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
   }
 
   private setNewActiveGitFile(activeGitFile: string | undefined): void {
-    this.fileChangelogManager?.resetAndGetSignal();
+    this.fileChangelogManager?.resetAndGetSignal(); // Does this belong inside the file changelog class?
     this.cachedActiveGitFile = activeGitFile;
     this.app.workspace.trigger('git-changelog:active-git-file-changed');
   }
