@@ -43,7 +43,6 @@ Install the plugin from [the official Community Plugins repository](https://obsi
 ### File Changelog View
 
 - Shows the count of added and deleted lines for all previous versions of the active note.
-- Only Markdown files are currently supported.
 
 ![File Changelog View](.github/file-changelog-view.webp)
 

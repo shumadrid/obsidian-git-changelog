@@ -46,11 +46,11 @@ export class ExcludeFilesAndFolders extends GitChangelogSetting {
 }
 
 export function convertPathToGitIgnoreRule(path: string): string {
-  // First escape special characters (except whitespace)
+  // First escape special characters (except whitespace), so that git doesn't interpret them as such.
   const escaped = path.replaceAll(/(?<temp1>[\\!#*?[\]])/g, String.raw`\$1`);
 
-  // Then escape each trailing whitespace character individually, because git trims trailing whitespace
-  // This scenario is possible if Obsidian's "Detect all file extensions" setting is turned on.
+  // Then escape the last trailing whitespace character, because git trims unescaped trailing whitespace from the end of the line.
+  // Files normally end with a file extension, not whitespace, but a file with trailing whitespace can appear if Obsidian's "Detect all file extensions" setting is turned on.
   return escaped.replaceAll(/\s(?=\s*$)/g, String.raw`\ `);
 }
 
