@@ -16,6 +16,7 @@
     "format": "obsidian-dev-utils format",
     "format:check": "obsidian-dev-utils format:check",
     "lint": "obsidian-dev-utils lint",
+    "lint:fix": "obsidian-dev-utils lint:fix",
     "spellcheck": "obsidian-dev-utils spellcheck",
     "version": "obsidian-dev-utils version"
   },

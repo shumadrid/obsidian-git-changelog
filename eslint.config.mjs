@@ -91,6 +91,14 @@ export default typescriptEslint.config(
           ignore: [-1, 0, 1, 2],
           ignoreDefaultValues: true
         }
+      ],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true
+        }
       ]
     }
   },

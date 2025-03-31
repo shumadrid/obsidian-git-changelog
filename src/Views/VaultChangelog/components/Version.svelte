@@ -41,12 +41,10 @@
   <div
     class="tree-item-self is-clickable"
     data-tooltip-position="bottom"
-    onclick={/* eslint-disable-next-line @typescript-eslint/explicit-function-return-type */
-    () => {
+    onclick={() => {
       version.isCollapsed = !version.isCollapsed;
     }}
-    onauxclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    (event) => {
+    onauxclick={(event) => {
       event.stopPropagation();
       // eslint-disable-next-line eqeqeq
       if (event.button == 2) {

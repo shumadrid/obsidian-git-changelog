@@ -90,8 +90,7 @@
   data-tooltip-position="bottom"
   aria-label={ariaLabel}
   onclick={primaryClick}
-  onauxclick={// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  (event) => {
+  onauxclick={(event) => {
     event.stopPropagation();
     // eslint-disable-next-line eqeqeq
     if (event.button == 2) {
