@@ -1,40 +1,52 @@
+import type { TimeComponent } from 'obsidian-dev-utils/obsidian/Components/TimeComponent';
 import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 
 import { moment } from 'obsidian';
+import { ResetButton } from 'settings/components/resetButton.ts';
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 
 export class DayStartTime extends GitChangelogSetting {
   public display(): void {
-    this.createSetting()
+    let timeComponent: TimeComponent;
+    const setting = this.createSetting()
       .setName('Day start time')
-      .setDesc('Adjust the day based on your schedule.')
-      .addTime((text) => {
-        text
-          .setValue(
+      .setDesc('Adjust the day based on your schedule.');
+
+    new ResetButton(setting.controlEl).onClick(() => {
+      timeComponent.setValue(
+        moment.duration({
+          hours: DEFAULT_SETTINGS.changelogGenerationSettings.dayStartHour
+        })
+      );
+    });
+
+    setting.addTime((text) => {
+      timeComponent = text;
+
+      text
+        .setValue(
+          moment.duration({
+            hours: this.plugin.settings.changelogGenerationSettings.dayStartHour
+          })
+        )
+        .onChange((value) => {
+          // Clip any minutes. The smallest possible interval is an hour and this value should be clipped to that.
+          // Allowing the day start time to be specified in minutes doesn't make sense because then you would need to handle the half an hour that belongs to the previous day and the other half an hour that belongs to the next day separately.
+          text.setValue(
             moment.duration({
-              hours:
-                this.plugin.settings.changelogGenerationSettings.dayStartHour
+              hours: value.hours()
             })
-          )
-          .onChange((value) => {
-            // Clip any minutes. The smallest possible interval is an hour and this value should be clipped to that.
-            // Allowing the day start time to be specified in minutes doesn't make sense because then you would need to handle the half an hour that belongs to the previous day and the other half an hour that belongs to the next day separately.
-            text.setValue(
-              moment.duration({
-                hours: value.hours()
-              })
-            );
+          );
 
-            const newSettings = this.plugin.settingsClone;
-            newSettings.changelogGenerationSettings.dayStartHour =
-              value.hours();
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.plugin.saveSettings(newSettings);
-          });
+          const newSettings = this.plugin.settingsClone;
+          newSettings.changelogGenerationSettings.dayStartHour = value.hours();
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          this.plugin.saveSettings(newSettings);
+        });
 
-        text.inputEl.step = '3600';
-      });
+      text.inputEl.step = '3600';
+    });
   }
 }
 
