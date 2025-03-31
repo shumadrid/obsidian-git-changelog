@@ -127,7 +127,8 @@
       <ChangeIntervalButton
         {changelogManager}
         enabled={changelogState !== FileChangelogState.Initializing &&
-          plugin.dependenciesReady === true}
+          plugin.dependenciesReady === true &&
+          !!plugin.cachedActiveGitFile}
       ></ChangeIntervalButton>
     </div>
   </div>
@@ -160,7 +161,7 @@
           Loading {intervalAdjective} versions...
         </div>
       {:else if changelogState === FileChangelogState.NoMarkdownFileOpen}
-        <div class="pane-empty">No markdown file opened.</div>
+        <div class="pane-empty">No file opened.</div>
       {:else if changelogState === FileChangelogState.EmptyHistory}
         <div class="pane-empty">File has no Git history.</div>
       {/if}
