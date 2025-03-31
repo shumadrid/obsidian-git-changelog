@@ -14,6 +14,31 @@ body:
       description: A clear and concise description of the bug. Include any relevant details and steps to reproduce.
     validations:
       required: true
+  - type: dropdown
+    id: os
+    attributes:
+    label: Operating system
+    description: Which OS are you using?
+    options:
+      - Windows
+      - Linux
+      - macOS
+      - Android
+      - iOS
+    validations:
+    required: true
+  - type: dropdown
+    id: installation-method
+    attributes:
+    label: Installation Method (Linux)
+    description: Only necessary on Linux
+    options:
+      - Flatpak
+      - AppImage
+      - Snap
+      - Other
+    validations:
+    required: false
   - type: textarea
     attributes:
       label: Environment Information
@@ -21,7 +46,6 @@ body:
       value: |
         - **Plugin Version**:
         - **Obsidian Version**:
-        - **Operating System**:
     validations:
       required: true
   - type: textarea
