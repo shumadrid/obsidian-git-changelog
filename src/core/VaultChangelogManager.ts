@@ -39,7 +39,11 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   }
 
   public override resetAndGetSignal(): AbortSignal {
-    this.collapseFirstVersion = this.visibleEntries?.at(0)?.isCollapsed;
+    const firstEntryExists = this.visibleEntries?.at(0);
+    // Preserves the first entry collapsed state when users shuffles intervals and triggers multiple recomputes before any of them have the chance to finish.
+    if (firstEntryExists) {
+      this.collapseFirstVersion = firstEntryExists.isCollapsed;
+    }
     return super.resetAndGetSignal();
   }
 
