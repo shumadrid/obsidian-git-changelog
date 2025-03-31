@@ -20,10 +20,10 @@ export async function runFileDiff({
   oldCommit?: FileLogEntry;
   plugin: GitChangelogPlugin;
 }): Promise<FileChangelogEntry | undefined> {
-  const isInitialVersion =
+  const oldVersionIsEmpty =
     oldCommit === undefined || oldCommit.fileDeleted === true;
 
-  if (isInitialVersion && newCommit.fileDeleted) {
+  if (oldVersionIsEmpty && newCommit.fileDeleted) {
     // I assumed that the other should always be defined if one is undefined, since newCommit.hash is only undefined for commits where the file was deleted, and it can't get deleted if it didn't exist before, but these are statuses calculated from comparing neighboring commits, but we are diffing selected commits only, so maybe it's possible that we get in a situation where we compare some initial version commit (that isn't the actual initial commit, so that commit could be a deletion of that file, if a file was newly added and then deleted in the same interval) with an empty state
     plugin.consoleDebug(
       'oldCommit and newCommit are both undefined, assumption is wrong'
@@ -41,17 +41,17 @@ export async function runFileDiff({
   assignDiffAlgorithm(numstatArguments, plugin);
 
   // Only one of these can be true at the same time since we are returning early if they are both true.
-  if (isInitialVersion || newCommit.fileDeleted) {
+  if (oldVersionIsEmpty || newCommit.fileDeleted) {
     const emptyTreeHash = await getEmptyTreeHash({ plugin });
 
     numstatArguments.push(
       emptyTreeHash,
-      isInitialVersion ? newCommit.hash : oldCommit.hash,
+      oldVersionIsEmpty ? newCommit.hash : oldCommit.hash,
       // This part is important. It tells git where is the explicit separation between revisions and the file path. Without it, git will not always be able to parse the file path correctly.
       '--',
       // We can pass oldCommit.filePath if the new commit is just a deletion of that file, meaning the file names are the same. We just inverse the result later to count the showed additions as deletions.
 
-      isInitialVersion ? newCommit.filePath : oldCommit.filePath
+      oldVersionIsEmpty ? newCommit.filePath : oldCommit.filePath
     );
   } else {
     numstatArguments.push(
@@ -62,7 +62,7 @@ export async function runFileDiff({
 
   let fileStatus: DiffFileStatus;
 
-  if (isInitialVersion) {
+  if (oldVersionIsEmpty) {
     fileStatus = DiffFileStatus.Added;
   } else if (newCommit.fileDeleted) {
     fileStatus = DiffFileStatus.Deleted;
@@ -92,6 +92,7 @@ export async function runFileDiff({
   }
 
   const textDiffStats =
+    // If diff result shows no changes, there will be no entries in files array, so in that case, this will assign empty stats to textDiffStats instead of undefined
     diffNumstatResult.files.at(0)?.binary === true
       ? undefined
       : {

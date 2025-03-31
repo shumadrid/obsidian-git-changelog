@@ -4,7 +4,6 @@ import type { LogEntry, TextDiffBaseStats } from 'types.ts';
 
 import { assignDiffAlgorithm } from 'core/gitOperations/helper.ts';
 import { AbortError } from 'types.ts';
-import { parseContentChange } from 'utils.ts';
 
 /**
  * Used for status bar stats.
@@ -12,45 +11,42 @@ import { parseContentChange } from 'utils.ts';
 export async function runWorkingDirFileDiff({
   abortSignal,
   oldCommit,
-  plugin
+  plugin,
+  activeGitFile
 }: {
   abortSignal: AbortSignal;
   oldCommit: LogEntry;
+  activeGitFile: string;
   plugin: GitChangelogPlugin;
 }): Promise<TextDiffBaseStats | undefined> {
-  const numstatArguments = [
-    '--numstat',
-    '--color-moved=no',
-    '-z',
-    '--no-renames',
-    oldCommit.hash,
-    `${oldCommit.filePath}`
-  ];
+  // Status bar calculations should handle cases of undefined oldCommit and oldCommit.fileDeleted === true before reaching this function
 
+  const numstatArguments = ['--numstat', '--color-moved=no', '--no-renames'];
+
+  // Must come before the commit hashes and file paths
   assignDiffAlgorithm(numstatArguments, plugin);
+
+  numstatArguments.push(
+    `${oldCommit.hash}:${oldCommit.filePath}`,
+    activeGitFile
+  );
 
   if (abortSignal.aborted) {
     throw new AbortError();
   }
 
   const git = await plugin.getGit();
-  const diffNumstatResult = await git.diff(numstatArguments);
+  const diffNumstatResult = await git.diffSummary(numstatArguments);
 
-  const parts = diffNumstatResult.split('\t');
-  const addedString = parts[0];
-  const deletedString = parts[1];
-
-  // Determine if this is a binary file or submodule.
-  const isBinary = addedString === '-' && deletedString === '-';
-
-  // Parse numeric values for text files.
-  const textDiffStats = isBinary
-    ? undefined
-    : parseContentChange({ addedStr: addedString, deletedStr: deletedString });
-
-  if (abortSignal.aborted) {
-    throw new AbortError();
-  }
+  const textDiffStats =
+    diffNumstatResult.files.at(0)?.binary === true
+      ? undefined
+      : {
+          baseStats: {
+            additions: diffNumstatResult.insertions,
+            deletions: diffNumstatResult.deletions
+          }
+        };
 
   return textDiffStats?.baseStats;
 }

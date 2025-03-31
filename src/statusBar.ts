@@ -2,7 +2,7 @@ import type { GitChangelogPluginSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
 
-import { findFirstCommitBefore } from 'core/gitOperations/findFirstCommitBefore.ts';
+import { findFirstFileCommitBefore } from 'core/findFirstFileCommitBefore.ts';
 import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
 import { runWorkingDirFileDiff } from 'core/gitOperations/runWorkingDirFileDiff.ts';
 import { MarkdownView } from 'obsidian';
@@ -133,17 +133,18 @@ export class StatusBarStats {
     let additions = 0;
     let deletions = 0;
 
-    const oldCommit = await findFirstCommitBefore({
+    const oldCommit = await findFirstFileCommitBefore({
       abortSignal,
       filePath: activeGitFile,
       minutes: getStatusBarInterval(this.plugin.settings),
       plugin: this.plugin
     });
 
-    if (oldCommit) {
+    if (oldCommit && oldCommit.fileDeleted !== true) {
       const baseStats = await runWorkingDirFileDiff({
         abortSignal,
         oldCommit,
+        activeGitFile,
         plugin: this.plugin
       });
       if (baseStats) {

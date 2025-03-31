@@ -2,23 +2,19 @@ import type GitChangelogPlugin from 'main.ts';
 import type { LogEntry } from 'types.ts';
 
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
-import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
 
 export async function findFirstCommitBefore({
   abortSignal,
-  filePath,
   minutes,
   plugin
 }: {
   abortSignal: AbortSignal;
-  filePath: string;
   minutes: number;
   plugin: GitChangelogPlugin;
 }): Promise<LogEntry | undefined> {
   const options: Record<string, unknown> = {
-    ...(filePath ? { file: filePath } : {}),
     // "--no-patch": null,
     // eslint-disable-next-line no-magic-numbers
     '--before': `${minutes * 60 - 3} seconds ago`,
@@ -31,17 +27,6 @@ export async function findFirstCommitBefore({
     // Splitter: '\0',
     strictDate: true
   };
-
-  if (filePath) {
-    options['--name-status'] = null;
-    // --name-only
-    options['--follow'] = null;
-
-    const renameDetectionStrictness = getRenameDetectionStrictness(
-      plugin.settings.changelogGenerationSettings
-    );
-    options['--find-renames'] = `${renameDetectionStrictness.toString()}%`;
-  }
 
   if (abortSignal.aborted) {
     throw new AbortError();
@@ -63,8 +48,7 @@ export async function findFirstCommitBefore({
   }
 
   return result.all.map<LogEntry>((entry) => ({
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    filePath: entry.diff!.files.first()!.file,
+    filePath: undefined,
     hash: entry.hash,
     timezoneAdjustedDate: spacetime(entry.date).goto(timezone)
   }))[0];

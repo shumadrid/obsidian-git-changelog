@@ -44,8 +44,8 @@ export async function runLog({
     options['--diff-merges'] = 'first-parent';
     options['--name-status'] = null;
 
-    // --name-only
-    // `--follow` does not work well on non-linear history
+    // `--follow` does not work well on non-linear history. It does not work for files that were just renamed in the working directory but haven't been committed yet. It needs commit information to track renames.
+    // This problem can be solved by running a separate git diff name-status command before running git log, to detect potential renames and get the last committed filename of the current file, but the performance impact is not worth it.
     options['--follow'] = null;
     options['--find-renames'] =
       `${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`;
