@@ -54,7 +54,6 @@
           mayTriggerChangelogMenu({
             event,
             commitHash: version.commitHash,
-            // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
             view: view.leaf,
             plugin
           });

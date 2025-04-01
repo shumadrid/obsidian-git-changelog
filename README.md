@@ -120,7 +120,6 @@ git fsck -full
 - By Git design, files/folders specified in `.gitignore` aren't watched for changes.
 - Git decides if a file is binary (non-text) or a text file by analyzing the file contents rather than looking at the file extension. If you rename a text file to have a `.png` extension, Git will still count its lines and treat it as a text file.
 - If some data loss is only a few words/lines in a heavily edited file, you probably won't notice it. Even though those few lines could have been important.
-- When using this plugin, the Git plugin status bar branch indicator may get duplicated. (weird)
 - Interaction with submodules isn't tested yet!
 
 ## Roadmap

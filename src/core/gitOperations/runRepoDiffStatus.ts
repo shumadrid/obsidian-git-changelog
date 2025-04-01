@@ -28,6 +28,11 @@ export async function runRepoDiffStatus({
     // Turns off rename detection, even when the configuration file gives the default to run rename detection.
     '--no-renames'
   ];
+
+  // We don't have to assign the DiffAlgorithm and the WhitespaceIgnoreMode settings because the set that this function returns is just going to be used as a helper set in the runRepoDiff function for assigning an added or deleted file status to changed files that were detected in runRepoDiff using all the proper settings.
+  // If after applying the diff settings, some changed files in runRepoDiff become identical, the runRepoDiff function will simply skip those, and those same files that were detected as changes in this function are never going to be accessed, so they can't return incorrect file statuses.
+  // Also, crossing the rename threshold because of diff settings mismatch isn't a concern since this function isn't used to determine renamed file statuses.
+
   if (pathSpec.length > 0) {
     diffStatusArguments.push('--', ...pathSpec);
   }
@@ -35,7 +40,6 @@ export async function runRepoDiffStatus({
   const diffStatusResult = await git.diffSummary(diffStatusArguments);
 
   const changedFilesMap: Record<string, DiffFileStatus> = {};
-
   for (const file of diffStatusResult.files as DiffResultNameStatusFile[]) {
     switch (file.status) {
       case DiffNameStatus.ADDED: {

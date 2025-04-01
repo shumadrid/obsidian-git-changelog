@@ -6,7 +6,9 @@ export class MiscellaneousButtons extends GitChangelogSetting {
     bugReportDiv.addButton((button) => {
       button.setButtonText('Give feedback');
       button.onClick(() => {
-        window.open('https://github.com/shumadrid/obsidian-git-changelog');
+        window.open(
+          'https://github.com/shumadrid/obsidian-git-changelog/issues'
+        );
       });
     });
 

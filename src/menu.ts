@@ -78,7 +78,6 @@ export function mayTriggerChangelogMenu({
         plugin.app.workspace.trigger(
           'file-menu',
           fileMenu,
-
           assertNotNull(tFile),
           view.view.getViewType(),
           view
