@@ -17,28 +17,28 @@ body:
   - type: dropdown
     id: os
     attributes:
-    label: Operating system
-    description: Which OS are you using?
-    options:
-      - Windows
-      - Linux
-      - macOS
-      - Android
-      - iOS
+      label: Operating system
+      description: Which OS are you using?
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - Android
+        - iOS
     validations:
-    required: true
+      required: true
   - type: dropdown
     id: installation-method
     attributes:
-    label: Installation Method (Linux)
-    description: Only necessary on Linux
-    options:
-      - Flatpak
-      - AppImage
-      - Snap
-      - Other
+      label: Installation Method (Linux)
+      description: Only necessary on Linux
+      options:
+        - Flatpak
+        - AppImage
+        - Snap
+        - Other
     validations:
-    required: false
+      required: false
   - type: textarea
     attributes:
       label: Environment Information
