@@ -95,9 +95,19 @@ export enum ChangelogInterval {
  * Patience and Histogram algorithms don't make sense for this use case.
  */
 export enum DiffAlgorithm {
-  Default = 'Default', // Myers algorithm
   Inherit = 'Inherit',
-  Minimal = 'Minimal'
+  Default = 'default', // Myers algorithm
+  Minimal = 'minimal'
+}
+
+export enum WhitespaceIgnoreMode {
+  None = 'None',
+  SpaceAtEol = 'SpaceAtEol',
+  SpaceChange = 'SpaceChange', // Superset of SpaceAtEol
+  AllSpace = 'AllSpace' // Superset of SpaceChange
+  // None = 'None',
+  // Git lacks a `--no-ignore-whitespace` flag.
+  // `core.whitespace` is related to fixing whitespace issues, not ignoring whitespace in diffs.
 }
 
 /**

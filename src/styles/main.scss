@@ -170,6 +170,28 @@
   gap: var(--size-2-2);
 }
 
+.git-changelog-left-padding {
+  margin-left: var(--size-4-4);
+}
+
+.git-changelog-setting-label {
+  padding: 0 var(--size-4-2);
+  transform: translateY(-1px); // workaround to appear centered
+  display: inline-flex;
+}
+
+.git-changelog-new {
+  @extend .git-changelog-setting-label;
+  color: var(--color-green);
+  background-color: rgba(var(--color-green-rgb), 0.15);
+}
+
+.git-changelog-experimental {
+  @extend .git-changelog-setting-label;
+  color: var(--color-orange);
+  background-color: rgba(var(--color-orange-rgb), 0.15);
+}
+
 /* Sticky view header and padding fixes */
 .workspace-leaf-content {
   &[data-type='vault-changelog-view'] .view-content,

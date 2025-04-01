@@ -1,14 +1,16 @@
 import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 
 import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsTabBase';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 import { CustomLocale } from 'settings/ui/CustomLocale.ts';
+import { DiffAlgorithmOptions } from 'settings/ui/DiffAlgorithmOptions.ts';
+import { DiffConfigHeading } from 'settings/ui/DiffConfigHeading.ts';
+import { IgnoreBlankLinesToggle } from 'settings/ui/IgnoreBlankLinesToggle.ts';
 import { MiscellaneousButtons } from 'settings/ui/MiscellaneousButtons.ts';
+import { WhitespaceIgnoreModeOptions } from 'settings/ui/WhitespaceIgnoreMode.ts';
 
 import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
 import { CustomTimeZone } from './ui/CustomTimeZone.ts';
 import { DayStartTime } from './ui/DayStartTime.ts';
-import { DiffAlgorithmOptions } from './ui/DiffAlgorithmOptions.ts';
 import { ExcludeFilesAndFolders } from './ui/ExcludeFilesAndFolders.ts';
 import { GitPluginWarning } from './ui/GitPluginWarning.ts';
 import { RenameDetectionFileLimit } from './ui/RenameDetectionFileLimit.ts';
@@ -41,8 +43,10 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
 
     new DiffAlgorithmOptions({
       containerEl,
-      plugin
+      plugin,
+      settingTab: this
     }).display();
+
     // New DeletionsNotificationThreshold(plugin, containerEl, false, this).display();
     // New configureDeletionsMovesAlert(
     //   Plugin,
@@ -83,9 +87,22 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
 
     new StatusBarInterval({
       containerEl,
-      disabled: !(
-        plugin.settings.statusBarStats ?? DEFAULT_SETTINGS.statusBarStats
-      ),
+      disabled: !plugin.settings.statusBarStats,
+      plugin
+    }).display();
+
+    new DiffConfigHeading({
+      containerEl,
+      plugin
+    }).display();
+
+    new WhitespaceIgnoreModeOptions({
+      containerEl,
+      plugin
+    }).display();
+
+    new IgnoreBlankLinesToggle({
+      containerEl,
       plugin
     }).display();
 

@@ -5,7 +5,8 @@ import {
   DiffAlgorithm,
   DiffMeasurementUnit,
   FileExplorerStats,
-  FilesSummariesDisplayMode
+  FilesSummariesDisplayMode,
+  WhitespaceIgnoreMode
 } from 'types.ts';
 
 // Constants
@@ -27,6 +28,8 @@ export interface ChangelogGenerationSettings {
   renameLimit: string;
   timezone: string;
   locale: string;
+  whitespaceIgnoreMode: WhitespaceIgnoreMode;
+  ignoreBlankLines: boolean;
 }
 
 export interface VaultChangelogGenerationSettings {
@@ -127,7 +130,9 @@ export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings 
     renameDetectionStrictness: 50,
     renameLimit: '1000',
     timezone: AUTO_DETECT_PLACEHOLDER,
-    locale: AUTO_DETECT_PLACEHOLDER
+    locale: AUTO_DETECT_PLACEHOLDER,
+    whitespaceIgnoreMode: WhitespaceIgnoreMode.None,
+    ignoreBlankLines: false
   } as const;
 export const DEFAULT_SETTINGS: IGitChangelogSettings = {
   autoCommitDisabledWarningDismissed: false,

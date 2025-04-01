@@ -7,6 +7,7 @@ import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
 import {
   addFileStatusToSummary,
   assignDiffAlgorithm,
+  assignWhitespaceIgnoreSettings,
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
 import { convertGitIgnoreToPathspec } from 'settings/ui/ExcludeFilesAndFolders.ts';
@@ -86,6 +87,7 @@ export async function runRepoDiff({
     '-z'
   ];
   assignDiffAlgorithm(numstatArguments, plugin);
+  assignWhitespaceIgnoreSettings(numstatArguments, plugin);
 
   let statusResult: Record<string, DiffFileStatus> | undefined;
 

@@ -2,7 +2,10 @@
 import type GitChangelogPlugin from 'main.ts';
 import type { LogEntry, TextDiffBaseStats } from 'types.ts';
 
-import { assignDiffAlgorithm } from 'core/gitOperations/helper.ts';
+import {
+  assignDiffAlgorithm,
+  assignWhitespaceIgnoreSettings
+} from 'core/gitOperations/helper.ts';
 import { AbortError } from 'types.ts';
 
 /**
@@ -25,6 +28,7 @@ export async function runWorkingDirFileDiff({
 
   // Must come before the commit hashes and file paths
   assignDiffAlgorithm(numstatArguments, plugin);
+  assignWhitespaceIgnoreSettings(numstatArguments, plugin);
 
   numstatArguments.push(
     `${oldCommit.hash}:${oldCommit.filePath}`,

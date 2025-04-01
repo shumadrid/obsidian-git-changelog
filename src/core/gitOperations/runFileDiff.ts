@@ -5,6 +5,7 @@ import { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
 import {
   assignDiffAlgorithm,
+  assignWhitespaceIgnoreSettings,
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
@@ -39,6 +40,7 @@ export async function runFileDiff({
     // `--exit-code`,
   ];
   assignDiffAlgorithm(numstatArguments, plugin);
+  assignWhitespaceIgnoreSettings(numstatArguments, plugin);
 
   // Only one of these can be true at the same time since we are returning early if they are both true.
   if (oldVersionIsEmpty || newCommit.fileDeleted) {

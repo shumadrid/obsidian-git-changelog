@@ -3,7 +3,8 @@ import type { DiffFile, FilesSummary } from 'types.ts';
 
 import { normalizePath } from 'obsidian';
 import { getDiffAlgorithm } from 'settings/ui/DiffAlgorithmOptions.ts';
-import { DiffAlgorithm, DiffFileStatus } from 'types.ts';
+import { getWhitespaceIgnoreMode } from 'settings/ui/WhitespaceIgnoreMode.ts';
+import { DiffAlgorithm, DiffFileStatus, WhitespaceIgnoreMode } from 'types.ts';
 import { getFileNameFromPath } from 'utils.ts';
 import { getDisplayExtensionFromPath } from 'Views/formatters.ts';
 
@@ -40,6 +41,36 @@ export function assignDiffAlgorithm(
     default: {
       break;
     }
+  }
+}
+
+export function assignWhitespaceIgnoreSettings(
+  arguments_: string[],
+  plugin: GitChangelogPlugin
+): void {
+  const whitespaceIgnoreMode = getWhitespaceIgnoreMode(
+    plugin.settings.changelogGenerationSettings
+  );
+  switch (whitespaceIgnoreMode) {
+    case WhitespaceIgnoreMode.None: {
+      break;
+    }
+    case WhitespaceIgnoreMode.SpaceAtEol: {
+      arguments_.push('--ignore-space-at-eol');
+      break;
+    }
+    case WhitespaceIgnoreMode.SpaceChange: {
+      arguments_.push('--ignore-space-change');
+      break;
+    }
+    case WhitespaceIgnoreMode.AllSpace: {
+      arguments_.push('--ignore-all-space');
+      break;
+    }
+  }
+
+  if (plugin.settings.changelogGenerationSettings.ignoreBlankLines) {
+    arguments_.push('--ignore-blank-lines');
   }
 }
 
