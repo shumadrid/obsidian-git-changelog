@@ -8,19 +8,34 @@ import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 export class ExcludeFilesAndFolders extends GitChangelogSetting {
   public display(): void {
     this.createSetting()
-      .setName('Exclude files and folders (experimental)')
+      .setName(
+        createFragment((fragment) => {
+          fragment.appendText(`Exclude files and folders`);
+          fragment
+            .createEl('span', {
+              cls: 'nav-file-tag git-changelog-experimental'
+            })
+            .setText('EXPERIMENTAL');
+        })
+      )
       .setDesc(
         createFragment((fragment) => {
           fragment.appendText(
-            "Items listed here will still be committed to your repository but won't be included in the vault changelog. Use the same "
+            "Items listed here will still be committed to your repository but won't be included in the vault changelog."
           );
+          fragment.createEl('br');
+          fragment.appendText('Use the same ');
           fragment.createEl('a', {
             href: 'https://gitcheatsheet.org/how-to/git-gitignore',
             text: 'syntax'
           });
           fragment.appendText(
-            " as .gitignore, but note that negation patterns are not yet supported. The main .gitignore file still applies. Don't forget to put .md for markdown files."
+            ' as .gitignore, but note that negation patterns are not yet supported.'
           );
+          fragment.createEl('br');
+          fragment.appendText('The main .gitignore file still applies.');
+          fragment.createEl('br');
+          fragment.appendText("Don't forget to put .md for markdown files.");
         })
       )
       .addTextArea((text) => {

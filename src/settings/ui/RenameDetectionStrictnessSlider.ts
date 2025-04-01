@@ -14,7 +14,15 @@ export class RenameDetectionStrictnessSlider extends GitChangelogSetting {
     const setting = this.createSetting()
       .setName('File move/rename detection strictness')
       .setDesc(
-        "Flag files as renamed only if more than X% of the file hasn't changed. Adjust this if you notice the plugin missing valid moves/renames or showing false positives."
+        createFragment((fragment) => {
+          fragment.appendText(
+            `Flag files as renamed only if more than X% of the file hasn't changed.`
+          );
+          fragment.createEl('br');
+          fragment.appendText(
+            'Adjust this if you notice the plugin missing valid moves/renames or showing false positives.'
+          );
+        })
       );
 
     new ResetButton(setting.controlEl).onClick(() => {
