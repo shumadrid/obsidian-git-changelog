@@ -3,10 +3,10 @@ import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsTabBase';
 import { CustomLocale } from 'settings/ui/CustomLocale.ts';
 import { DiffAlgorithmOptions } from 'settings/ui/DiffAlgorithmOptions.ts';
-import { DiffConfigHeading } from 'settings/ui/DiffConfigHeading.ts';
 import { IgnoreBlankLinesToggle } from 'settings/ui/IgnoreBlankLinesToggle.ts';
 import { MiscellaneousButtons } from 'settings/ui/MiscellaneousButtons.ts';
 import { WhitespaceIgnoreModeOptions } from 'settings/ui/WhitespaceIgnoreMode.ts';
+import { WhitespaceSettingsHeading } from 'settings/ui/WhitespaceSettingsHeading.ts';
 
 import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
 import { CustomTimeZone } from './ui/CustomTimeZone.ts';
@@ -91,7 +91,7 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
       plugin
     }).display();
 
-    new DiffConfigHeading({
+    new WhitespaceSettingsHeading({
       containerEl,
       plugin
     }).display();

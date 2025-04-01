@@ -2,6 +2,7 @@
 import type { App, WorkspaceLeaf } from 'obsidian';
 import type { DiffFile, TextDiffStats } from 'types.ts';
 
+import { FEEDBACK_URL } from 'constants.ts';
 // Import * as cssColorConverter from "css-color-converter";
 import { Keymap } from 'obsidian';
 import { DiffFileStatus, NullValueError } from 'types.ts';
@@ -92,8 +93,30 @@ export function parseContentChange({
 
 export function assertNotNull<T>(value: null | T | undefined): T {
   DEV: if (value === null || value === undefined) {
-    console.error('Non-nullable value is null or undefined');
-    throw new NullValueError();
+    const error = new NullValueError();
+    const stack = error.stack ?? '';
+    const message = `Git changelog:\nNon-nullable value is null or undefined`;
+    console.error(message);
+    const fragment = createFragment((el) => {
+      el.createEl('p', {
+        text: 'Git changelog:\nHey, some null error happened that shouldn`t have.\nCan you please copy the error info and report it to the Github issues page so that it can get fixed.\nJust paste the copied info, nothing more'
+      });
+
+      const button = el.createEl('button', { text: 'Copy & Report Issue' });
+      button.addEventListener('click', () => {
+        window.navigator.clipboard
+          .writeText(stack)
+          .then(() => {
+            window.open(FEEDBACK_URL);
+          })
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          .catch(() => {});
+      });
+    });
+
+    new Notice(fragment, 0);
+
+    throw error;
   }
   return value;
 }

@@ -4,6 +4,9 @@ export const PLUGIN_NAME_SENTENCE_CASE =
 export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
 export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.1';
 
+export const FEEDBACK_URL =
+  'https://github.com/shumadrid/obsidian-git-changelog/issues';
+
 // Icons
 export const ADDITIONS_ICON = 'list-plus';
 export const DELETIONS_ICON = 'list-minus';
