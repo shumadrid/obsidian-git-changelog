@@ -9,21 +9,18 @@ export class ChangelogMeasurementUnit extends GitChangelogSetting {
     this.createSetting()
       .setName('Changelog measurement unit')
       .addDropdown((dropdown) => {
-        const options: Record<DiffMeasurementUnit, string> = {
-          Lines: 'Lines',
-          Words: 'Words'
+        const options = {
+          [DiffMeasurementUnit.Lines]: 'Lines',
+          [DiffMeasurementUnit.Words]: 'Words'
         };
         dropdown.addOptions(options);
         dropdown.setValue(
           getMeasurementUnit(this.plugin.settings.changelogGenerationSettings)
         );
 
-        dropdown.onChange((value: string) => {
-          const option =
-            DiffMeasurementUnit[value as keyof typeof DiffMeasurementUnit];
-
+        dropdown.onChange((value: DiffMeasurementUnit) => {
           const newSettings = this.plugin.settingsClone;
-          newSettings.changelogGenerationSettings.measurementUnit = option;
+          newSettings.changelogGenerationSettings.measurementUnit = value;
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.plugin.saveSettings(newSettings);
         });
