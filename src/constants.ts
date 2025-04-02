@@ -3,8 +3,10 @@ export const PLUGIN_NAME_SENTENCE_CASE = 'Git changelog';
 export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
 export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.1';
 
+// Strings
 export const FEEDBACK_URL =
   'https://github.com/shumadrid/obsidian-git-changelog/issues';
+export const EXCLUDE_FILES_AND_FOLDERS = 'Exclude files and folders';
 
 // Icons
 export const ADDITIONS_ICON = 'list-plus';

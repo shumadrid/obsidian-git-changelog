@@ -69,6 +69,12 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     ) {
       return true;
     }
+    if (
+      oldSettings.vaultChangelogGenerationSettings.convertToInclude !==
+      newSettings.vaultChangelogGenerationSettings.convertToInclude
+    ) {
+      return true;
+    }
     return super.generationSettingsChanged(oldSettings, newSettings);
   }
 

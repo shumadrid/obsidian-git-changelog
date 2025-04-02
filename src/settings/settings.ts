@@ -35,6 +35,7 @@ export interface ChangelogGenerationSettings {
 
 export interface VaultChangelogGenerationSettings {
   excludeFilesAndFoldersLines: string[];
+  convertToInclude: boolean;
   interval: ChangelogInterval;
 }
 
@@ -119,6 +120,7 @@ export class GitChangelogPluginSettings
 export const DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS: VaultChangelogGenerationSettings =
   {
     excludeFilesAndFoldersLines: [],
+    convertToInclude: false,
     interval: ChangelogInterval.Daily
   } as const;
 

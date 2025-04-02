@@ -4,6 +4,7 @@ import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/Plugin/Plugin
 import { CustomLocale } from 'settings/ui/CustomLocale.ts';
 import { DiffAlgorithmOptions } from 'settings/ui/DiffAlgorithmOptions.ts';
 import { IgnoreBlankLinesToggle } from 'settings/ui/IgnoreBlankLinesToggle.ts';
+import { IncludeItemsToggle } from 'settings/ui/IncludeItemsToggle.ts';
 import { MiscellaneousButtons } from 'settings/ui/MiscellaneousButtons.ts';
 import { WhitespaceIgnoreModeOptions } from 'settings/ui/WhitespaceIgnoreMode.ts';
 import { WhitespaceSettingsHeading } from 'settings/ui/WhitespaceSettingsHeading.ts';
@@ -68,6 +69,11 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     //     FileExplorerChangelogStats.Disabled
     // ).display();
     new ExcludeFilesAndFolders({ containerEl, plugin }).display();
+
+    new IncludeItemsToggle({
+      containerEl,
+      plugin
+    }).display();
 
     new RenameDetectionStrictnessSlider({
       containerEl,

@@ -2,6 +2,7 @@
 
 import type { ReadonlyDeep } from 'type-fest';
 
+import { EXCLUDE_FILES_AND_FOLDERS } from 'constants.ts';
 import { GitChangelogSetting } from 'settings/components/setting.ts';
 import { DEFAULT_SETTINGS } from 'settings/settings.ts';
 
@@ -10,7 +11,7 @@ export class ExcludeFilesAndFolders extends GitChangelogSetting {
     this.createSetting()
       .setName(
         createFragment((fragment) => {
-          fragment.appendText(`Exclude files and folders`);
+          fragment.appendText(EXCLUDE_FILES_AND_FOLDERS);
           fragment
             .createEl('span', {
               cls: 'nav-file-tag git-changelog-experimental'
@@ -86,11 +87,14 @@ export function parseGitIgnoreLine(gitIgnoreLine: string): string {
 }
 
 export function convertGitIgnoreToPathspec(
-  gitIgnoreRules: ReadonlyDeep<string[]>
+  gitIgnoreRules: ReadonlyDeep<string[]>,
+  include: boolean
 ): string[] {
   try {
-    // Always exclude .git directory
-    const excludes: string[] = [':(exclude,glob)**/.git/**'];
+    const items: string[] = [];
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
+    const excludePrefix = include === true ? '' : 'exclude,';
 
     for (const line of gitIgnoreRules.map((element) =>
       parseGitIgnoreLine(element)
@@ -104,21 +108,20 @@ export function convertGitIgnoreToPathspec(
       // Handle patterns differently based on their format:
       if (line.endsWith('/*')) {
         // Single-level match
-        excludes.push(`:(exclude,glob)${formatted}`);
+        items.push(`:(${excludePrefix}glob)${formatted}`);
       } else if (line.endsWith('/**') || line.endsWith('/')) {
         // Recursive match
-        excludes.push(`:(exclude,glob)${formatted}`);
+        items.push(`:(${excludePrefix}glob)${formatted}`);
       } else {
         // All other patterns - match both item and contents
         // Regardless of whether they contain special characters
-        excludes.push(
-          `:(exclude,glob)${formatted}`,
-          `:(exclude,glob)${formatted}/**`
+        items.push(
+          `:(${excludePrefix}glob)${formatted}`,
+          `:(${excludePrefix}glob)${formatted}/**`
         );
       }
     }
-
-    return excludes;
+    return items;
   } catch {
     return [];
   }
