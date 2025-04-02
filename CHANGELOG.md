@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 0.4.0
+
+### Features
+
+- Add options for ignoring whitespace changes.
+- Expand "Copy commit hash" context menu option to also copy the file path when possible.
+
+### Bug Fixes
+
+- Make the plugin load faster by reducing file size.
+- Disable "Change interval" button for the file changelog when no file is opened.
+- Don't forget the collapsed state of the first version when chaining recomputes.
+- Make the status bar stats recognize renamed files once they're committed instead of treating them as new.
+- Ensure version labels are displayed in the user's specified timezone.
+- Remove redundant Git plugin initialization check on startup.
+- Add more detail to incompatibility notices about the installed Git plugin version.
+- Prevent expanding large number of versions in the vault changelog view as a temporary workaround for performance degradations.
+
 ## 0.3.0
 
 ### Features
