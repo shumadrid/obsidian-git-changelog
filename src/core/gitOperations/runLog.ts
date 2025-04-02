@@ -1,14 +1,16 @@
 import type GitChangelogPlugin from 'main.ts';
-import type { DiffResultNameStatusFile } from 'simple-git';
 import type { LogEntry } from 'types.ts';
 
 import { unescapeGitFileOutput } from 'core/gitOperations/helper.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
-import { DiffNameStatus } from 'simple-git';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
 import { assertNotNull } from 'utils.ts';
+
+import type { DiffResultNameStatusFile } from './simpleGitTypes.ts';
+
+import { DiffNameStatus } from './simpleGitTypes.ts';
 
 // Less efficient than running raw?
 export async function runLog({

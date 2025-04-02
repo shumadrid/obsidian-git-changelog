@@ -10,6 +10,7 @@ import {
 } from 'types.ts';
 
 // Constants
+// Takes 0.3 ms
 export const TIME_ZONES_LIST = new Set(Object.keys(spacetime().timezones));
 export const MAX_SUPPORTED_INTERVAL = 99_999; // ~69 days
 export const AUTO_DETECT_PLACEHOLDER = 'Auto-detect';

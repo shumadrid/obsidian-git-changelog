@@ -99,6 +99,18 @@ export default typescriptEslint.config(
           allowTypedFunctionExpressions: true,
           allowHigherOrderFunctions: true
         }
+      ],
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'simple-git',
+              message: 'Please copy paste the needed enum instead.',
+              allowTypeImports: true
+            }
+          ]
+        }
       ]
     }
   },

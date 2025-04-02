@@ -1,8 +1,10 @@
 import type GitChangelogPlugin from 'main.ts';
-import type { DiffResultNameStatusFile } from 'simple-git';
 
-import { DiffNameStatus } from 'simple-git';
 import { DiffFileStatus } from 'types.ts';
+
+import type { DiffResultNameStatusFile } from './simpleGitTypes.ts';
+
+import { DiffNameStatus } from './simpleGitTypes.ts';
 
 /**
  * Check the number of changed files and if they are added, modified or deleted. this function is needed because git diff --numstat doesn't say if a file is added or deleted
