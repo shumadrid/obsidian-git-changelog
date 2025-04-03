@@ -6,7 +6,7 @@ export class WhitespaceSettingsHeading extends GitChangelogSetting {
       .setHeading()
       .setName('Whitespace settings')
       .setDesc(
-        `Note that adjusting these settings will make the generated stats to slightly differ from the diff view, because unlike the diff algorithm, these settings can't be applied globally.`
+        `Note that adjusting these settings will make the generated stats slightly differ from the diff view, because unlike the diff algorithm, these settings can't be applied globally.`
       );
   }
 }
