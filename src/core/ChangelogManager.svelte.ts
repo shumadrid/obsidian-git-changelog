@@ -97,6 +97,8 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     // We want to immediately cancel all current operations for the changelog and schedule the operation in a queue.
     const abortSignal = this.resetAndGetSignal();
 
+    // Abort controllers don't just serve to optimize performance by stopping the execution of cancelled functions, but they also serve to prevent those cancelled functions from mutating current state and introducing race conditions.
+    // All abort signals need to be created on call time, and also the plugin settings (it's not strictly necessary, because operations with outdated settings will always get cancelled anyway).
     this.taskManager.enqueueSafely(async () => {
       await this.computeChangelog(abortSignal);
     });
@@ -162,6 +164,10 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     abortSignal: AbortSignal;
     activeGitFile?: string;
   }): Promise<T[]> {
+    // Terminology:
+    // ActiveGitFile: the current file path of some live file version.
+    // FilePath: the path of some file in history.
+
     // Gets all commits newer (>=) than the commit of the latest cached version.
     const timezoneAdjustedLogs = await runLog({
       abortSignal,
@@ -258,6 +264,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       });
     } else {
       // If necessary, retrieve additional entries (if there are any left) and then append.
+      // Check for sufficient versions when the task gets it's turn, not when it is added to the queue.
       if (this.shouldRetrieveMoreReserveEntries()) {
         await this.maybeRetrieveReserveEntries({ abortSignal });
       }

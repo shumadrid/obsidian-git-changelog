@@ -38,6 +38,14 @@ Install the plugin from [the official Community Plugins repository](https://obsi
 
   For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
 
+- **Include items:**
+
+  Convert the `Exclude Files and Folders` list to an include list, while excluding everything else.
+
+  An example case where this can come in handy is when you notice your vault misbehaving, you can trigger this setting and put `.obsidian` in the list to exclusively see changes made inside your configuration folder.
+
+  Then you can easily investigate what settings recently changed and if some of the changes are the cause of your issue.
+
 ![Vault Changelog View](.github/vault-changelog-view.webp)
 
 ### File Changelog View
@@ -54,6 +62,7 @@ Install the plugin from [the official Community Plugins repository](https://obsi
 - Set a custom day start time (if you're a night owl and want to track your actual days).
 - Set a custom timezone to base the intervals on or detect it automatically.
 - Choose to view hourly, daily, weekly, or monthly intervals.
+- Choose from 5 options to ignore whitespace changes with varying intensity.
 - **Adjust file rename detection strictness:**
 
   Git can't actually track which files you renamed. Instead, it tries to detect renames by comparing the file contents of the old and new files.

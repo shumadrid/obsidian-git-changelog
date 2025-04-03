@@ -167,7 +167,7 @@
           entry.isCollapsed = !everythingCollapsed;
       } else {
         plugin.displayNotice(
-          `Too many entries. Can't expand all because of performance reasons.`,
+          `Too many versions. Unable to expand them all because of the impact on performance.`,
           // eslint-disable-next-line no-magic-numbers
           1500
         );
