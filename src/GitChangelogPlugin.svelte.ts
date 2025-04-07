@@ -106,8 +106,16 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginSettings> {
     this.consoleDebug(`Error:`, error.stack);
   }
 
-  // eslint-disable-next-line no-magic-numbers
-  public displayNotice(message: string, timeout: number = 3 * 1000): void {
+  public displayNotice(
+    message: DocumentFragment | string,
+    // eslint-disable-next-line no-magic-numbers
+    timeout: number = 3 * 1000
+  ): void {
+    if (message instanceof DocumentFragment) {
+      new Notice(message, timeout);
+      return;
+    }
+
     new Notice(`${this.manifest.name}:\n${message}`, timeout);
   }
 

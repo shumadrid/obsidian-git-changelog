@@ -117,7 +117,14 @@ export function addExcludeMenuItem({
     plugin
   });
   const ruleAlreadyExists = lineNumber !== -1;
-  const actionTitle = ruleAlreadyExists ? 'Reinclude' : 'Exclude';
+  const isIncludeList =
+    plugin.settings.vaultChangelogGenerationSettings.convertToIncludeList;
+  let actionTitle: string;
+  if (isIncludeList) {
+    actionTitle = ruleAlreadyExists ? 'Re-exclude' : 'Include';
+  } else {
+    actionTitle = ruleAlreadyExists ? 'Reinclude' : 'Exclude';
+  }
 
   item
     .setSection('action')

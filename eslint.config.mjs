@@ -89,7 +89,8 @@ export default typescriptEslint.config(
         'error',
         {
           ignore: [-1, 0, 1, 2],
-          ignoreDefaultValues: true
+          ignoreDefaultValues: true,
+          ignoreClassFieldInitialValues: true
         }
       ],
       '@typescript-eslint/explicit-function-return-type': [

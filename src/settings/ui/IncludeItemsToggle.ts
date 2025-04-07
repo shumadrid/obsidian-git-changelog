@@ -26,7 +26,7 @@ export class IncludeItemsToggle extends GitChangelogSetting {
         toggle
           .setValue(
             this.plugin.settings.vaultChangelogGenerationSettings
-              .convertToInclude
+              .convertToIncludeList
           )
           .onChange((value) => {
             const newSettings = this.plugin.settingsClone;
