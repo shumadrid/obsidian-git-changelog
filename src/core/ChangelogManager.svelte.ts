@@ -124,7 +124,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
 
   public abstract specificSettingsChanged(
     oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: GitChangelogSettings
+    newSettings: ReadonlyDeep<GitChangelogSettings>
   ): boolean;
 
   public resetAndGetSignal(): AbortSignal {

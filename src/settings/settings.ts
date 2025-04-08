@@ -6,7 +6,7 @@ import {
   DiffAlgorithm,
   DiffMeasurementUnit,
   FileExplorerStats,
-  FilesSummariesDisplayMode,
+  FileSummariesDisplayMode,
   WhitespaceIgnoreMode
 } from 'types.ts';
 
@@ -17,36 +17,32 @@ export const MAX_SUPPORTED_INTERVAL = 99_999; // ~69 days
 export const AUTO_DETECT_PLACEHOLDER = 'Auto-detect';
 
 export class GitChangelogSettings {
-  // State
+  // Plugin state
   public autoCommitDisabledWarningDismissed = false;
-
   public firstStartup = true;
-
-  /**
-   * The number refers to either words or lines depending on what the changelog is set up to count
-   */
-  public contentDeletionsAndMovesWarningThreshold = '2000';
 
   // ShowFilesSummaryCountOptions[]; //Set<ShowFilesSummaryCountOptions>;
   // VaultChangelogFilesVisibility: VaultChangelogFilesVisibility;
   // NotifyOnLargeCommitAdditions: boolean;
   // NotifyOnLargeCommitAdditionsWarningThreshold: string;
   public dedicatedFileTypeSummaries: string[] = [];
+  public fileSummariesDisplayMode: FileSummariesDisplayMode =
+    FileSummariesDisplayMode.Total;
 
   public fileExplorerInterval = '4320'; // In mins
   public fileExplorerStats: FileExplorerStats = FileExplorerStats.Disabled;
 
-  public filesChangesWarningThreshold = '50';
+  public notifyOnHighContentDeletionsAndMoves = true;
+  /**
+   * The number refers to either words or lines depending on what the changelog is set up to count
+   */
+  public contentDeletionsAndMovesWarningThreshold = '2000';
 
-  public fileSummariesDisplayMode: FilesSummariesDisplayMode =
-    FilesSummariesDisplayMode.Total;
-
-  public notifyOnContentDeletionsAndMovesThresholdReached = true;
-
-  public notifyOnFilesChangesThresholdReached = false;
+  public notifyOnHighFilesChanged = false;
+  public filesChangedWarningThreshold = '50';
 
   public statusBarInterval = 30; // In mins
-  public statusBarStatsEnabled = false;
+  public showStatusBarStats = false;
 
   // FileGenerationSettings
   public fileChangelogInterval: ChangelogInterval = ChangelogInterval.Daily;
@@ -122,17 +118,17 @@ type VaultGenerationSettings = Except<
   | 'fileChangelogInterval'
   | 'fileExplorerInterval'
   | 'fileExplorerStats'
-  | 'filesChangesWarningThreshold'
+  | 'filesChangedWarningThreshold'
   | 'fileSummariesDisplayMode'
   | 'firstStartup'
   | 'ignoreBlankLines'
   | 'locale'
-  | 'notifyOnContentDeletionsAndMovesThresholdReached'
-  | 'notifyOnFilesChangesThresholdReached'
+  | 'notifyOnHighContentDeletionsAndMoves'
+  | 'notifyOnHighFilesChanged'
   | 'renameDetectionStrictness'
   | 'renameLimit'
+  | 'showStatusBarStats'
   | 'statusBarInterval'
-  | 'statusBarStatsEnabled'
   | 'timeZone'
   | 'whitespaceIgnoreMode'
 >;
@@ -150,17 +146,17 @@ type FileGenerationSettings = Except<
   | 'excludeFilesAndFoldersLines'
   | 'fileExplorerInterval'
   | 'fileExplorerStats'
-  | 'filesChangesWarningThreshold'
+  | 'filesChangedWarningThreshold'
   | 'fileSummariesDisplayMode'
   | 'firstStartup'
   | 'ignoreBlankLines'
   | 'locale'
-  | 'notifyOnContentDeletionsAndMovesThresholdReached'
-  | 'notifyOnFilesChangesThresholdReached'
+  | 'notifyOnHighContentDeletionsAndMoves'
+  | 'notifyOnHighFilesChanged'
   | 'renameDetectionStrictness'
   | 'renameLimit'
+  | 'showStatusBarStats'
   | 'statusBarInterval'
-  | 'statusBarStatsEnabled'
   | 'timeZone'
   | 'vaultChangelogInterval'
   | 'whitespaceIgnoreMode'
@@ -176,12 +172,12 @@ type GenerationSettings = Except<
   | 'fileChangelogInterval'
   | 'fileExplorerInterval'
   | 'fileExplorerStats'
-  | 'filesChangesWarningThreshold'
+  | 'filesChangedWarningThreshold'
   | 'fileSummariesDisplayMode'
   | 'firstStartup'
-  | 'notifyOnContentDeletionsAndMovesThresholdReached'
-  | 'notifyOnFilesChangesThresholdReached'
+  | 'notifyOnHighContentDeletionsAndMoves'
+  | 'notifyOnHighFilesChanged'
+  | 'showStatusBarStats'
   | 'statusBarInterval'
-  | 'statusBarStatsEnabled'
   | 'vaultChangelogInterval'
 >;

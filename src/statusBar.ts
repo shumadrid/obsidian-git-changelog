@@ -67,7 +67,7 @@ export class StatusBarStats {
 
   public static generationSettingsChanged(
     oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: GitChangelogSettings
+    newSettings: ReadonlyDeep<GitChangelogSettings>
   ): boolean {
     return oldSettings.statusBarInterval !== newSettings.statusBarInterval;
   }
@@ -86,7 +86,7 @@ export class StatusBarStats {
       if (abortSignal.aborted) {
         throw new AbortError();
       }
-      if (this.plugin.settings.statusBarStatsEnabled) {
+      if (this.plugin.settings.showStatusBarStats) {
         const result = await this.calculateStatsForActiveFile(
           this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
           abortSignal

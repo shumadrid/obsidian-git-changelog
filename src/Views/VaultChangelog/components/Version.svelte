@@ -8,7 +8,7 @@
   import { onDestroy } from 'svelte';
   // eslint-disable-next-line import-x/no-duplicates
   import { slide } from 'svelte/transition';
-  import { FilesSummariesDisplayMode } from 'types.ts';
+  import { FileSummariesDisplayMode } from 'types.ts';
   import { composeVersionTitle } from 'Views/formatters.ts';
   import { VaultChangelogView } from 'Views/VaultChangelog/VaultChangelog.ts';
 
@@ -18,7 +18,7 @@
 
   interface Properties {
     plugin: GitChangelogPlugin;
-    showFilesCountSummaries: FilesSummariesDisplayMode;
+    showFilesCountSummaries: FileSummariesDisplayMode;
     version: VaultChangelogEntry;
   }
 
@@ -106,7 +106,7 @@
         {/if}
       </div>
       <!-- if more than one option is selected then show labels -->
-      {#if showFilesCountSummaries === FilesSummariesDisplayMode.Total}
+      {#if showFilesCountSummaries === FileSummariesDisplayMode.Total}
         <div class="git-changelog-stat">
           <DayFilesStatusComponent
             filesSummary={version.getChangelogFilesSummary()}
@@ -114,7 +114,7 @@
         </div>
       {/if}
 
-      {#if showFilesCountSummaries === FilesSummariesDisplayMode.TextAndBinary}
+      {#if showFilesCountSummaries === FileSummariesDisplayMode.TextAndBinary}
         {#if version.binaryFiles.length > 0}
           <div class="git-changelog-stat">
             <DayFilesStatusComponent

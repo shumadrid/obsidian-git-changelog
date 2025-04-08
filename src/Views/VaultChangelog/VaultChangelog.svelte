@@ -8,7 +8,7 @@
   import { setIcon } from 'obsidian';
   import { onDestroy, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
-  import { FilesSummariesDisplayMode } from 'types.ts';
+  import { FileSummariesDisplayMode } from 'types.ts';
   import { assertNotNull } from 'utils.ts';
   import { getIntervalAdjectiveString } from 'Views/formatters.ts';
 
@@ -144,9 +144,9 @@
 
   async function toggleFilesSummaryOption(): Promise<void> {
     showFilesCountSummariesMode =
-      showFilesCountSummariesMode === FilesSummariesDisplayMode.Total
-        ? FilesSummariesDisplayMode.TextAndBinary
-        : FilesSummariesDisplayMode.Total;
+      showFilesCountSummariesMode === FileSummariesDisplayMode.Total
+        ? FileSummariesDisplayMode.TextAndBinary
+        : FileSummariesDisplayMode.Total;
 
     await plugin.settingsManager.editAndSave(
       (settings: GitChangelogSettings): void => {
@@ -208,7 +208,7 @@
         data-icon={TOGGLE_FILES_SUMMARY_OPTION_ICON}
         aria-disabled={changelogState !== VaultChangelogState.HasEntries}
         aria-label={showFilesCountSummariesMode ===
-        FilesSummariesDisplayMode.Total
+        FileSummariesDisplayMode.Total
           ? 'Text/media summary stats'
           : 'Total files summary stats'}
         bind:this={filesSummaryDisplayModeButton}

@@ -8,16 +8,12 @@ export class DeletionsNotificationThreshold extends SettingComponent {
         'Notify if changes between neighboring commits exceed a threshold, which can be a sign of data loss or corruption.'
       )
       .addToggle((toggle) => {
-        this.settingTab.bind(
-          toggle,
-          'notifyOnContentDeletionsAndMovesThresholdReached',
-          {
-            shouldShowValidationMessage: false,
-            onChanged: () => {
-              this.refreshDisplayWithDelay();
-            }
+        this.settingTab.bind(toggle, 'notifyOnHighContentDeletionsAndMoves', {
+          shouldShowValidationMessage: false,
+          onChanged: () => {
+            this.refreshDisplayWithDelay();
           }
-        );
+        });
       });
   }
 }

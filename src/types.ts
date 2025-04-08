@@ -137,7 +137,7 @@ export enum FileExplorerStats {
   FoldersAndNotes = 'FoldersAndNotes'
 }
 
-export enum FilesSummariesDisplayMode {
+export enum FileSummariesDisplayMode {
   TextAndBinary = 'Text and binary',
   Total = 'Total'
   // Binary = "Binary",

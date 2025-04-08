@@ -121,11 +121,11 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
     );
 
     this.registerValidator(
-      'filesChangesWarningThreshold',
-      (filesChangesWarningThreshold): MaybeReturn<string> => {
+      'filesChangedWarningThreshold',
+      (filesChangedWarningThreshold): MaybeReturn<string> => {
         if (
-          !Number.isInteger(Number(filesChangesWarningThreshold)) ||
-          Number(filesChangesWarningThreshold) < 1
+          !Number.isInteger(Number(filesChangedWarningThreshold)) ||
+          Number(filesChangedWarningThreshold) < 1
         ) {
           return 'Invalid threshold value';
         }

@@ -7,11 +7,11 @@ import type { ReadonlyDeep } from 'type-fest';
 
 import { FileChangelogManager } from 'core/FileChangelogManager.ts';
 import { runHashObjectEmptyTree } from 'core/gitOperations/runHashObjectEmptyTree.ts';
+import { changelogGenerationSettingsChanged } from 'core/helper.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
 import { addContextMenuItems } from 'menu.ts';
 import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
-import { changelogGenerationSettingsChanged } from 'settings/helper.ts';
 import { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import {
@@ -171,6 +171,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     if (skipCheck) {
       return;
     }
+
     this.debouncedChangelogSettingsChangedCheck?.(_oldSettings, _newSettings);
   }
 
@@ -229,7 +230,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       taskManager: new TaskManager(this)
     });
 
-    if (this.settings.statusBarStatsEnabled) {
+    if (this.settings.showStatusBarStats) {
       this.initStatusBar();
     }
 
@@ -328,7 +329,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
    */
   private onSaveSettingsCheck(
     oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: GitChangelogSettings
+    newSettings: ReadonlyDeep<GitChangelogSettings>
   ): void {
     try {
       if (
@@ -355,8 +356,8 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       }
 
       // Handle destroying and initializing the status bar stats
-      if (this.settings.statusBarStatsEnabled !== !!this.statusBarStats) {
-        const shouldEnableStatusBarStats = this.settings.statusBarStatsEnabled;
+      if (this.settings.showStatusBarStats !== !!this.statusBarStats) {
+        const shouldEnableStatusBarStats = this.settings.showStatusBarStats;
         if (shouldEnableStatusBarStats) {
           this.initStatusBar();
         } else {

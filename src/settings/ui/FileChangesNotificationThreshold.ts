@@ -5,7 +5,7 @@ export class FileChangesNotificationThreshold extends SettingComponent {
     this.createSetting()
       .setName('Custom threshold for file changes alert')
       .addText((text) => {
-        this.settingTab.bind(text, 'filesChangesWarningThreshold', {
+        this.settingTab.bind(text, 'filesChangedWarningThreshold', {
           shouldShowValidationMessage: false
         });
 

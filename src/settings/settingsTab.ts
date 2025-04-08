@@ -72,7 +72,7 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     new StatusBarStatsToggle({ plugin }).display();
 
     new StatusBarInterval({
-      disabled: !plugin.settings.statusBarStatsEnabled,
+      disabled: !plugin.settings.showStatusBarStats,
       plugin
     }).display();
 

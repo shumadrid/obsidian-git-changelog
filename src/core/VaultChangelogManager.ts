@@ -60,7 +60,7 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
 
   public override specificSettingsChanged(
     oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: GitChangelogSettings
+    newSettings: ReadonlyDeep<GitChangelogSettings>
   ): boolean {
     const oldVaultGenerationSettings = pickVaultChangelogSettings(oldSettings);
     const newVaultGenerationSettings = pickVaultChangelogSettings(newSettings);
