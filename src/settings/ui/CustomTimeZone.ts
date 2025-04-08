@@ -1,6 +1,5 @@
 import type GitChangelogPlugin from 'main.ts';
 
-import { Notice } from 'obsidian';
 import { SettingComponent } from 'settings/components/setting.ts';
 import { TimeZoneSuggest } from 'settings/components/suggest.ts';
 import { TIME_ZONES_LIST } from 'settings/settings.ts';
@@ -29,7 +28,7 @@ function getSystemTimeZone(plugin: GitChangelogPlugin): string {
     if (validateCustomTimeZone(systemTimeZone)) {
       plugin.detectedTimeZone = systemTimeZone;
     } else {
-      new Notice(
+      plugin.displayNotice(
         "Couldn't detect a valid system time zone: Obsidian installer version might be too old.\nFallback to UTC."
       );
       plugin.detectedTimeZone = 'utc';

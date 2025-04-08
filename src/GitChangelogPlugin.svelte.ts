@@ -165,8 +165,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
   // eslint-disable-next-line @typescript-eslint/require-await
   public override async onSaveSettings(
     _newSettings: GitChangelogSettings,
-    _oldSettings: GitChangelogSettings
+    _oldSettings: GitChangelogSettings,
+    skipCheck?: boolean
   ): Promise<void> {
+    if (skipCheck) {
+      return;
+    }
     this.debouncedChangelogSettingsChangedCheck?.(_oldSettings, _newSettings);
   }
 

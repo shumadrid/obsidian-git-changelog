@@ -50,7 +50,8 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     await this.plugin.settingsManager.editAndSave(
       (settings: GitChangelogSettings): void => {
         settings.vaultChangelogInterval = this.getNextInterval();
-      }
+      },
+      true
     );
     this.plugin.app.workspace.trigger(
       'git-changelog:vault-changelog-generation-settings-changed'

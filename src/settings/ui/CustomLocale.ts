@@ -25,7 +25,7 @@ function getSystemLocale(plugin: GitChangelogPlugin): string {
     if (validateLocale(systemLocale)) {
       plugin.detectedLocale = systemLocale;
     } else {
-      new Notice(
+      plugin.displayNotice(
         "Couldn't detect a valid system locale: Obsidian installer version might be too old.\nFallback to en-US."
       );
       plugin.detectedLocale = 'en-US';

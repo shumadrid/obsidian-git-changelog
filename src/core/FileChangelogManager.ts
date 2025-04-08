@@ -50,7 +50,8 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
     await this.plugin.settingsManager.editAndSave(
       (settings: GitChangelogSettings): void => {
         settings.fileChangelogInterval = this.getNextInterval();
-      }
+      },
+      true
     );
     this.plugin.app.workspace.trigger(
       'git-changelog:file-changelog-generation-settings-changed'
