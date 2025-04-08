@@ -1,9 +1,7 @@
-import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 import type { Spacetime, TimeUnit } from 'spacetime';
 import type { ChangelogInterval, FilesSummary, LogEntry } from 'types.ts';
 
-import { getDayStartTime } from 'settings/ui/DayStartTime.ts';
-import { applyDayStartTimeSetting } from 'timeUtils.ts';
+import { applyDayStartHourSetting } from 'timeUtils.ts';
 
 export const GIT_MAX_CONCURRENT_PROCESSES = 6;
 
@@ -68,24 +66,24 @@ export async function isSameAsync({
 }
 
 export async function extractLastCommitsForInterval({
-  changelogGenerationSettings,
   interval,
   previouslySeenFullyAdjustedDates,
-  timezoneAdjustedLogs
+  timeZoneAdjustedLogs,
+  dayStartHour
 }: {
-  changelogGenerationSettings: ChangelogGenerationSettings;
   interval: ChangelogInterval;
   previouslySeenFullyAdjustedDates?: Set<Spacetime>;
-  timezoneAdjustedLogs: LogEntry[];
+  timeZoneAdjustedLogs: LogEntry[];
+  dayStartHour: number;
 }): Promise<LogEntry[]> {
   const lastCommitsInEachInterval: LogEntry[] = [];
   const fullyAdjustedSeenDates =
     previouslySeenFullyAdjustedDates ?? new Set<Spacetime>();
 
-  for (const log of timezoneAdjustedLogs) {
-    const fullyAdjustedLogDate = applyDayStartTimeSetting({
-      dayStartTime: getDayStartTime(changelogGenerationSettings),
-      timezoneAdjustedDate: log.timezoneAdjustedDate
+  for (const log of timeZoneAdjustedLogs) {
+    const fullyAdjustedLogDate = applyDayStartHourSetting({
+      dayStartHour,
+      timeZoneAdjustedDate: log.timeZoneAdjustedDate
     });
 
     const logDateAlreadySeen = await dateAlreadySeen({

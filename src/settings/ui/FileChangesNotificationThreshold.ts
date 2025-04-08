@@ -1,39 +1,17 @@
-import { GitChangelogSetting } from 'settings/components/setting.ts';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 
-export class FileChangesNotificationThreshold extends GitChangelogSetting {
+export class FileChangesNotificationThreshold extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName('Custom threshold for file changes alert')
-
       .addText((text) => {
-        text.setDisabled(this.disabled).onChange((value) => {
-          const newSettings = this.plugin.settingsClone;
-          newSettings.contentDeletionsAndMovesWarningThreshold =
-            validateFileChangesNotificationThreshold(value)
-              ? value
-              : DEFAULT_SETTINGS.contentDeletionsAndMovesWarningThreshold;
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.plugin.saveSettings(newSettings);
+        this.settingTab.bind(text, 'filesChangesWarningThreshold', {
+          shouldShowValidationMessage: false
         });
-        // This.restrictToPositiveIntegerInput(text);
 
-        this.setNonDefaultValue({
-          settingsProperty: 'filesChangesWarningThreshold',
-          text
-        });
+        text.setDisabled(this.disabled);
+
+        // This.restrictToPositiveIntegerInput(text);
       });
   }
-}
-
-export function validateFileChangesNotificationThreshold(
-  fileChangesNotificationThreshold: string
-): boolean {
-  if (
-    !Number.isInteger(Number(fileChangesNotificationThreshold)) ||
-    Number(fileChangesNotificationThreshold) < 1
-  ) {
-    return false;
-  }
-  return true;
 }

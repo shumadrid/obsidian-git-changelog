@@ -3,10 +3,9 @@
 import type { ReadonlyDeep } from 'type-fest';
 
 import { EXCLUDE_FILES_AND_FOLDERS } from 'constants.ts';
-import { GitChangelogSetting } from 'settings/components/setting.ts';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 
-export class ExcludeFilesAndFolders extends GitChangelogSetting {
+export class ExcludeFilesAndFolders extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName(
@@ -40,22 +39,15 @@ export class ExcludeFilesAndFolders extends GitChangelogSetting {
         })
       )
       .addTextArea((text) => {
-        text
-          .setValue(
-            joinExcludeItems(
-              this.plugin.settingsClone.vaultChangelogGenerationSettings
-                .excludeFilesAndFoldersLines ??
-                DEFAULT_SETTINGS.vaultChangelogGenerationSettings
-                  .excludeFilesAndFoldersLines
-            )
-          )
-          .onChange((value) => {
-            const newSettings = this.plugin.settingsClone;
-            newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines =
-              splitExcludeItems(value);
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.plugin.saveSettings(newSettings);
-          });
+        this.settingTab.bind(text, 'excludeFilesAndFoldersLines', {
+          componentToPluginSettingsValueConverter: (uiValue) =>
+            splitExcludeItems(uiValue),
+
+          shouldShowValidationMessage: false,
+          pluginSettingsToComponentValueConverter: (pluginSettingsValue) =>
+            joinExcludeItems(pluginSettingsValue)
+        });
+
         text.inputEl.classList.add('git-changelog-text-area');
       });
   }

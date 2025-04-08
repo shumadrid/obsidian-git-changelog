@@ -13,23 +13,23 @@ export class TimeZoneSuggest extends AbstractInputSuggest<string> {
 
   public getSuggestions(inputString: string): string[] {
     const lowerCaseInputString = inputString.toLowerCase();
-    const timezones: string[] = [];
+    const timeZones: string[] = [];
 
-    for (const timezone of TIME_ZONES_LIST) {
-      if (timezone.toLowerCase().contains(lowerCaseInputString)) {
-        timezones.push(timezone);
+    for (const timeZone of TIME_ZONES_LIST) {
+      if (timeZone.toLowerCase().contains(lowerCaseInputString)) {
+        timeZones.push(timeZone);
       }
     }
 
-    return timezones;
+    return timeZones;
   }
 
-  public renderSuggestion(timezone: string, element: HTMLElement): void {
-    element.setText(timezone);
+  public renderSuggestion(timeZone: string, element: HTMLElement): void {
+    element.setText(timeZone);
   }
 
-  public override selectSuggestion(timezone: string): void {
-    this.inputEl.value = timezone;
+  public override selectSuggestion(timeZone: string): void {
+    this.inputEl.value = timeZone;
     this.inputEl.trigger('input');
     this.close();
   }

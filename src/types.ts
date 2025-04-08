@@ -41,6 +41,7 @@ declare module 'obsidian' {
     on(
       name:
         | 'git-changelog:active-git-file-changed'
+        | 'git-changelog:day-changed'
         | 'git-changelog:file-changelog-generation-settings-changed'
         | 'git-changelog:generation-settings-changed'
         | 'git-changelog:status-bar-settings-changed'
@@ -61,6 +62,7 @@ declare module 'obsidian' {
     trigger(
       name:
         | 'git-changelog:active-git-file-changed'
+        | 'git-changelog:day-changed'
         | 'git-changelog:file-changelog-generation-settings-changed'
         | 'git-changelog:generation-settings-changed'
         | 'git-changelog:status-bar-settings-changed'
@@ -174,7 +176,7 @@ export interface FilesSummary {
 export interface LogEntry {
   // Can be null for file logs, if the file was deleted in some commit
   hash: string;
-  timezoneAdjustedDate: Spacetime;
+  timeZoneAdjustedDate: Spacetime;
 
   // For file git logs only:
   // To track file renames through history

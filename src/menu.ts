@@ -1,5 +1,6 @@
 import type GitChangelogPlugin from 'main.ts';
 import type { MenuItem, WorkspaceLeaf } from 'obsidian';
+import type { GitChangelogSettings } from 'settings/settings.ts';
 
 import { COPY_COMMIT_HASH_ICON, PLUGIN_NAME_SENTENCE_CASE } from 'constants.ts';
 import { Menu, TFolder } from 'obsidian';
@@ -117,8 +118,7 @@ export function addExcludeMenuItem({
     plugin
   });
   const ruleAlreadyExists = lineNumber !== -1;
-  const isIncludeList =
-    plugin.settings.vaultChangelogGenerationSettings.convertToIncludeList;
+  const isIncludeList = plugin.settings.convertToIncludeList;
   let actionTitle: string;
   if (isIncludeList) {
     actionTitle = ruleAlreadyExists ? 'Re-exclude' : 'Include';
@@ -225,9 +225,7 @@ export function isAbsolutePathInExcludeFilesAndFolders({
     isFolder,
     gitRelativePath
   });
-  const existingLines =
-    plugin.settingsClone.vaultChangelogGenerationSettings
-      .excludeFilesAndFoldersLines;
+  const existingLines = plugin.settings.excludeFilesAndFoldersLines;
 
   // Trim unescaped trailing white space from existing lines, since it gets trimmed by git anyways.
   // By doing this we won't miss already existing lines that only differ in trailing white space.
@@ -239,12 +237,11 @@ export async function removeExcludeFilesAndFoldersItem(
   lineNumber: number,
   plugin: GitChangelogPlugin
 ): Promise<void> {
-  const newSettings = plugin.settingsClone;
-  newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines.splice(
-    lineNumber,
-    1
+  await plugin.settingsManager.editAndSave(
+    (settings: GitChangelogSettings): void => {
+      settings.excludeFilesAndFoldersLines.splice(lineNumber, 1);
+    }
   );
-  await plugin.saveSettings(newSettings);
 }
 
 export async function addExcludeFilesAndFoldersItem({
@@ -261,10 +258,9 @@ export async function addExcludeFilesAndFoldersItem({
     isFolder
   });
 
-  const newSettings = plugin.settingsClone;
-  newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines.push(
-    gitIgnoreRule
+  await plugin.settingsManager.editAndSave(
+    (settings: GitChangelogSettings): void => {
+      settings.excludeFilesAndFoldersLines.push(gitIgnoreRule);
+    }
   );
-
-  await plugin.saveSettings(newSettings);
 }

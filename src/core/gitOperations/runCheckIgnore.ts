@@ -1,22 +1,20 @@
-import type GitChangelogPlugin from 'main.ts';
+import type { SimpleGit } from 'simple-git';
 
 import { AbortError } from 'types.ts';
 
 export async function runCheckIgnore({
   abortSignal,
   activeGitFile,
-  plugin
+  git
 }: {
   abortSignal: AbortSignal;
   activeGitFile: string;
-  plugin: GitChangelogPlugin;
+  git: SimpleGit;
 }): Promise<boolean> {
   if (abortSignal.aborted) {
     throw new AbortError();
   }
-  const gitCheckIgnoreResult = await plugin
-    .getGitPlugin()
-    .gitManager.git.checkIgnore(activeGitFile);
+  const gitCheckIgnoreResult = await git.checkIgnore(activeGitFile);
 
   if (abortSignal.aborted) {
     throw new AbortError();

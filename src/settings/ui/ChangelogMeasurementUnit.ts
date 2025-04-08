@@ -1,48 +1,16 @@
-import type { ChangelogGenerationSettings } from 'settings/settings.ts';
-
-import { GitChangelogSetting } from 'settings/components/setting.ts';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 import { DiffMeasurementUnit } from 'types.ts';
 
-export class ChangelogMeasurementUnit extends GitChangelogSetting {
+export class ChangelogMeasurementUnit extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName('Changelog measurement unit')
-      .addDropdown((dropdown) => {
-        const options = {
-          [DiffMeasurementUnit.Lines]: 'Lines',
-          [DiffMeasurementUnit.Words]: 'Words'
-        };
-        dropdown.addOptions(options);
-        dropdown.setValue(
-          getMeasurementUnit(this.plugin.settings.changelogGenerationSettings)
-        );
-
-        dropdown.onChange((value: DiffMeasurementUnit) => {
-          const newSettings = this.plugin.settingsClone;
-          newSettings.changelogGenerationSettings.measurementUnit = value;
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.plugin.saveSettings(newSettings);
+      .addTypedDropdown((dropdown) => {
+        dropdown.addOption(DiffMeasurementUnit.Lines, 'Lines');
+        dropdown.addOption(DiffMeasurementUnit.Words, 'Words');
+        this.settingTab.bind(dropdown, 'diffMeasurementUnit', {
+          shouldShowValidationMessage: false
         });
       });
   }
-}
-export function getMeasurementUnit(
-  changelogGenerationSettings: ChangelogGenerationSettings
-): DiffMeasurementUnit {
-  return DiffMeasurementUnit.Lines;
-  if (!validateMeasurementUnit(changelogGenerationSettings.measurementUnit)) {
-    return DEFAULT_SETTINGS.changelogGenerationSettings.measurementUnit;
-  }
-
-  return changelogGenerationSettings.measurementUnit;
-}
-
-export function validateMeasurementUnit(
-  measurementUnit: DiffMeasurementUnit
-): boolean {
-  if (Object.values(DiffMeasurementUnit).includes(measurementUnit)) {
-    return true;
-  }
-  return false;
 }

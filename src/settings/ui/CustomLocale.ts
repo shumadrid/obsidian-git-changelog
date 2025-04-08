@@ -1,50 +1,58 @@
 import type GitChangelogPlugin from 'main.ts';
 
-import { GitChangelogSetting } from 'settings/components/setting.ts';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 
-export class CustomLocale extends GitChangelogSetting {
+export class CustomLocale extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName('Date format locale')
       .setDesc(`Accepts a locale code (e.g. "en-US").`)
       .addText((text) => {
         text.inputEl.maxLength = 30;
-        text
-          .setPlaceholder(DEFAULT_SETTINGS.changelogGenerationSettings.locale)
-          .onChange((value) => {
-            const newSettings = this.plugin.settingsClone;
-            newSettings.changelogGenerationSettings.locale = value;
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.plugin.saveSettings(newSettings);
-          });
 
-        this.setNonDefaultValue({
-          settingsProperty: 'changelogGenerationSettings',
-          diffSettingsProperty: 'locale',
-          text
+        this.settingTab.bind(text, 'locale', {
+          shouldShowValidationMessage: false
         });
       });
   }
 }
 
-export function getUserLocale(plugin: GitChangelogPlugin): string {
-  const locale = plugin.settings.changelogGenerationSettings.locale;
-  if (validateLocale(locale)) {
-    return locale;
+function getSystemLocale(plugin: GitChangelogPlugin): string {
+  if (plugin.detectedLocale === undefined) {
+    // Detect the system locale using Intl API and save it for the current Obsidian session.
+    const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+
+    if (validateLocale(systemLocale)) {
+      plugin.detectedLocale = systemLocale;
+    } else {
+      new Notice(
+        "Couldn't detect a valid system locale: Obsidian installer version might be too old.\nFallback to en-US."
+      );
+      plugin.detectedLocale = 'en-US';
+    }
   }
-  // Decided against using the new Obsidian language API so that the plugin is compatible with older versions of Obsidian (for now, will update later).
-  return Intl.DateTimeFormat().resolvedOptions().locale;
+
+  return plugin.detectedLocale;
 }
 
-export function validateLocale(locale?: string): boolean {
+export function getLocale(plugin: GitChangelogPlugin): string {
+  return plugin.settings.locale ===
+    plugin.settingsManager.getProperty('locale').defaultValue
+    ? getSystemLocale(plugin)
+    : plugin.settings.locale;
+}
+
+export function validateLocale(locale: string): boolean {
   try {
     if (!locale || typeof locale !== 'string') {
       return false;
     }
     new Intl.Locale(locale);
-    return Intl.DateTimeFormat.supportedLocalesOf([locale]).length > 0;
+    if (Intl.DateTimeFormat.supportedLocalesOf([locale]).length === 0) {
+      return false;
+    }
   } catch {
     return false;
   }
+  return true;
 }

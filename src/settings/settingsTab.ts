@@ -1,7 +1,8 @@
-import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
+import type { GitChangelogPluginTypes } from 'constants.ts';
 
 import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsTabBase';
 import { CustomLocale } from 'settings/ui/CustomLocale.ts';
+import { DayStartHour } from 'settings/ui/DayStartTime.ts';
 import { DiffAlgorithmOptions } from 'settings/ui/DiffAlgorithmOptions.ts';
 import { IgnoreBlankLinesToggle } from 'settings/ui/IgnoreBlankLinesToggle.ts';
 import { IncludeItemsToggle } from 'settings/ui/IncludeItemsToggle.ts';
@@ -11,7 +12,6 @@ import { WhitespaceSettingsHeading } from 'settings/ui/WhitespaceSettingsHeading
 
 import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
 import { CustomTimeZone } from './ui/CustomTimeZone.ts';
-import { DayStartTime } from './ui/DayStartTime.ts';
 import { ExcludeFilesAndFolders } from './ui/ExcludeFilesAndFolders.ts';
 import { GitPluginWarning } from './ui/GitPluginWarning.ts';
 import { RenameDetectionFileLimit } from './ui/RenameDetectionFileLimit.ts';
@@ -20,7 +20,7 @@ import { StatusBarInterval } from './ui/StatusBarInterval.ts';
 import { StatusBarStatsToggle } from './ui/StatusBarStatsToggle.ts';
 
 // Commented-out settings are for features that will be implemented later
-export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogPlugin> {
+export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogPluginTypes> {
   public override display(): void {
     const { containerEl, plugin } = this;
 
@@ -29,93 +29,60 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
     //   Plugin.settings.notifyIfContentDeletionsAndMovesThresholdReached ??
     //   DEFAULT_SETTINGS.notifyIfContentDeletionsAndMovesThresholdReached;
 
-    new GitPluginWarning({ containerEl, plugin }).display();
+    new GitPluginWarning({ plugin }).display();
 
-    new AutoCommitDisabledWarning({
-      containerEl,
-      plugin
-    }).display();
+    new AutoCommitDisabledWarning({ plugin }).display();
 
-    new DayStartTime({ containerEl, plugin }).display();
+    new DayStartHour({ plugin }).display();
 
-    new CustomTimeZone({ containerEl, plugin }).display();
+    new CustomTimeZone({ plugin }).display();
 
-    new CustomLocale({ containerEl, plugin }).display();
+    new CustomLocale({ plugin }).display();
 
-    new DiffAlgorithmOptions({
-      containerEl,
-      plugin,
-      settingTab: this
-    }).display();
+    new DiffAlgorithmOptions({ plugin }).display();
 
-    // New DeletionsNotificationThreshold(plugin, containerEl, false, this).display();
+    // New DeletionsNotificationThreshold(plugin,  false, this).display();
     // New configureDeletionsMovesAlert(
     //   Plugin,
-    //   ContainerEl,
+    //
     //   !notifyOnLargeChanges
     // ).display();
     // New FileChangesNotificationThreshold(
     //   Plugin,
-    //   ContainerEl,
+    //
     //   NotifyOnLargeChanges
     // ).display();
-    // New ChangelogStatsInFileExplorerOptions(plugin, containerEl, false, this).display();
+    // New ChangelogStatsInFileExplorerOptions(plugin,  false, this).display();
 
     // New FileExplorerStatsInterval(
     //   Plugin,
-    //   ContainerEl,
+    //
     //   (plugin.settings?.fileExplorerChangelogStats ??
     //     DEFAULT_SETTINGS.fileExplorerChangelogStats) ===
     //     FileExplorerChangelogStats.Disabled
     // ).display();
-    new ExcludeFilesAndFolders({ containerEl, plugin }).display();
+    new ExcludeFilesAndFolders({ plugin }).display();
 
-    new IncludeItemsToggle({
-      containerEl,
-      plugin
-    }).display();
+    new IncludeItemsToggle({ plugin }).display();
 
-    new RenameDetectionStrictnessSlider({
-      containerEl,
-      plugin
-    }).display();
+    new RenameDetectionStrictnessSlider({ plugin }).display();
 
-    new RenameDetectionFileLimit({
-      containerEl,
-      plugin
-    }).display();
+    new RenameDetectionFileLimit({ plugin }).display();
 
-    new StatusBarStatsToggle({
-      containerEl,
-      plugin,
-      settingTab: this
-    }).display();
+    new StatusBarStatsToggle({ plugin }).display();
 
     new StatusBarInterval({
-      containerEl,
-      disabled: !plugin.settings.statusBarStats,
+      disabled: !plugin.settings.statusBarStatsEnabled,
       plugin
     }).display();
 
-    new WhitespaceSettingsHeading({
-      containerEl,
-      plugin
-    }).display();
+    new WhitespaceSettingsHeading({ plugin }).display();
 
-    new WhitespaceIgnoreModeOptions({
-      containerEl,
-      plugin
-    }).display();
+    new WhitespaceIgnoreModeOptions({ plugin }).display();
 
-    new IgnoreBlankLinesToggle({
-      containerEl,
-      plugin
-    }).display();
+    new IgnoreBlankLinesToggle({ plugin }).display();
 
-    new MiscellaneousButtons({
-      containerEl,
-      plugin
-    }).display();
+    new MiscellaneousButtons({ plugin }).display();
   }
   // New DetectMovedContentToggle(plugin, containerEl).display();
   // New ChangelogMeasurementUnit(plugin, containerEl).display();

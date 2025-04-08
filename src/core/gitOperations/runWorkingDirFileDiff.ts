@@ -1,6 +1,11 @@
 /* eslint-disable unicorn/prevent-abbreviations */
-import type GitChangelogPlugin from 'main.ts';
-import type { LogEntry, TextDiffBaseStats } from 'types.ts';
+import type { SimpleGit } from 'simple-git';
+import type {
+  DiffAlgorithm,
+  LogEntry,
+  TextDiffBaseStats,
+  WhitespaceIgnoreMode
+} from 'types.ts';
 
 import {
   assignDiffAlgorithm,
@@ -14,32 +19,41 @@ import { AbortError } from 'types.ts';
 export async function runWorkingDirFileDiff({
   abortSignal,
   oldCommit,
-  plugin,
-  activeGitFile
+  activeGitFile,
+  git,
+  diffAlgorithm,
+  whitespaceIgnoreMode,
+  ignoreBlankLines
 }: {
+  diffAlgorithm: DiffAlgorithm;
   abortSignal: AbortSignal;
   oldCommit: LogEntry;
   activeGitFile: string;
-  plugin: GitChangelogPlugin;
+  git: SimpleGit;
+  whitespaceIgnoreMode: WhitespaceIgnoreMode;
+  ignoreBlankLines: boolean;
 }): Promise<TextDiffBaseStats | undefined> {
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
+
   // Status bar calculations should handle cases of undefined oldCommit and oldCommit.fileDeleted === true before reaching this function
 
   const numstatArguments = ['--numstat', '--color-moved=no', '--no-renames'];
 
   // Must come before the commit hashes and file paths
-  assignDiffAlgorithm(numstatArguments, plugin);
-  assignWhitespaceIgnoreSettings(numstatArguments, plugin);
+  assignDiffAlgorithm({ arguments_: numstatArguments, diffAlgorithm });
+  assignWhitespaceIgnoreSettings({
+    arguments_: numstatArguments,
+    whitespaceIgnoreMode,
+    ignoreBlankLines
+  });
 
   numstatArguments.push(
     `${oldCommit.hash}:${oldCommit.filePath}`,
     activeGitFile
   );
 
-  if (abortSignal.aborted) {
-    throw new AbortError();
-  }
-
-  const git = await plugin.getGit();
   const diffNumstatResult = await git.diffSummary(numstatArguments);
 
   const textDiffStats =

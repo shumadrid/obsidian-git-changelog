@@ -1,8 +1,12 @@
 <script lang="ts">
   import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type GitChangelogPlugin from 'main.ts';
+  import type { EventRef } from 'obsidian';
 
   import { mayTriggerChangelogMenu } from 'menu.ts';
+  // eslint-disable-next-line import-x/no-duplicates
+  import { onDestroy } from 'svelte';
+  // eslint-disable-next-line import-x/no-duplicates
   import { slide } from 'svelte/transition';
   import { FilesSummariesDisplayMode } from 'types.ts';
   import { composeVersionTitle } from 'Views/formatters.ts';
@@ -20,15 +24,27 @@
 
   const { plugin, showFilesCountSummaries, version }: Properties = $props();
 
-  const formattedVersionDateLabel = $derived.by(() => {
-    // CurrentDay just used to trigger updates
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const currentDay = plugin.currentDay;
+  let dayChangedReference: EventRef;
+
+  dayChangedReference = plugin.app.workspace.on(
+    'git-changelog:day-changed',
+    () => {
+      formattedVersionDateLabel = updateFormattedVersionDateLabel();
+    }
+  );
+
+  let formattedVersionDateLabel = $state(updateFormattedVersionDateLabel());
+
+  function updateFormattedVersionDateLabel(): string {
     return composeVersionTitle({
-      interval: plugin.settings.vaultChangelogGenerationSettings.interval,
+      interval: plugin.settings.vaultChangelogInterval,
       plugin,
-      timezoneAdjustedEntryDate: version.timezoneAdjustedDate
+      timeZoneAdjustedEntryDate: version.timeZoneAdjustedDate
     });
+  }
+
+  onDestroy(() => {
+    plugin.app.workspace.offref(dayChangedReference);
   });
 </script>
 

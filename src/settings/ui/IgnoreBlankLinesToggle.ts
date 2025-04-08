@@ -1,6 +1,6 @@
-import { GitChangelogSetting } from 'settings/components/setting.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 
-export class IgnoreBlankLinesToggle extends GitChangelogSetting {
+export class IgnoreBlankLinesToggle extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName(
@@ -13,16 +13,9 @@ export class IgnoreBlankLinesToggle extends GitChangelogSetting {
       )
       .setDesc('Ignore the additions and removals of completely empty lines.')
       .addToggle((toggle) =>
-        toggle
-          .setValue(
-            this.plugin.settings.changelogGenerationSettings.ignoreBlankLines
-          )
-          .onChange((value) => {
-            const newSettings = this.plugin.settingsClone;
-            newSettings.changelogGenerationSettings.ignoreBlankLines = value;
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            this.plugin.saveSettings(newSettings);
-          })
+        this.settingTab.bind(toggle, 'ignoreBlankLines', {
+          shouldShowValidationMessage: false
+        })
       );
   }
 }

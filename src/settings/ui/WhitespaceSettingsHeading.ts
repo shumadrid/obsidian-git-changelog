@@ -1,6 +1,6 @@
-import { GitChangelogSetting } from 'settings/components/setting.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 
-export class WhitespaceSettingsHeading extends GitChangelogSetting {
+export class WhitespaceSettingsHeading extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setHeading()

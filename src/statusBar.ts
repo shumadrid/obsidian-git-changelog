@@ -1,4 +1,4 @@
-import type { GitChangelogPluginSettings } from 'settings/settings.ts';
+import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
 
@@ -6,8 +6,6 @@ import { findFirstFileCommitBefore } from 'core/findFirstFileCommitBefore.ts';
 import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
 import { runWorkingDirFileDiff } from 'core/gitOperations/runWorkingDirFileDiff.ts';
 import { MarkdownView } from 'obsidian';
-import { getMeasurementUnit } from 'settings/ui/ChangelogMeasurementUnit.ts';
-import { getStatusBarInterval } from 'settings/ui/StatusBarInterval.ts';
 import { AbortError, DiffMeasurementUnit } from 'types.ts';
 import { getGitRelativeFilePath } from 'Views/helper.ts';
 
@@ -68,12 +66,10 @@ export class StatusBarStats {
   }
 
   public static generationSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
-    newSettings: GitChangelogPluginSettings
+    oldSettings: ReadonlyDeep<GitChangelogSettings>,
+    newSettings: GitChangelogSettings
   ): boolean {
-    return (
-      getStatusBarInterval(oldSettings) !== getStatusBarInterval(newSettings)
-    );
+    return oldSettings.statusBarInterval !== newSettings.statusBarInterval;
   }
 
   public destroy(): void {
@@ -90,7 +86,7 @@ export class StatusBarStats {
       if (abortSignal.aborted) {
         throw new AbortError();
       }
-      if (this.plugin.settings.statusBarStats) {
+      if (this.plugin.settings.statusBarStatsEnabled) {
         const result = await this.calculateStatsForActiveFile(
           this.plugin.app.workspace.getActiveViewOfType(MarkdownView),
           abortSignal
@@ -133,11 +129,15 @@ export class StatusBarStats {
     let additions = 0;
     let deletions = 0;
 
+    const git = await this.plugin.getGit();
+
     const oldCommit = await findFirstFileCommitBefore({
       abortSignal,
       filePath: activeGitFile,
-      minutes: getStatusBarInterval(this.plugin.settings),
-      plugin: this.plugin
+      minutes: this.plugin.settings.statusBarInterval,
+      timeZone: await this.plugin.getEmptyTreeHash(),
+      git,
+      renameDetectionStrictness: this.plugin.settings.renameDetectionStrictness
     });
 
     if (oldCommit && oldCommit.fileDeleted !== true) {
@@ -145,7 +145,10 @@ export class StatusBarStats {
         abortSignal,
         oldCommit,
         activeGitFile,
-        plugin: this.plugin
+        git,
+        diffAlgorithm: this.plugin.settings.diffAlgorithm,
+        whitespaceIgnoreMode: this.plugin.settings.whitespaceIgnoreMode,
+        ignoreBlankLines: this.plugin.settings.ignoreBlankLines
       });
       if (baseStats) {
         additions = baseStats.additions;
@@ -160,15 +163,13 @@ export class StatusBarStats {
       const fileIsGitIgnored = await runCheckIgnore({
         abortSignal,
         activeGitFile,
-        plugin: this.plugin
+        git
       });
 
       if (fileIsGitIgnored) {
         return 'In .gitignore';
       }
-      const measurementUnit = getMeasurementUnit(
-        this.plugin.settings.changelogGenerationSettings
-      );
+      const measurementUnit = this.plugin.settings.diffMeasurementUnit;
 
       if (measurementUnit === DiffMeasurementUnit.Lines) {
         additions = activeFileView.editor.lineCount();

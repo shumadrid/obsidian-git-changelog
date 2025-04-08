@@ -1,3 +1,4 @@
+import type { BuildOptions } from 'esbuild';
 import type { CliTaskResult } from 'obsidian-dev-utils/ScriptUtils/CliUtils';
 
 import {
@@ -9,9 +10,10 @@ export async function buildWithSvelte(
   developmentMode: boolean
 ): Promise<CliTaskResult> {
   return await buildObsidianPlugin({
-    customEsbuildOptions: {
-      dropLabels: developmentMode ? undefined : ['DEV']
+    customizeEsbuildOptions: (options: BuildOptions) => {
+      options.dropLabels = developmentMode ? undefined : ['DEV'];
     },
+
     customEsbuildPlugins: [
       {
         name: 'add-condition',

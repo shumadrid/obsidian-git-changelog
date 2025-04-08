@@ -1,6 +1,6 @@
 import type { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
-import type { GitChangelogPluginSettings } from 'settings/settings.ts';
+import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
 import type { ChangelogInterval, FileLogEntry } from 'types.ts';
@@ -12,8 +12,8 @@ import {
 } from 'constants.ts';
 import { ChangelogManager } from 'core/ChangelogManager.svelte.ts';
 import { runFileDiff } from 'core/gitOperations/runFileDiff.ts';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
-import { validateChangelogInterval } from 'settings/validation/changelogInterval.ts';
+import { deepEqual } from 'obsidian-dev-utils/Object';
+import { pickFileChangelogSettings } from 'settings/settings.ts';
 
 export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
   public constructor({
@@ -47,23 +47,30 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
   }
 
   public override async setNextInterval(): Promise<void> {
-    const newSettings = this.plugin.settingsClone;
+    await this.plugin.settingsManager.editAndSave(
+      (settings: GitChangelogSettings): void => {
+        settings.fileChangelogInterval = this.getNextInterval();
+      }
+    );
+    this.plugin.app.workspace.trigger(
+      'git-changelog:file-changelog-generation-settings-changed'
+    );
+  }
 
-    newSettings.fileChangelogInterval = this.getNextInterval();
+  public override specificSettingsChanged(
+    oldSettings: ReadonlyDeep<GitChangelogSettings>,
+    newSettings: GitChangelogSettings
+  ): boolean {
+    const oldVaultGenerationSettings = pickFileChangelogSettings(oldSettings);
+    const newVaultGenerationSettings = pickFileChangelogSettings(newSettings);
 
-    await this.plugin.saveSettings(newSettings, false);
+    return !deepEqual(oldVaultGenerationSettings, newVaultGenerationSettings);
   }
 
   public override getInterval(
-    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
+    settings: ReadonlyDeep<GitChangelogSettings> = this.plugin.settings
   ): ChangelogInterval {
-    const interval = settings.fileChangelogInterval;
-
-    if (!validateChangelogInterval(interval)) {
-      return DEFAULT_SETTINGS.fileChangelogInterval;
-    }
-
-    return interval;
+    return settings.fileChangelogInterval;
   }
 
   protected override async loadEntries({
@@ -124,11 +131,17 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
     newCommit: FileLogEntry;
     oldCommit?: FileLogEntry;
   }): Promise<FileChangelogEntry | undefined> {
+    const git = await this.plugin.getGit();
     return await runFileDiff({
       abortSignal,
       newCommit,
       oldCommit,
-      plugin: this.plugin
+      plugin: this.plugin,
+      diffAlgorithm: this.plugin.settings.diffAlgorithm,
+      whitespaceIgnoreMode: this.plugin.settings.whitespaceIgnoreMode,
+      ignoreBlankLines: this.plugin.settings.ignoreBlankLines,
+      emptyTreeHash: await this.plugin.getEmptyTreeHash(),
+      git
     });
   }
 

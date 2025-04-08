@@ -1,6 +1,8 @@
-import { GitChangelogSetting } from 'settings/components/setting.ts';
+import type { GitChangelogSettings } from 'settings/settings.ts';
 
-export class AutoCommitDisabledWarning extends GitChangelogSetting {
+import { SettingComponent } from 'settings/components/setting.ts';
+
+export class AutoCommitDisabledWarning extends SettingComponent {
   public display(): void {
     try {
       const gitPlugin = this.plugin.getGitPlugin();
@@ -19,10 +21,12 @@ export class AutoCommitDisabledWarning extends GitChangelogSetting {
             button.onClick(() => {
               warningSetting.settingEl.remove();
 
-              const newSettings = this.plugin.settingsClone;
-              newSettings.autoCommitDisabledWarningDismissed = true;
               // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              this.plugin.saveSettings(newSettings);
+              this.plugin.settingsManager.editAndSave(
+                (settings: GitChangelogSettings): void => {
+                  settings.autoCommitDisabledWarningDismissed = true;
+                }
+              );
             });
           });
       }

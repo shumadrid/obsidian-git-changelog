@@ -1,7 +1,7 @@
 import { FEEDBACK_URL } from 'constants.ts';
-import { GitChangelogSetting } from 'settings/components/setting.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 
-export class MiscellaneousButtons extends GitChangelogSetting {
+export class MiscellaneousButtons extends SettingComponent {
   public display(): void {
     const bugReportDiv = this.createSetting();
     bugReportDiv.addButton((button) => {

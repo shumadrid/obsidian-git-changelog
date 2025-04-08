@@ -1,9 +1,7 @@
-import type GitChangelogPlugin from 'main.ts';
+import type { SimpleGit } from 'simple-git';
 import type { LogEntry } from 'types.ts';
 
 import { unescapeGitFileOutput } from 'core/gitOperations/helper.ts';
-import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
-import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
 import { assertNotNull } from 'utils.ts';
@@ -18,16 +16,23 @@ export async function runLog({
   filePath,
   lowerBoundaryCommit,
   maxCount,
-  plugin,
-  upperBoundaryCommit
+  upperBoundaryCommit,
+  timeZone,
+  git,
+  renameDetectionStrictness
 }: {
   abortSignal: AbortSignal;
   filePath: string | undefined;
   lowerBoundaryCommit: string | undefined;
   maxCount?: number;
-  plugin: GitChangelogPlugin;
   upperBoundaryCommit: string | undefined;
+  git: SimpleGit;
+  timeZone: string;
+  renameDetectionStrictness: number;
 }): Promise<LogEntry[]> {
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
   // This is confusing, and could be accidentally broken in the future
   const retrievingNewLogs = lowerBoundaryCommit !== undefined;
   const options: Record<string, unknown> = {
@@ -50,8 +55,7 @@ export async function runLog({
     // `--follow` does not work well on non-linear history. It does not work for files that were just renamed in the working directory but haven't been committed yet. It needs commit information to track renames.
     // This problem can be solved by running a separate git diff name-status command before running git log, to detect potential renames and get the last committed filename of the current file, but the performance impact is not worth it.
     options['--follow'] = null;
-    options['--find-renames'] =
-      `${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`;
+    options['--find-renames'] = `${renameDetectionStrictness}%`;
   }
 
   if (upperBoundaryCommit) {
@@ -60,15 +64,8 @@ export async function runLog({
     options['--boundary'] = null;
     options[`${lowerBoundaryCommit}..HEAD`] = null;
   }
-  if (abortSignal.aborted) {
-    throw new AbortError();
-  }
-  const git = await plugin.getGit();
+
   const result = await git.log(options);
-  const timezone = getTimeZone(
-    plugin.settings.changelogGenerationSettings,
-    plugin
-  );
 
   const logs: LogEntry[] = [];
   for (const entry of result.all) {
@@ -109,7 +106,7 @@ export async function runLog({
         : undefined,
       hash: entry.hash,
       fileDeleted,
-      timezoneAdjustedDate: spacetime(entry.date).goto(timezone)
+      timeZoneAdjustedDate: spacetime(entry.date).goto(timeZone)
     });
   }
   return logs;

@@ -1,6 +1,6 @@
 import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
-import type { GitChangelogPluginSettings } from 'settings/settings.ts';
+import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
 import type { ChangelogInterval, LogEntry } from 'types.ts';
@@ -13,8 +13,7 @@ import {
 import { ChangelogManager } from 'core/ChangelogManager.svelte.ts';
 import { runRepoDiff } from 'core/gitOperations/runRepoDiff.ts';
 import { deepEqual } from 'obsidian-dev-utils/Object';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
-import { validateChangelogInterval } from 'settings/validation/changelogInterval.ts';
+import { pickVaultChangelogSettings } from 'settings/settings.ts';
 
 export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry> {
   private collapseFirstVersion: boolean | undefined;
@@ -48,46 +47,30 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   }
 
   public override async setNextInterval(): Promise<void> {
-    const newSettings = this.plugin.settingsClone;
-
-    newSettings.vaultChangelogGenerationSettings.interval =
-      this.getNextInterval();
-
-    await this.plugin.saveSettings(newSettings, false);
+    await this.plugin.settingsManager.editAndSave(
+      (settings: GitChangelogSettings): void => {
+        settings.vaultChangelogInterval = this.getNextInterval();
+      }
+    );
+    this.plugin.app.workspace.trigger(
+      'git-changelog:vault-changelog-generation-settings-changed'
+    );
   }
 
-  public override generationSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
-    newSettings: GitChangelogPluginSettings
+  public override specificSettingsChanged(
+    oldSettings: ReadonlyDeep<GitChangelogSettings>,
+    newSettings: GitChangelogSettings
   ): boolean {
-    if (
-      !deepEqual(
-        oldSettings.vaultChangelogGenerationSettings
-          .excludeFilesAndFoldersLines,
-        newSettings.vaultChangelogGenerationSettings.excludeFilesAndFoldersLines
-      )
-    ) {
-      return true;
-    }
-    if (
-      oldSettings.vaultChangelogGenerationSettings.convertToIncludeList !==
-      newSettings.vaultChangelogGenerationSettings.convertToIncludeList
-    ) {
-      return true;
-    }
-    return super.generationSettingsChanged(oldSettings, newSettings);
+    const oldVaultGenerationSettings = pickVaultChangelogSettings(oldSettings);
+    const newVaultGenerationSettings = pickVaultChangelogSettings(newSettings);
+
+    return !deepEqual(oldVaultGenerationSettings, newVaultGenerationSettings);
   }
 
   public override getInterval(
-    settings: ReadonlyDeep<GitChangelogPluginSettings> = this.plugin.settings
+    settings: ReadonlyDeep<GitChangelogSettings> = this.plugin.settings
   ): ChangelogInterval {
-    const interval = settings.vaultChangelogGenerationSettings.interval;
-
-    if (!validateChangelogInterval(interval)) {
-      return DEFAULT_SETTINGS.vaultChangelogGenerationSettings.interval;
-    }
-
-    return interval;
+    return settings.vaultChangelogInterval;
   }
 
   protected override calculateVersionsToAppend(resetCache: boolean): number {
@@ -105,11 +88,22 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
     newCommit: LogEntry;
     oldCommit?: LogEntry;
   }): Promise<undefined | VaultChangelogEntry> {
+    const git = await this.plugin.getGit();
     return await runRepoDiff({
       abortSignal,
       newCommit,
       oldCommit,
-      plugin: this.plugin
+      plugin: this.plugin,
+      git,
+      diffAlgorithm: this.plugin.settings.diffAlgorithm,
+      renameLimit: this.plugin.settings.renameLimit,
+      renameDetectionStrictness: this.plugin.settings.renameDetectionStrictness,
+      emptyTreeHash: await this.plugin.getEmptyTreeHash(),
+      excludeFilesAndFoldersLines:
+        this.plugin.settings.excludeFilesAndFoldersLines,
+      convertToIncludeList: this.plugin.settings.convertToIncludeList,
+      whitespaceIgnoreMode: this.plugin.settings.whitespaceIgnoreMode,
+      ignoreBlankLines: this.plugin.settings.ignoreBlankLines
     });
   }
 

@@ -1,8 +1,7 @@
-import type GitChangelogPlugin from 'main.ts';
+import type { SimpleGit } from 'simple-git';
 import type { LogEntry } from 'types.ts';
 
 import { runLog } from 'core/gitOperations/runLog.ts';
-import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
 import { assertNotNull } from 'utils.ts';
@@ -14,21 +13,23 @@ export async function findFirstFileCommitBefore({
   abortSignal,
   filePath,
   minutes,
-  plugin
+  timeZone,
+  git,
+  renameDetectionStrictness
 }: {
   abortSignal: AbortSignal;
   filePath: string;
   minutes: number;
-  plugin: GitChangelogPlugin;
+  timeZone: string;
+  git: SimpleGit;
+  renameDetectionStrictness: number;
 }): Promise<LogEntry | undefined> {
   // eslint-disable-next-line no-magic-numbers
   const maxCount = Math.ceil(minutes / AVERAGE_COMMIT_FREQUENCY_MINUTES) + 20;
 
   let firstEntriesOutsideInterval: LogEntry[] = [];
   let startingFilePath = filePath;
-  const currentTime = spacetime.now(
-    getTimeZone(plugin.settings.changelogGenerationSettings, plugin)
-  );
+  const currentTime = spacetime.now(timeZone);
   let startingCommit: string | undefined;
 
   while (
@@ -36,7 +37,7 @@ export async function findFirstFileCommitBefore({
     !firstEntriesOutsideInterval.at(-1) ||
     // Only continue if commit(s) that happened before the specified interval aren't reached yet.
 
-    assertNotNull(firstEntriesOutsideInterval.at(-1)).timezoneAdjustedDate.diff(
+    assertNotNull(firstEntriesOutsideInterval.at(-1)).timeZoneAdjustedDate.diff(
       currentTime,
 
       'minutes'
@@ -49,8 +50,10 @@ export async function findFirstFileCommitBefore({
       filePath: startingFilePath,
       lowerBoundaryCommit: undefined,
       maxCount,
-      plugin,
-      upperBoundaryCommit: startingCommit
+      upperBoundaryCommit: startingCommit,
+      git,
+      renameDetectionStrictness,
+      timeZone
     });
 
     if (firstEntriesOutsideInterval.length < maxCount) {
@@ -73,7 +76,7 @@ export async function findFirstFileCommitBefore({
 
   // We just need to get the most recent commit that's still outside the interval.
   for (const entry of firstEntriesOutsideInterval) {
-    if (entry.timezoneAdjustedDate.diff(currentTime, 'minutes') >= minutes) {
+    if (entry.timeZoneAdjustedDate.diff(currentTime, 'minutes') >= minutes) {
       return entry;
     }
   }

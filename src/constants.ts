@@ -1,7 +1,20 @@
+import type GitChangelogPlugin from 'main.ts';
+import type { PluginTypesBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
+import type { GitChangelogSettings } from 'settings/settings.ts';
+import type { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
+import type { GitChangelogSettingsTab } from 'settings/settingsTab.ts';
+
 export const PLUGIN_NAME = 'Git Changelog';
 export const PLUGIN_NAME_SENTENCE_CASE = 'Git changelog';
 export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
 export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.32.1';
+
+export interface GitChangelogPluginTypes extends PluginTypesBase {
+  plugin: GitChangelogPlugin;
+  pluginSettings: GitChangelogSettings;
+  pluginSettingsManager: GitChangelogSettingsManager;
+  pluginSettingsTab: GitChangelogSettingsTab;
+}
 
 // Strings
 export const FEEDBACK_URL =
@@ -29,3 +42,7 @@ export const CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER = 35;
 export const CHANGELOG_LOAD_AMOUNT_VERSIONS = 10;
 export const FILE_VIEW_VERSIONS_MULTIPLIER = 2.4;
 export const VAULT_MAX_COUNT_MULTIPLIER = 6;
+
+// Settings
+export const MIN_RENAME_DETECTION_STRICTNESS = 1;
+export const MAX_RENAME_DETECTION_STRICTNESS = 100;

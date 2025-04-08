@@ -1,4 +1,5 @@
-import { PluginSettingsBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsBase';
+import type { Except, ReadonlyDeep } from 'type-fest';
+
 import spacetime from 'spacetime';
 import {
   ChangelogInterval,
@@ -15,142 +16,172 @@ export const TIME_ZONES_LIST = new Set(Object.keys(spacetime().timezones));
 export const MAX_SUPPORTED_INTERVAL = 99_999; // ~69 days
 export const AUTO_DETECT_PLACEHOLDER = 'Auto-detect';
 
-/**
- * Each change in these settings triggers a recalculation of the changelogs statistics.
- */
-export interface ChangelogGenerationSettings {
-  // Time settings
-  dayStartHour: number;
-  // Diff settings
-  detectMovedContent: boolean;
-  diffAlgorithm: DiffAlgorithm;
-  measurementUnit: DiffMeasurementUnit;
-  renameDetectionStrictness: number;
-  renameLimit: string;
-  timezone: string;
-  locale: string;
-  whitespaceIgnoreMode: WhitespaceIgnoreMode;
-  ignoreBlankLines: boolean;
-}
-
-export interface VaultChangelogGenerationSettings {
-  excludeFilesAndFoldersLines: string[];
-  convertToIncludeList: boolean;
-  interval: ChangelogInterval;
-}
-
-export interface IGitChangelogSettings {
-  autoCommitDisabledWarningDismissed: boolean;
-  changelogGenerationSettings: ChangelogGenerationSettings;
-  contentDeletionsAndMovesWarningThreshold: string;
-  dedicatedFileTypeSummaries: string[];
-  fileChangelogInterval: ChangelogInterval;
-  fileExplorerInterval: string;
-  fileExplorerStats: FileExplorerStats;
-  filesChangesWarningThreshold: string;
-  fileSummariesDisplayMode: FilesSummariesDisplayMode;
-  firstStartup: boolean;
-  notifyOnContentDeletionsAndMovesThresholdReached: boolean;
-  notifyOnFilesChangesThresholdReached: boolean;
-  statusBarInterval: string;
-  statusBarStats: boolean;
-  vaultChangelogGenerationSettings: VaultChangelogGenerationSettings;
-}
-
-export class GitChangelogPluginSettings
-  extends PluginSettingsBase
-  implements IGitChangelogSettings
-{
+export class GitChangelogSettings {
   // State
-  public autoCommitDisabledWarningDismissed: boolean =
-    DEFAULT_SETTINGS.autoCommitDisabledWarningDismissed;
+  public autoCommitDisabledWarningDismissed = false;
 
-  public firstStartup: boolean = DEFAULT_SETTINGS.firstStartup;
-
-  public changelogGenerationSettings: ChangelogGenerationSettings =
-    DEFAULT_CHANGELOG_GENERATION_SETTINGS;
+  public firstStartup = true;
 
   /**
    * The number refers to either words or lines depending on what the changelog is set up to count
    */
-  public contentDeletionsAndMovesWarningThreshold: string =
-    DEFAULT_SETTINGS.contentDeletionsAndMovesWarningThreshold;
+  public contentDeletionsAndMovesWarningThreshold = '2000';
 
   // ShowFilesSummaryCountOptions[]; //Set<ShowFilesSummaryCountOptions>;
   // VaultChangelogFilesVisibility: VaultChangelogFilesVisibility;
   // NotifyOnLargeCommitAdditions: boolean;
   // NotifyOnLargeCommitAdditionsWarningThreshold: string;
-  public dedicatedFileTypeSummaries: string[] = [
-    ...DEFAULT_SETTINGS.dedicatedFileTypeSummaries
-  ];
+  public dedicatedFileTypeSummaries: string[] = [];
 
-  public fileChangelogInterval: ChangelogInterval =
-    DEFAULT_SETTINGS.fileChangelogInterval;
+  public fileExplorerInterval = '4320'; // In mins
+  public fileExplorerStats: FileExplorerStats = FileExplorerStats.Disabled;
 
-  public fileExplorerInterval: string = DEFAULT_SETTINGS.fileExplorerInterval;
-  public fileExplorerStats: FileExplorerStats =
-    DEFAULT_SETTINGS.fileExplorerStats;
-
-  public filesChangesWarningThreshold: string =
-    DEFAULT_SETTINGS.filesChangesWarningThreshold;
+  public filesChangesWarningThreshold = '50';
 
   public fileSummariesDisplayMode: FilesSummariesDisplayMode =
-    DEFAULT_SETTINGS.fileSummariesDisplayMode;
+    FilesSummariesDisplayMode.Total;
 
-  public notifyOnContentDeletionsAndMovesThresholdReached: boolean =
-    DEFAULT_SETTINGS.notifyOnContentDeletionsAndMovesThresholdReached;
+  public notifyOnContentDeletionsAndMovesThresholdReached = true;
 
-  public notifyOnFilesChangesThresholdReached: boolean =
-    DEFAULT_SETTINGS.notifyOnFilesChangesThresholdReached;
+  public notifyOnFilesChangesThresholdReached = false;
 
-  public statusBarInterval: string = DEFAULT_SETTINGS.statusBarInterval;
-  public statusBarStats: boolean = DEFAULT_SETTINGS.statusBarStats;
-  // Specific Changelog Generation Settings
-  public vaultChangelogGenerationSettings: VaultChangelogGenerationSettings =
-    DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS;
+  public statusBarInterval = 30; // In mins
+  public statusBarStatsEnabled = false;
 
-  public constructor(data: unknown) {
-    super();
-    // Object.assign(this, DEFAULT_SETTINGS);
-    this.init(data);
-    this._shouldSaveAfterLoad = true;
-  }
+  // FileGenerationSettings
+  public fileChangelogInterval: ChangelogInterval = ChangelogInterval.Daily;
+
+  // VaultGenerationSettings
+  public excludeFilesAndFoldersLines: string[] = [];
+  public convertToIncludeList = false;
+  public vaultChangelogInterval = ChangelogInterval.Daily;
+
+  /**
+   * Each change in these settings triggers a recalculation of all the changelogs statistics.
+   */
+  // Time settings
+  public dayStartHour = 0;
+  // Diff settings
+  public detectMovedContent = true;
+  public diffAlgorithm = DiffAlgorithm.Inherit;
+  public diffMeasurementUnit = DiffMeasurementUnit.Words;
+  public renameDetectionStrictness = 50;
+  public renameLimit = 1000;
+  public timeZone = AUTO_DETECT_PLACEHOLDER;
+  public locale = AUTO_DETECT_PLACEHOLDER;
+  public whitespaceIgnoreMode = WhitespaceIgnoreMode.None;
+  public ignoreBlankLines = false;
 }
 
-export const DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS: VaultChangelogGenerationSettings =
-  {
-    excludeFilesAndFoldersLines: [],
-    convertToIncludeList: false,
-    interval: ChangelogInterval.Daily
-  } as const;
+// This is needed for checking if the generation settings have changed. And on each new added setting, the developer will have to explicitly include or exclude the added setting from all of these categories.
 
-export const DEFAULT_CHANGELOG_GENERATION_SETTINGS: ChangelogGenerationSettings =
-  {
-    dayStartHour: 0,
-    detectMovedContent: true,
-    diffAlgorithm: DiffAlgorithm.Inherit,
-    measurementUnit: DiffMeasurementUnit.Words,
-    renameDetectionStrictness: 50,
-    renameLimit: '1000',
-    timezone: AUTO_DETECT_PLACEHOLDER,
-    locale: AUTO_DETECT_PLACEHOLDER,
-    whitespaceIgnoreMode: WhitespaceIgnoreMode.None,
-    ignoreBlankLines: false
-  } as const;
-export const DEFAULT_SETTINGS: IGitChangelogSettings = {
-  autoCommitDisabledWarningDismissed: false,
-  changelogGenerationSettings: DEFAULT_CHANGELOG_GENERATION_SETTINGS,
-  vaultChangelogGenerationSettings: DEFAULT_VAULT_CHANGELOG_GENERATION_SETTINGS,
-  contentDeletionsAndMovesWarningThreshold: '2000',
-  dedicatedFileTypeSummaries: [] as const,
-  fileChangelogInterval: ChangelogInterval.Daily,
-  fileExplorerInterval: '4320', // In mins
-  fileExplorerStats: FileExplorerStats.Disabled,
-  filesChangesWarningThreshold: '50',
-  fileSummariesDisplayMode: FilesSummariesDisplayMode.Total,
-  firstStartup: true,
-  notifyOnContentDeletionsAndMovesThresholdReached: true,
-  notifyOnFilesChangesThresholdReached: false,
-  statusBarInterval: '30', // In mins
-  statusBarStats: false
-} as const;
+export function pickVaultChangelogSettings(
+  settings: ReadonlyDeep<GitChangelogSettings>
+): ReadonlyDeep<VaultGenerationSettings> {
+  return {
+    excludeFilesAndFoldersLines: settings.excludeFilesAndFoldersLines,
+    convertToIncludeList: settings.convertToIncludeList,
+    vaultChangelogInterval: settings.vaultChangelogInterval
+  };
+}
+
+export function pickFileChangelogSettings(
+  settings: ReadonlyDeep<GitChangelogSettings>
+): ReadonlyDeep<FileGenerationSettings> {
+  return {
+    fileChangelogInterval: settings.fileChangelogInterval
+  };
+}
+
+export function pickGeneralChangelogSettings(
+  settings: ReadonlyDeep<GitChangelogSettings>
+): ReadonlyDeep<GenerationSettings> {
+  return {
+    dayStartHour: settings.dayStartHour,
+    detectMovedContent: settings.detectMovedContent,
+    diffAlgorithm: settings.diffAlgorithm,
+    diffMeasurementUnit: settings.diffMeasurementUnit,
+    renameDetectionStrictness: settings.renameDetectionStrictness,
+    renameLimit: settings.renameLimit,
+    timeZone: settings.timeZone,
+    locale: settings.locale,
+    whitespaceIgnoreMode: settings.whitespaceIgnoreMode,
+    ignoreBlankLines: settings.ignoreBlankLines
+  };
+}
+
+type VaultGenerationSettings = Except<
+  GitChangelogSettings,
+  | 'autoCommitDisabledWarningDismissed'
+  | 'contentDeletionsAndMovesWarningThreshold'
+  | 'dayStartHour'
+  | 'dedicatedFileTypeSummaries'
+  | 'detectMovedContent'
+  | 'diffAlgorithm'
+  | 'diffMeasurementUnit'
+  | 'fileChangelogInterval'
+  | 'fileExplorerInterval'
+  | 'fileExplorerStats'
+  | 'filesChangesWarningThreshold'
+  | 'fileSummariesDisplayMode'
+  | 'firstStartup'
+  | 'ignoreBlankLines'
+  | 'locale'
+  | 'notifyOnContentDeletionsAndMovesThresholdReached'
+  | 'notifyOnFilesChangesThresholdReached'
+  | 'renameDetectionStrictness'
+  | 'renameLimit'
+  | 'statusBarInterval'
+  | 'statusBarStatsEnabled'
+  | 'timeZone'
+  | 'whitespaceIgnoreMode'
+>;
+
+type FileGenerationSettings = Except<
+  GitChangelogSettings,
+  | 'autoCommitDisabledWarningDismissed'
+  | 'contentDeletionsAndMovesWarningThreshold'
+  | 'convertToIncludeList'
+  | 'dayStartHour'
+  | 'dedicatedFileTypeSummaries'
+  | 'detectMovedContent'
+  | 'diffAlgorithm'
+  | 'diffMeasurementUnit'
+  | 'excludeFilesAndFoldersLines'
+  | 'fileExplorerInterval'
+  | 'fileExplorerStats'
+  | 'filesChangesWarningThreshold'
+  | 'fileSummariesDisplayMode'
+  | 'firstStartup'
+  | 'ignoreBlankLines'
+  | 'locale'
+  | 'notifyOnContentDeletionsAndMovesThresholdReached'
+  | 'notifyOnFilesChangesThresholdReached'
+  | 'renameDetectionStrictness'
+  | 'renameLimit'
+  | 'statusBarInterval'
+  | 'statusBarStatsEnabled'
+  | 'timeZone'
+  | 'vaultChangelogInterval'
+  | 'whitespaceIgnoreMode'
+>;
+
+type GenerationSettings = Except<
+  GitChangelogSettings,
+  | 'autoCommitDisabledWarningDismissed'
+  | 'contentDeletionsAndMovesWarningThreshold'
+  | 'convertToIncludeList'
+  | 'dedicatedFileTypeSummaries'
+  | 'excludeFilesAndFoldersLines'
+  | 'fileChangelogInterval'
+  | 'fileExplorerInterval'
+  | 'fileExplorerStats'
+  | 'filesChangesWarningThreshold'
+  | 'fileSummariesDisplayMode'
+  | 'firstStartup'
+  | 'notifyOnContentDeletionsAndMovesThresholdReached'
+  | 'notifyOnFilesChangesThresholdReached'
+  | 'statusBarInterval'
+  | 'statusBarStatsEnabled'
+  | 'vaultChangelogInterval'
+>;

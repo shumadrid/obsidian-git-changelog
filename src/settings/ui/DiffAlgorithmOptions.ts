@@ -1,14 +1,12 @@
 import type GitChangelogPlugin from 'main.ts';
-import type { ChangelogGenerationSettings } from 'settings/settings.ts';
 
 import { appendCodeBlock } from 'obsidian-dev-utils/HTMLElement';
-import { GitChangelogSetting } from 'settings/components/setting.ts';
-import { DEFAULT_SETTINGS } from 'settings/settings.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 import { DiffAlgorithm } from 'types.ts';
 
 const GIT_CONFIG_PATH = '.git/config';
 
-export class DiffAlgorithmOptions extends GitChangelogSetting {
+export class DiffAlgorithmOptions extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName('Difference detection algorithm')
@@ -27,9 +25,7 @@ export class DiffAlgorithmOptions extends GitChangelogSetting {
         button.setButtonText('Apply');
         button.setDisabled(shouldDisableApplyButton(this.plugin));
         button.onClick(async () => {
-          const diffAlgorithm = getDiffAlgorithm(
-            this.plugin.settings.changelogGenerationSettings
-          );
+          const diffAlgorithm = this.plugin.settings.diffAlgorithm;
           if (diffAlgorithm !== DiffAlgorithm.Inherit) {
             try {
               const git = await this.plugin.getGit();
@@ -45,51 +41,25 @@ export class DiffAlgorithmOptions extends GitChangelogSetting {
           }
         });
       })
-      .addDropdown((dropdown) => {
-        const options = {
-          [DiffAlgorithm.Inherit]: 'Inherit git config',
-          [DiffAlgorithm.Default]: 'Default (Faster)',
-          [DiffAlgorithm.Minimal]: 'Minimal (More precise)'
-        } as const;
-        dropdown.addOptions(options);
-
-        dropdown.setValue(
-          getDiffAlgorithm(this.plugin.settings.changelogGenerationSettings)
-        );
-
-        dropdown.onChange((value: DiffAlgorithm) => {
-          const newSettings = this.plugin.settingsClone;
-          newSettings.changelogGenerationSettings.diffAlgorithm = value;
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          this.plugin.saveSettings(newSettings).then(() => {
+      .addTypedDropdown((dropdown) => {
+        dropdown.addOption(DiffAlgorithm.Inherit, 'Inherit git config');
+        dropdown.addOption(DiffAlgorithm.Default, 'Default (Faster)');
+        dropdown.addOption(DiffAlgorithm.Minimal, 'Minimal (More precise)');
+        this.settingTab.bind(dropdown, 'diffAlgorithm', {
+          shouldShowValidationMessage: false,
+          onChanged: () => {
             // eslint-disable-next-line no-magic-numbers
             this.refreshDisplayWithDelay(30);
-          });
+          }
         });
       });
   }
 }
 
 function shouldDisableApplyButton(plugin: GitChangelogPlugin): boolean {
-  const diffAlgorithm = getDiffAlgorithm(
-    plugin.settings.changelogGenerationSettings
-  );
+  const diffAlgorithm = plugin.settings.diffAlgorithm;
   if (diffAlgorithm === DiffAlgorithm.Inherit) {
     return true;
   }
   return false;
-}
-
-export function getDiffAlgorithm(
-  changelogGenerationSettings: ChangelogGenerationSettings
-): DiffAlgorithm {
-  if (
-    !Object.values(DiffAlgorithm).includes(
-      changelogGenerationSettings.diffAlgorithm
-    )
-  ) {
-    return DEFAULT_SETTINGS.changelogGenerationSettings.diffAlgorithm;
-  }
-
-  return changelogGenerationSettings.diffAlgorithm;
 }

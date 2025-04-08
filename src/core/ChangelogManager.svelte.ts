@@ -1,6 +1,6 @@
 import type { ChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
-import type { GitChangelogPluginSettings } from 'settings/settings.ts';
+import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { Spacetime } from 'spacetime';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
@@ -12,6 +12,7 @@ import {
   extractLastCommitsForInterval,
   GIT_MAX_CONCURRENT_PROCESSES
 } from 'core/helper.ts';
+import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import { AbortError, ChangelogInterval } from 'types.ts';
 import { assertNotNull } from 'utils.ts';
 
@@ -121,12 +122,10 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     });
   }
 
-  public generationSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogPluginSettings>,
-    newSettings: GitChangelogPluginSettings
-  ): boolean {
-    return this.getInterval(oldSettings) !== this.getInterval(newSettings);
-  }
+  public abstract specificSettingsChanged(
+    oldSettings: ReadonlyDeep<GitChangelogSettings>,
+    newSettings: GitChangelogSettings
+  ): boolean;
 
   public resetAndGetSignal(): AbortSignal {
     // Reset `visibleEntries` to undefined each time when you schedule a recompute so that the UI correctly updates to "loading" state while it waits for the stats to compute.
@@ -143,7 +142,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   public abstract setNextInterval(): Promise<void>;
 
   public abstract getInterval(
-    settings?: ReadonlyDeep<GitChangelogPluginSettings>
+    settings?: ReadonlyDeep<GitChangelogSettings>
   ): ChangelogInterval;
 
   protected abstract updateEntries({
@@ -168,21 +167,23 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     // ActiveGitFile: the current file path of some live file version.
     // FilePath: the path of some file in history.
 
+    const git = await this.plugin.getGit();
     // Gets all commits newer (>=) than the commit of the latest cached version.
-    const timezoneAdjustedLogs = await runLog({
+    const timeZoneAdjustedLogs = await runLog({
       abortSignal,
       filePath: activeGitFile,
       lowerBoundaryCommit: this.latestCachedVersion?.commitHash,
       maxCount: undefined,
-      plugin: this.plugin,
-      upperBoundaryCommit: undefined
+      upperBoundaryCommit: undefined,
+      git,
+      renameDetectionStrictness: this.plugin.settings.renameDetectionStrictness,
+      timeZone: getTimeZone(this.plugin)
     });
 
     const extractedVersions = await extractLastCommitsForInterval({
-      changelogGenerationSettings:
-        this.plugin.settings.changelogGenerationSettings,
+      dayStartHour: this.plugin.settings.dayStartHour,
       interval: this.getInterval(),
-      timezoneAdjustedLogs
+      timeZoneAdjustedLogs
     });
 
     // Always recalculate the latest version in cached changelog (because it likely has outdated stats), but only if there are any versions to recalculate.
@@ -194,7 +195,7 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
       extractedVersions.push({
         filePath: versionBeforeLatestCached.getPotentialGitFilePath(),
         hash: versionBeforeLatestCached.commitHash,
-        timezoneAdjustedDate: versionBeforeLatestCached.timezoneAdjustedDate
+        timeZoneAdjustedDate: versionBeforeLatestCached.timeZoneAdjustedDate
       });
     }
 
@@ -392,31 +393,34 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
     ) {
       logCycles++;
 
-      const timezoneAdjustedLogs = await runLog({
+      const git = await this.plugin.getGit();
+      const timeZoneAdjustedLogs = await runLog({
         abortSignal,
         filePath: startingFilePath,
         lowerBoundaryCommit: undefined,
         maxCount: logMaxCount,
-        plugin: this.plugin,
+        git,
+        renameDetectionStrictness:
+          this.plugin.settings.renameDetectionStrictness,
+        timeZone: getTimeZone(this.plugin),
         upperBoundaryCommit: startingCommit
       });
 
       // All we need from a version is its latest commit, not all commits included in that interval
       const extractedVersions = await extractLastCommitsForInterval({
-        changelogGenerationSettings:
-          this.plugin.settings.changelogGenerationSettings,
+        dayStartHour: this.plugin.settings.dayStartHour,
         interval,
         previouslySeenFullyAdjustedDates: fullyAdjustedSeenDates,
-        timezoneAdjustedLogs
+        timeZoneAdjustedLogs
       });
 
-      if (timezoneAdjustedLogs.length < logMaxCount) {
+      if (timeZoneAdjustedLogs.length < logMaxCount) {
         reachedInitialCommit = true;
       }
       // If getting file changelog versions and need to loop many times, we need to track the file path across renames so that we can follow the target file across its whole history.
-      startingFilePath = timezoneAdjustedLogs.at(-1)?.filePath;
+      startingFilePath = timeZoneAdjustedLogs.at(-1)?.filePath;
 
-      startingCommit = timezoneAdjustedLogs.at(-1)?.hash;
+      startingCommit = timeZoneAdjustedLogs.at(-1)?.hash;
 
       lastCommitsInEachVersion.push(...extractedVersions);
 

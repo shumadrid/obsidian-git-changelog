@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
+  import type { EventRef } from 'obsidian';
 
   import { OPEN_FILE_ICON } from 'constants.ts';
   import { mayTriggerChangelogMenu } from 'menu.ts';
   import { setIcon } from 'obsidian';
+  import { onDestroy } from 'svelte';
   import { DiffFileStatus } from 'types.ts';
   import { assertNotNull } from 'utils.ts';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
@@ -25,6 +27,29 @@
   const { entry, plugin, previousEntry, index }: Properties = $props();
 
   let openFileButton = $state<HTMLElement>();
+
+  let dayChangedReference: EventRef;
+
+  dayChangedReference = plugin.app.workspace.on(
+    'git-changelog:day-changed',
+    () => {
+      formattedVersionDateLabel = updateFormattedVersionDateLabel();
+    }
+  );
+
+  let formattedVersionDateLabel = $state(updateFormattedVersionDateLabel());
+
+  function updateFormattedVersionDateLabel(): string {
+    return composeVersionTitle({
+      interval: plugin.settings.fileChangelogInterval,
+      plugin,
+      timeZoneAdjustedEntryDate: entry.timeZoneAdjustedDate
+    });
+  }
+
+  onDestroy(() => {
+    plugin.app.workspace.offref(dayChangedReference);
+  });
 
   function primaryClick(event: MouseEvent): void {
     event.stopPropagation();
@@ -73,17 +98,6 @@
       })
     );
   }
-
-  const formattedVersionDateLabel = $derived.by(() => {
-    // CurrentDay just used to trigger updates
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const currentDay = plugin.currentDay;
-    return composeVersionTitle({
-      interval: plugin.settings.fileChangelogInterval,
-      plugin,
-      timezoneAdjustedEntryDate: entry.timezoneAdjustedDate
-    });
-  });
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->

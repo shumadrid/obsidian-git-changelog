@@ -1,8 +1,12 @@
 import type GitChangelogPlugin from 'main.ts';
-import type { FileLogEntry } from 'types.ts';
+import type { SimpleGit } from 'simple-git';
+import type {
+  DiffAlgorithm,
+  FileLogEntry,
+  WhitespaceIgnoreMode
+} from 'types.ts';
 
 import { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
-import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
 import {
   assignDiffAlgorithm,
   assignWhitespaceIgnoreSettings,
@@ -14,19 +18,33 @@ export async function runFileDiff({
   abortSignal,
   newCommit,
   oldCommit,
-  plugin
+  plugin,
+  git,
+  diffAlgorithm,
+  whitespaceIgnoreMode,
+  ignoreBlankLines,
+  emptyTreeHash
 }: {
   abortSignal: AbortSignal;
   newCommit: FileLogEntry;
   oldCommit?: FileLogEntry;
-  plugin: GitChangelogPlugin;
+  plugin?: GitChangelogPlugin;
+  git: SimpleGit;
+  diffAlgorithm: DiffAlgorithm;
+  whitespaceIgnoreMode: WhitespaceIgnoreMode;
+  ignoreBlankLines: boolean;
+  emptyTreeHash: string;
 }): Promise<FileChangelogEntry | undefined> {
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
+
   const oldVersionIsEmpty =
     oldCommit === undefined || oldCommit.fileDeleted === true;
 
   if (oldVersionIsEmpty && newCommit.fileDeleted) {
     // I assumed that the other should always be defined if one is undefined, since newCommit.hash is only undefined for commits where the file was deleted, and it can't get deleted if it didn't exist before, but these are statuses calculated from comparing neighboring commits, but we are diffing selected commits only, so maybe it's possible that we get in a situation where we compare some initial version commit (that isn't the actual initial commit, so that commit could be a deletion of that file, if a file was newly added and then deleted in the same interval) with an empty state
-    plugin.consoleDebug(
+    plugin?.consoleDebug(
       'oldCommit and newCommit are both undefined, assumption is wrong'
     );
 
@@ -39,13 +57,15 @@ export async function runFileDiff({
     '--no-renames'
     // `--exit-code`,
   ];
-  assignDiffAlgorithm(numstatArguments, plugin);
-  assignWhitespaceIgnoreSettings(numstatArguments, plugin);
+  assignDiffAlgorithm({ arguments_: numstatArguments, diffAlgorithm });
+  assignWhitespaceIgnoreSettings({
+    arguments_: numstatArguments,
+    whitespaceIgnoreMode,
+    ignoreBlankLines
+  });
 
   // Only one of these can be true at the same time since we are returning early if they are both true.
   if (oldVersionIsEmpty || newCommit.fileDeleted) {
-    const emptyTreeHash = await getEmptyTreeHash({ plugin });
-
     numstatArguments.push(
       emptyTreeHash,
       oldVersionIsEmpty ? newCommit.hash : oldCommit.hash,
@@ -77,11 +97,6 @@ export async function runFileDiff({
     );
   }
 
-  if (abortSignal.aborted) {
-    throw new AbortError();
-  }
-
-  const git = await plugin.getGit();
   const diffNumstatResult = await git.diffSummary(numstatArguments);
 
   if (
@@ -113,7 +128,7 @@ export async function runFileDiff({
     pathGitRelative: newCommit.filePath, // Passing oldCommit.filePath or undefined for fileDeleted case could be more logical, but not compatible with use in git commands.
     status: fileStatus,
     textDiffStats,
-    timezoneAdjustedDate: newCommit.timezoneAdjustedDate
+    timeZoneAdjustedDate: newCommit.timeZoneAdjustedDate
   });
   return fileEntry;
 }

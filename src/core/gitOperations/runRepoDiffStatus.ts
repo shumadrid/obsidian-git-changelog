@@ -1,6 +1,7 @@
 import type GitChangelogPlugin from 'main.ts';
+import type { SimpleGit } from 'simple-git';
 
-import { DiffFileStatus } from 'types.ts';
+import { AbortError, DiffFileStatus } from 'types.ts';
 
 import type { DiffResultNameStatusFile } from './simpleGitTypes.ts';
 
@@ -13,13 +14,21 @@ export async function runRepoDiffStatus({
   newCommit,
   oldCommit,
   pathSpec,
-  plugin
+  git,
+  plugin,
+  abortSignal
 }: {
   newCommit: string;
   oldCommit?: string;
   pathSpec: string[];
-  plugin: GitChangelogPlugin;
+  plugin?: GitChangelogPlugin;
+  abortSignal: AbortSignal;
+  git: SimpleGit;
 }): Promise<Record<string, DiffFileStatus> | undefined> {
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
+
   if (oldCommit === undefined) {
     return undefined;
   }
@@ -38,7 +47,6 @@ export async function runRepoDiffStatus({
   if (pathSpec.length > 0) {
     diffStatusArguments.push('--', ...pathSpec);
   }
-  const git = await plugin.getGit();
   const diffStatusResult = await git.diffSummary(diffStatusArguments);
 
   const changedFilesMap: Record<string, DiffFileStatus> = {};
@@ -60,7 +68,7 @@ export async function runRepoDiffStatus({
             file.status ?? DiffNameStatus.MODIFIED
           )
         ) {
-          plugin.consoleDebug(
+          plugin?.consoleDebug(
             `Unexpected file status of ${file.file}:`,
             file.status
           );

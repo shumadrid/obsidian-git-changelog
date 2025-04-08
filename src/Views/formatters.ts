@@ -3,11 +3,10 @@ import type { Spacetime } from 'spacetime';
 import type { DiffFile } from 'types.ts';
 
 import { normalizePath } from 'obsidian';
-import { getUserLocale } from 'settings/ui/CustomLocale.ts';
+import { getLocale } from 'settings/ui/CustomLocale.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
-import { getDayStartTime } from 'settings/ui/DayStartTime.ts';
 import spacetime from 'spacetime';
-import { applyDayStartTimeSetting } from 'timeUtils.ts';
+import { applyDayStartHourSetting } from 'timeUtils.ts';
 import { ChangelogInterval } from 'types.ts';
 import {
   assertNotNull,
@@ -86,35 +85,35 @@ export function composeDailyVersionDisplayText({
 
   return formatDate(
     fullyAdjustedEntryDate.toNativeDate(),
-    getUserLocale(plugin),
-    getTimeZone(plugin.settings.changelogGenerationSettings, plugin)
+    getLocale(plugin),
+    getTimeZone(plugin)
   );
 }
 
 // Only for composing the UI string
 export function applyDayDisplayOffset({
-  dayStartTime,
-  timezoneAdjustedDate
+  dayStartHour,
+  timeZoneAdjustedDate
 }: {
-  dayStartTime: number;
-  timezoneAdjustedDate: Spacetime;
+  dayStartHour: number;
+  timeZoneAdjustedDate: Spacetime;
 }): Spacetime {
-  const dayOffset = timezoneAdjustedDate.hour() < dayStartTime ? 1 : 0;
-  return timezoneAdjustedDate.clone().subtract(dayOffset, 'day');
+  const dayOffset = timeZoneAdjustedDate.hour() < dayStartHour ? 1 : 0;
+  return timeZoneAdjustedDate.clone().subtract(dayOffset, 'day');
 }
 
 export function composeHourlyVersionDisplayText({
   fullyAdjustedCurrentDate,
   fullyAdjustedEntryDate,
-  timezoneAdjustedEntryDate,
+  timeZoneAdjustedEntryDate,
   plugin
 }: {
   fullyAdjustedCurrentDate: Spacetime;
   fullyAdjustedEntryDate: Spacetime;
-  timezoneAdjustedEntryDate: Spacetime;
+  timeZoneAdjustedEntryDate: Spacetime;
   plugin: GitChangelogPlugin;
 }): string {
-  // Use the fullyAdjusted dates only to check if the dates belong to the same day after the dayStartTime setting is applied.
+  // Use the fullyAdjusted dates only to check if the dates belong to the same day after the dayStartHour setting is applied.
   const isToday = fullyAdjustedEntryDate.isSame(
     fullyAdjustedCurrentDate,
     'day'
@@ -124,12 +123,9 @@ export function composeHourlyVersionDisplayText({
     'day'
   );
 
-  const userLocale = getUserLocale(plugin);
+  const userLocale = getLocale(plugin);
 
-  const timeZone = getTimeZone(
-    plugin.settings.changelogGenerationSettings,
-    plugin
-  );
+  const timeZone = getTimeZone(plugin);
 
   // Replaces the day part of the date time string with today or yesterday labels.
   if (isToday || isYesterday) {
@@ -138,7 +134,7 @@ export function composeHourlyVersionDisplayText({
       timeZone
     });
     const timeString = timeFormatter.format(
-      timezoneAdjustedEntryDate.startOf('hour').toNativeDate()
+      timeZoneAdjustedEntryDate.startOf('hour').toNativeDate()
     );
     return `${isToday ? 'Today' : 'Yesterday'}, ${timeString}`;
   }
@@ -149,14 +145,14 @@ export function composeHourlyVersionDisplayText({
     timeZone
   });
 
-  // Use the timezoneAdjustedEntryDate in the UI and just potentially subtract a day if it crosses the dayStartTime boundary. Don't show the fake fullyAdjustedEntryDate that has the dayStartTime offset applied to hours.
-  const timezoneAdjustedEntryDateWithDayOffset = applyDayDisplayOffset({
-    dayStartTime: getDayStartTime(plugin.settings.changelogGenerationSettings),
-    timezoneAdjustedDate: timezoneAdjustedEntryDate
+  // Use the timeZoneAdjustedEntryDate in the UI and just potentially subtract a day if it crosses the dayStartHour boundary. Don't show the fake fullyAdjustedEntryDate that has the dayStartHour offset applied to hours.
+  const timeZoneAdjustedEntryDateWithDayOffset = applyDayDisplayOffset({
+    dayStartHour: plugin.settings.dayStartHour,
+    timeZoneAdjustedDate: timeZoneAdjustedEntryDate
   });
 
   return formatter.format(
-    timezoneAdjustedEntryDateWithDayOffset.startOf('hour').toNativeDate()
+    timeZoneAdjustedEntryDateWithDayOffset.startOf('hour').toNativeDate()
   );
 }
 
@@ -169,30 +165,28 @@ export function composeMonthlyVersionDisplayText({
 }): string {
   return formatMonthYear(
     fullyAdjustedEntryDate.toNativeDate(),
-    getUserLocale(plugin),
-    getTimeZone(plugin.settings.changelogGenerationSettings, plugin)
+    getLocale(plugin),
+    getTimeZone(plugin)
   );
 }
 
 export function composeVersionTitle({
   interval,
   plugin,
-  timezoneAdjustedEntryDate
+  timeZoneAdjustedEntryDate
 }: {
   interval: ChangelogInterval;
   plugin: GitChangelogPlugin;
-  timezoneAdjustedEntryDate: Spacetime;
+  timeZoneAdjustedEntryDate: Spacetime;
 }): string {
-  const timezoneAdjustedCurrentDate = spacetime.now(
-    getTimeZone(plugin.settings.changelogGenerationSettings, plugin)
-  );
-  const fullyAdjustedCurrentDate = applyDayStartTimeSetting({
-    dayStartTime: getDayStartTime(plugin.settings.changelogGenerationSettings),
-    timezoneAdjustedDate: timezoneAdjustedCurrentDate
+  const timeZoneAdjustedCurrentDate = spacetime.now(getTimeZone(plugin));
+  const fullyAdjustedCurrentDate = applyDayStartHourSetting({
+    dayStartHour: plugin.settings.dayStartHour,
+    timeZoneAdjustedDate: timeZoneAdjustedCurrentDate
   });
-  const fullyAdjustedEntryDate = applyDayStartTimeSetting({
-    dayStartTime: getDayStartTime(plugin.settings.changelogGenerationSettings),
-    timezoneAdjustedDate: timezoneAdjustedEntryDate
+  const fullyAdjustedEntryDate = applyDayStartHourSetting({
+    dayStartHour: plugin.settings.dayStartHour,
+    timeZoneAdjustedDate: timeZoneAdjustedEntryDate
   });
 
   switch (interval) {
@@ -200,7 +194,7 @@ export function composeVersionTitle({
       return composeHourlyVersionDisplayText({
         fullyAdjustedCurrentDate,
         fullyAdjustedEntryDate,
-        timezoneAdjustedEntryDate,
+        timeZoneAdjustedEntryDate,
         plugin
       });
     }
@@ -251,7 +245,7 @@ export function composeWeeklyVersionDisplayText({
     return 'Last week';
   }
 
-  const userLocale = getUserLocale(plugin);
+  const userLocale = getLocale(plugin);
 
   const weekNumber = fullyAdjustedEntryDate.week();
 
@@ -261,10 +255,7 @@ export function composeWeeklyVersionDisplayText({
   );
 
   const nativeFullyAdjustedEntryWeek = fullyAdjustedEntryWeek.toNativeDate();
-  const timeZone = getTimeZone(
-    plugin.settings.changelogGenerationSettings,
-    plugin
-  );
+  const timeZone = getTimeZone(plugin);
 
   if (isCurrentYear) {
     const monthString = new Intl.DateTimeFormat(userLocale, {

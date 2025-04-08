@@ -6,10 +6,10 @@ import {
   MAX_TESTED_GIT_PLUGIN_VERSION,
   MIN_COMPATIBLE_GIT_PLUGIN_VERSION
 } from 'constants.ts';
-import { GitChangelogSetting } from 'settings/components/setting.ts';
+import { SettingComponent } from 'settings/components/setting.ts';
 import { GitPluginState } from 'types.ts';
 
-export class GitPluginWarning extends GitChangelogSetting {
+export class GitPluginWarning extends SettingComponent {
   public display(): void {
     let desc: DocumentFragment | string;
     let setting: Setting;

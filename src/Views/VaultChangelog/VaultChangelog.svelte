@@ -2,6 +2,7 @@
   // Import { SimpleGit } from "src/gitManager/simpleGit";
   import type GitChangelogPlugin from 'main.ts';
   import type { EventRef } from 'obsidian';
+  import type { GitChangelogSettings } from 'settings/settings.ts';
 
   import { TOGGLE_FILES_SUMMARY_OPTION_ICON } from 'constants.ts';
   import { setIcon } from 'obsidian';
@@ -141,16 +142,17 @@
     collapseButton = undefined;
   });
 
-  function toggleFilesSummaryOption(): void {
+  async function toggleFilesSummaryOption(): Promise<void> {
     showFilesCountSummariesMode =
       showFilesCountSummariesMode === FilesSummariesDisplayMode.Total
         ? FilesSummariesDisplayMode.TextAndBinary
         : FilesSummariesDisplayMode.Total;
 
-    const newSettings = plugin.settingsClone;
-    newSettings.fileSummariesDisplayMode = showFilesCountSummariesMode;
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    plugin.saveSettings(newSettings);
+    await plugin.settingsManager.editAndSave(
+      (settings: GitChangelogSettings): void => {
+        settings.fileSummariesDisplayMode = showFilesCountSummariesMode;
+      }
+    );
   }
 
   function toggleCollapsedState(): void {

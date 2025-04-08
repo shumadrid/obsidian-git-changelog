@@ -8,7 +8,7 @@ import type {
 
 export abstract class ChangelogEntry {
   public constructor(
-    public timezoneAdjustedDate: Spacetime,
+    public timeZoneAdjustedDate: Spacetime,
 
     public commitHash: string // Represents a single commit that's just the latest commit of a certain interval (day,week...).
   ) {}
@@ -33,16 +33,16 @@ export class FileChangelogEntry extends ChangelogEntry implements DiffFile {
     pathGitRelative,
     status,
     textDiffStats,
-    timezoneAdjustedDate
+    timeZoneAdjustedDate
   }: {
     commitHash: string;
     fromPathGitRelative?: string;
     pathGitRelative: string;
     status: DiffFileStatus;
     textDiffStats?: TextDiffStats;
-    timezoneAdjustedDate: Spacetime;
+    timeZoneAdjustedDate: Spacetime;
   }) {
-    super(timezoneAdjustedDate, commitHash);
+    super(timeZoneAdjustedDate, commitHash);
     this.pathGitRelative = pathGitRelative;
     this.status = status;
     this.fromPathGitRelative = fromPathGitRelative;
@@ -78,7 +78,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
     previousDayLastCommitHash,
     textFiles,
     textFilesSummaryCached,
-    timezoneAdjustedDate
+    timeZoneAdjustedDate
   }: {
     binaryFiles: DiffFile[];
     binaryFilesSummaryCached: FilesSummary;
@@ -86,9 +86,9 @@ export class VaultChangelogEntry extends ChangelogEntry {
     previousDayLastCommitHash?: string;
     textFiles: DiffFile[];
     textFilesSummaryCached: FilesSummary;
-    timezoneAdjustedDate: Spacetime;
+    timeZoneAdjustedDate: Spacetime;
   }) {
-    super(timezoneAdjustedDate, commitHash);
+    super(timeZoneAdjustedDate, commitHash);
     this.textFiles = textFiles;
     this.binaryFiles = binaryFiles;
     this.textFilesSummaryCached = textFilesSummaryCached;

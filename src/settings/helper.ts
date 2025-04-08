@@ -1,37 +1,22 @@
-import type GitChangelogPlugin from 'main.ts';
-import type { ChangelogGenerationSettings } from 'settings/settings.ts';
+import type { GitChangelogSettings } from 'settings/settings.ts';
+import type { ReadonlyDeep } from 'type-fest';
 
 import { deepEqual } from 'obsidian-dev-utils/Object';
-import {
-  systemTimeZoneUnchanged,
-  validateCustomTimeZone
-} from 'settings/ui/CustomTimeZone.ts';
+import { pickGeneralChangelogSettings } from 'settings/settings.ts';
 
 export function changelogGenerationSettingsChanged({
-  newChangelogSettings,
-  oldChangelogSettings,
-  plugin
+  newSettings,
+  oldSettings
 }: {
-  newChangelogSettings: ChangelogGenerationSettings;
-  oldChangelogSettings: ChangelogGenerationSettings;
-  plugin: GitChangelogPlugin;
+  newSettings: ReadonlyDeep<GitChangelogSettings>;
+  oldSettings: ReadonlyDeep<GitChangelogSettings>;
 }): boolean {
-  if (!oldChangelogSettings) {
-    return true;
-  }
+  const oldVaultGenerationSettings = pickGeneralChangelogSettings(oldSettings);
+  const newVaultGenerationSettings = pickGeneralChangelogSettings(newSettings);
 
   // IsAncestor run
 
-  if (
-    !validateCustomTimeZone(newChangelogSettings.timezone) &&
-    !systemTimeZoneUnchanged(plugin)
-  ) {
-    return true;
-  }
+  // Don't have to check if the detected system time zone or detected locale changed since they're only assigned once at startup.
 
-  if (deepEqual(oldChangelogSettings, newChangelogSettings)) {
-    return false;
-  }
-
-  return true;
+  return !deepEqual(oldVaultGenerationSettings, newVaultGenerationSettings);
 }

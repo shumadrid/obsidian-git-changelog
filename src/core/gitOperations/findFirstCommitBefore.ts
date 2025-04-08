@@ -1,19 +1,24 @@
-import type GitChangelogPlugin from 'main.ts';
+import type { SimpleGit } from 'simple-git';
 import type { LogEntry } from 'types.ts';
 
-import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
 
 export async function findFirstCommitBefore({
   abortSignal,
   minutes,
-  plugin
+  git,
+  timeZone
 }: {
   abortSignal: AbortSignal;
   minutes: number;
-  plugin: GitChangelogPlugin;
+  git: SimpleGit;
+  timeZone: string;
 }): Promise<LogEntry | undefined> {
+  if (abortSignal.aborted) {
+    throw new AbortError();
+  }
+
   const options: Record<string, unknown> = {
     // "--no-patch": null,
     // eslint-disable-next-line no-magic-numbers
@@ -28,15 +33,7 @@ export async function findFirstCommitBefore({
     strictDate: true
   };
 
-  if (abortSignal.aborted) {
-    throw new AbortError();
-  }
-  const git = await plugin.getGit();
   const result = await git.log(options);
-  const timezone = getTimeZone(
-    plugin.settings.changelogGenerationSettings,
-    plugin
-  );
 
   if (abortSignal.aborted) {
     throw new AbortError();
@@ -50,6 +47,6 @@ export async function findFirstCommitBefore({
   return result.all.map<LogEntry>((entry) => ({
     filePath: undefined,
     hash: entry.hash,
-    timezoneAdjustedDate: spacetime(entry.date).goto(timezone)
+    timeZoneAdjustedDate: spacetime(entry.date).goto(timeZone)
   }))[0];
 }

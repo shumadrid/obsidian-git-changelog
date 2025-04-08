@@ -1,9 +1,16 @@
 /* eslint-disable no-magic-numbers */
 import type GitChangelogPlugin from 'main.ts';
-import type { DiffFile, FilesSummary, LogEntry, TextDiffFile } from 'types.ts';
+import type { SimpleGit } from 'simple-git';
+import type {
+  DiffAlgorithm,
+  DiffFile,
+  FilesSummary,
+  LogEntry,
+  TextDiffFile,
+  WhitespaceIgnoreMode
+} from 'types.ts';
 
 import { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
-import { getEmptyTreeHash } from 'core/gitOperations/getEmptyTreeHash.ts';
 import {
   addFileStatusToSummary,
   assignDiffAlgorithm,
@@ -11,8 +18,6 @@ import {
   calculateFileStatusRenamedOrMoved
 } from 'core/gitOperations/helper.ts';
 import { convertGitIgnoreToPathspec } from 'settings/ui/ExcludeFilesAndFolders.ts';
-import { getRenameLimit } from 'settings/ui/RenameDetectionFileLimit.ts';
-import { getRenameDetectionStrictness } from 'settings/ui/RenameDetectionStrictnessSlider.ts';
 import { AbortError, DiffFileStatus } from 'types.ts';
 import { assertNotNull, insertSorted, parseContentChange } from 'utils.ts';
 
@@ -54,19 +59,38 @@ export function compareTextFiles(
   return leftFile.pathGitRelative.localeCompare(rightFile.pathGitRelative);
 }
 
+// eslint-disable-next-line complexity
 export async function runRepoDiff({
   abortSignal,
   newCommit,
   oldCommit,
-  plugin
+  git,
+  plugin,
+  excludeFilesAndFoldersLines,
+  convertToIncludeList,
+  renameLimit,
+  renameDetectionStrictness,
+  diffAlgorithm,
+  whitespaceIgnoreMode,
+  ignoreBlankLines,
+  emptyTreeHash
 }: {
   abortSignal: AbortSignal;
   newCommit: LogEntry;
   oldCommit?: LogEntry;
-  plugin: GitChangelogPlugin;
+  diffAlgorithm: DiffAlgorithm;
+  git: SimpleGit;
+  excludeFilesAndFoldersLines: readonly string[];
+  plugin?: GitChangelogPlugin;
+  convertToIncludeList: boolean;
+  renameLimit: number;
+  emptyTreeHash: string;
+  renameDetectionStrictness: number;
+  ignoreBlankLines: boolean;
+  whitespaceIgnoreMode: WhitespaceIgnoreMode;
 }): Promise<undefined | VaultChangelogEntry> {
   if (newCommit === undefined) {
-    plugin.consoleDebug('newCommit is undefined');
+    plugin?.consoleDebug('newCommit is undefined');
   }
 
   if (abortSignal.aborted) {
@@ -74,34 +98,38 @@ export async function runRepoDiff({
   }
 
   const pathSpec = convertGitIgnoreToPathspec(
-    plugin.settings.vaultChangelogGenerationSettings
-      .excludeFilesAndFoldersLines,
-    plugin.settings.vaultChangelogGenerationSettings.convertToIncludeList
+    excludeFilesAndFoldersLines,
+    convertToIncludeList
   );
 
   const numstatArguments = [
     '--numstat',
-    `-l${getRenameLimit(plugin.settings.changelogGenerationSettings)}`,
-    `--find-renames=${getRenameDetectionStrictness(plugin.settings.changelogGenerationSettings)}%`,
+    `-l${renameLimit}`,
+    `--find-renames=${renameDetectionStrictness}%`,
     '--color-moved=no',
     // Don't use empty files as rename candidates. If you delete any empty file and add a new empty file, that file will be considered a rename unless this flag is used.
     '--no-rename-empty',
     '-z'
   ];
-  assignDiffAlgorithm(numstatArguments, plugin);
-  assignWhitespaceIgnoreSettings(numstatArguments, plugin);
+  assignDiffAlgorithm({ arguments_: numstatArguments, diffAlgorithm });
+  assignWhitespaceIgnoreSettings({
+    arguments_: numstatArguments,
+    whitespaceIgnoreMode,
+    ignoreBlankLines
+  });
 
   let statusResult: Record<string, DiffFileStatus> | undefined;
 
   if (oldCommit === undefined) {
-    const emptyTreeHash = await getEmptyTreeHash({ plugin });
     numstatArguments.push(emptyTreeHash, newCommit.hash);
   } else {
     statusResult = await runRepoDiffStatus({
       newCommit: newCommit.hash,
       oldCommit: oldCommit.hash,
       pathSpec,
-      plugin
+      plugin,
+      abortSignal,
+      git
     });
     numstatArguments.push(oldCommit.hash, newCommit.hash);
   }
@@ -110,11 +138,11 @@ export async function runRepoDiff({
     numstatArguments.push('--', ...pathSpec);
   }
 
+  const diffNumstatResult = await git.diff(numstatArguments);
+
   if (abortSignal.aborted) {
     throw new AbortError();
   }
-  const git = await plugin.getGit();
-  const diffNumstatResult = await git.diff(numstatArguments);
 
   const records = diffNumstatResult.split('\0').filter((token) => token !== '');
 
@@ -171,7 +199,7 @@ export async function runRepoDiff({
       status = DiffFileStatus.Added;
     } else if (oldPath) {
       if (typeof oldPath !== 'string') {
-        plugin.consoleDebug('oldPath is not a string', oldPath);
+        plugin?.consoleDebug('oldPath is not a string', oldPath);
       }
       status = calculateFileStatusRenamedOrMoved(oldPath, filePath);
     } else if (assertNotNull(statusResult)[filePath]) {
@@ -215,7 +243,7 @@ export async function runRepoDiff({
     previousDayLastCommitHash: oldCommit?.hash,
     textFiles,
     textFilesSummaryCached: textFilesSummary,
-    timezoneAdjustedDate: newCommit.timezoneAdjustedDate
+    timeZoneAdjustedDate: newCommit.timeZoneAdjustedDate
   });
 
   return dayEntry;

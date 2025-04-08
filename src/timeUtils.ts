@@ -3,31 +3,31 @@ import type { Spacetime } from 'spacetime';
 import type { LogEntry } from 'types.ts';
 
 /**
- *  This function produces "fullyAdjusted" dates, which are dates that have the "day start time" setting applied to a "timeAdjustedDate". timezoneAdjustedDate is a date adjusted with the timezone setting specified in the settings tab.
+ *  This function produces "fullyAdjusted" dates, which are dates that have the "day start time" setting applied to a "timeAdjustedDate". timeZoneAdjustedDate is a date adjusted with the timeZone setting specified in the settings tab.
  */
-export function applyDayStartTimeSetting({
-  dayStartTime,
-  timezoneAdjustedDate
+export function applyDayStartHourSetting({
+  dayStartHour,
+  timeZoneAdjustedDate
 }: {
-  dayStartTime: number;
-  timezoneAdjustedDate: Spacetime;
+  dayStartHour: number;
+  timeZoneAdjustedDate: Spacetime;
 }): Spacetime {
-  return timezoneAdjustedDate.subtract(dayStartTime, 'hours');
+  return timeZoneAdjustedDate.subtract(dayStartHour, 'hours');
 }
 
-export function getDayStartTimeAdjustedLogs(
+export function getDayStartHourAdjustedLogs(
   logEntries: LogEntry[],
-  dayStartTime: number
+  dayStartHour: number
 ): LogEntry[] {
-  if (dayStartTime === 0) {
+  if (dayStartHour === 0) {
     return logEntries;
   }
   return logEntries.map((entry) => {
     return {
       ...entry,
-      fullyAdjustedDate: applyDayStartTimeSetting({
-        dayStartTime,
-        timezoneAdjustedDate: entry.timezoneAdjustedDate
+      fullyAdjustedDate: applyDayStartHourSetting({
+        dayStartHour,
+        timeZoneAdjustedDate: entry.timeZoneAdjustedDate
       })
     };
   });
