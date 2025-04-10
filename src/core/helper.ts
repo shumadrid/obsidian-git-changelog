@@ -1,4 +1,5 @@
-import type { GitChangelogSettings } from 'settings/settings.ts';
+import type { GitChangelogPluginTypes } from 'constants.ts';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { Spacetime, TimeUnit } from 'spacetime';
 import type { ReadonlyDeep } from 'type-fest';
 import type { ChangelogInterval, FilesSummary, LogEntry } from 'types.ts';
@@ -109,8 +110,12 @@ export function changelogGenerationSettingsChanged({
   newSettings,
   oldSettings
 }: {
-  newSettings: ReadonlyDeep<GitChangelogSettings>;
-  oldSettings: ReadonlyDeep<GitChangelogSettings>;
+  newSettings: ReadonlyDeep<
+    ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+  >;
+  oldSettings: ReadonlyDeep<
+    ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+  >;
 }): boolean {
   const oldVaultGenerationSettings = pickGeneralChangelogSettings(oldSettings);
   const newVaultGenerationSettings = pickGeneralChangelogSettings(newSettings);

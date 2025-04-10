@@ -41,7 +41,6 @@ declare module 'obsidian' {
     on(
       name:
         | 'git-changelog:active-git-file-changed'
-        | 'git-changelog:day-changed'
         | 'git-changelog:file-changelog-generation-settings-changed'
         | 'git-changelog:generation-settings-changed'
         | 'git-changelog:status-bar-settings-changed'
@@ -62,7 +61,6 @@ declare module 'obsidian' {
     trigger(
       name:
         | 'git-changelog:active-git-file-changed'
-        | 'git-changelog:day-changed'
         | 'git-changelog:file-changelog-generation-settings-changed'
         | 'git-changelog:generation-settings-changed'
         | 'git-changelog:status-bar-settings-changed'
@@ -171,6 +169,11 @@ export interface FilesSummary {
   deletedFiles: number;
   modifiedFiles: number;
   renamedAndMovedFiles: number;
+}
+
+export interface CompareRepoCommitsViewState {
+  utcOlderDate: string;
+  utcNewerDate: string;
 }
 
 export interface LogEntry {

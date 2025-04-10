@@ -1,3 +1,5 @@
+import type { GitChangelogPluginTypes } from 'constants.ts';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { Except, ReadonlyDeep } from 'type-fest';
 
 import spacetime from 'spacetime';
@@ -41,6 +43,8 @@ export class GitChangelogSettings {
   public notifyOnHighFilesChanged = false;
   public filesChangedWarningThreshold = '50';
 
+  public checkpointCommits: string[] = [];
+
   public statusBarInterval = 30; // In mins
   public showStatusBarStats = false;
 
@@ -49,6 +53,7 @@ export class GitChangelogSettings {
 
   // VaultGenerationSettings
   public excludeFilesAndFoldersLines: string[] = [];
+  public enableExclusionList = true;
   public convertToIncludeList = false;
   public vaultChangelogInterval = ChangelogInterval.Daily;
 
@@ -69,46 +74,48 @@ export class GitChangelogSettings {
   public ignoreBlankLines = false;
 }
 
-// This is needed for checking if the generation settings have changed. And on each new added setting, the developer will have to explicitly include or exclude the added setting from all of these categories.
+// This is needed for checking if the specific generation settings have changed. And on each new added setting, the developer will have to explicitly include or exclude the added setting from all of these categories.
 
 export function pickVaultChangelogSettings(
-  settings: ReadonlyDeep<GitChangelogSettings>
+  settings: ReadonlyDeep<ExtractPluginSettingsWrapper<GitChangelogPluginTypes>>
 ): ReadonlyDeep<VaultGenerationSettings> {
   return {
-    excludeFilesAndFoldersLines: settings.excludeFilesAndFoldersLines,
-    convertToIncludeList: settings.convertToIncludeList,
-    vaultChangelogInterval: settings.vaultChangelogInterval
+    excludeFilesAndFoldersLines:
+      settings.safeSettings.excludeFilesAndFoldersLines,
+    convertToIncludeList: settings.safeSettings.convertToIncludeList,
+    vaultChangelogInterval: settings.safeSettings.vaultChangelogInterval,
+    enableExclusionList: settings.safeSettings.enableExclusionList
   };
 }
 
 export function pickFileChangelogSettings(
-  settings: ReadonlyDeep<GitChangelogSettings>
+  settings: ReadonlyDeep<ExtractPluginSettingsWrapper<GitChangelogPluginTypes>>
 ): ReadonlyDeep<FileGenerationSettings> {
   return {
-    fileChangelogInterval: settings.fileChangelogInterval
+    fileChangelogInterval: settings.safeSettings.fileChangelogInterval
   };
 }
 
 export function pickGeneralChangelogSettings(
-  settings: ReadonlyDeep<GitChangelogSettings>
+  settings: ReadonlyDeep<ExtractPluginSettingsWrapper<GitChangelogPluginTypes>>
 ): ReadonlyDeep<GenerationSettings> {
   return {
-    dayStartHour: settings.dayStartHour,
-    detectMovedContent: settings.detectMovedContent,
-    diffAlgorithm: settings.diffAlgorithm,
-    diffMeasurementUnit: settings.diffMeasurementUnit,
-    renameDetectionStrictness: settings.renameDetectionStrictness,
-    renameLimit: settings.renameLimit,
-    timeZone: settings.timeZone,
-    locale: settings.locale,
-    whitespaceIgnoreMode: settings.whitespaceIgnoreMode,
-    ignoreBlankLines: settings.ignoreBlankLines
+    dayStartHour: settings.safeSettings.dayStartHour,
+    detectMovedContent: settings.safeSettings.detectMovedContent,
+    diffAlgorithm: settings.safeSettings.diffAlgorithm,
+    diffMeasurementUnit: settings.safeSettings.diffMeasurementUnit,
+    renameDetectionStrictness: settings.safeSettings.renameDetectionStrictness,
+    renameLimit: settings.safeSettings.renameLimit,
+    timeZone: settings.safeSettings.timeZone,
+    whitespaceIgnoreMode: settings.safeSettings.whitespaceIgnoreMode,
+    ignoreBlankLines: settings.safeSettings.ignoreBlankLines
   };
 }
 
 type VaultGenerationSettings = Except<
   GitChangelogSettings,
   | 'autoCommitDisabledWarningDismissed'
+  | 'checkpointCommits'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'dayStartHour'
   | 'dedicatedFileTypeSummaries'
@@ -136,6 +143,7 @@ type VaultGenerationSettings = Except<
 type FileGenerationSettings = Except<
   GitChangelogSettings,
   | 'autoCommitDisabledWarningDismissed'
+  | 'checkpointCommits'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'convertToIncludeList'
   | 'dayStartHour'
@@ -143,6 +151,7 @@ type FileGenerationSettings = Except<
   | 'detectMovedContent'
   | 'diffAlgorithm'
   | 'diffMeasurementUnit'
+  | 'enableExclusionList'
   | 'excludeFilesAndFoldersLines'
   | 'fileExplorerInterval'
   | 'fileExplorerStats'
@@ -165,9 +174,11 @@ type FileGenerationSettings = Except<
 type GenerationSettings = Except<
   GitChangelogSettings,
   | 'autoCommitDisabledWarningDismissed'
+  | 'checkpointCommits'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'convertToIncludeList'
   | 'dedicatedFileTypeSummaries'
+  | 'enableExclusionList'
   | 'excludeFilesAndFoldersLines'
   | 'fileChangelogInterval'
   | 'fileExplorerInterval'
@@ -175,6 +186,7 @@ type GenerationSettings = Except<
   | 'filesChangedWarningThreshold'
   | 'fileSummariesDisplayMode'
   | 'firstStartup'
+  | 'locale'
   | 'notifyOnHighContentDeletionsAndMoves'
   | 'notifyOnHighFilesChanged'
   | 'showStatusBarStats'

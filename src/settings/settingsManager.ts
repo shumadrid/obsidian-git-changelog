@@ -79,10 +79,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
     );
 
     this.registerValidator('locale', (locale): MaybeReturn<string> => {
-      if (
-        !validateLocale(locale) &&
-        locale !== this.getProperty('locale').defaultValue
-      ) {
+      if (!validateLocale(locale) && locale !== this.defaultSettings.locale) {
         return 'Invalid locale';
       }
     });
@@ -90,7 +87,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
     this.registerValidator('timeZone', (timeZone): MaybeReturn<string> => {
       if (
         !validateCustomTimeZone(timeZone) &&
-        timeZone !== this.getProperty('timeZone').defaultValue
+        timeZone !== this.defaultSettings.timeZone
       ) {
         return 'Invalid timeZone';
       }

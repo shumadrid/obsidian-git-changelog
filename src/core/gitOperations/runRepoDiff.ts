@@ -73,7 +73,8 @@ export async function runRepoDiff({
   diffAlgorithm,
   whitespaceIgnoreMode,
   ignoreBlankLines,
-  emptyTreeHash
+  emptyTreeHash,
+  enableExclusionList
 }: {
   abortSignal: AbortSignal;
   newCommit: LogEntry;
@@ -81,6 +82,7 @@ export async function runRepoDiff({
   diffAlgorithm: DiffAlgorithm;
   git: SimpleGit;
   excludeFilesAndFoldersLines: readonly string[];
+  enableExclusionList: boolean;
   plugin?: GitChangelogPlugin;
   convertToIncludeList: boolean;
   renameLimit: number;
@@ -97,10 +99,12 @@ export async function runRepoDiff({
     throw new AbortError();
   }
 
-  const pathSpec = convertGitIgnoreToPathspec(
-    excludeFilesAndFoldersLines,
-    convertToIncludeList
-  );
+  const pathSpec = enableExclusionList
+    ? convertGitIgnoreToPathspec(
+        excludeFilesAndFoldersLines,
+        convertToIncludeList
+      )
+    : undefined;
 
   const numstatArguments = [
     '--numstat',
@@ -134,7 +138,7 @@ export async function runRepoDiff({
     numstatArguments.push(oldCommit.hash, newCommit.hash);
   }
 
-  if (pathSpec.length > 0) {
+  if (pathSpec && pathSpec.length > 0) {
     numstatArguments.push('--', ...pathSpec);
   }
 
@@ -240,7 +244,7 @@ export async function runRepoDiff({
     binaryFiles,
     binaryFilesSummaryCached: binaryFilesSummary,
     commitHash: newCommit.hash,
-    previousDayLastCommitHash: oldCommit?.hash,
+    previousVersionLastCommitHash: oldCommit?.hash,
     textFiles,
     textFilesSummaryCached: textFilesSummary,
     timeZoneAdjustedDate: newCommit.timeZoneAdjustedDate

@@ -1,12 +1,9 @@
 <script lang="ts">
   import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type GitChangelogPlugin from 'main.ts';
-  import type { EventRef } from 'obsidian';
 
   import { mayTriggerChangelogMenu } from 'menu.ts';
-  // eslint-disable-next-line import-x/no-duplicates
-  import { onDestroy } from 'svelte';
-  // eslint-disable-next-line import-x/no-duplicates
+  import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
   import { slide } from 'svelte/transition';
   import { FileSummariesDisplayMode } from 'types.ts';
   import { composeVersionTitle } from 'Views/formatters.ts';
@@ -20,46 +17,45 @@
     plugin: GitChangelogPlugin;
     showFilesCountSummaries: FileSummariesDisplayMode;
     version: VaultChangelogEntry;
+    hideTitleAndMakeUncollapsible?: boolean;
   }
 
-  const { plugin, showFilesCountSummaries, version }: Properties = $props();
+  const {
+    plugin,
+    showFilesCountSummaries,
+    version,
+    hideTitleAndMakeUncollapsible: hideTitleAndCollapseIcon
+  }: Properties = $props();
 
-  let dayChangedReference: EventRef;
-
-  dayChangedReference = plugin.app.workspace.on(
-    'git-changelog:day-changed',
-    () => {
-      formattedVersionDateLabel = updateFormattedVersionDateLabel();
-    }
-  );
-
-  let formattedVersionDateLabel = $state(updateFormattedVersionDateLabel());
-
-  function updateFormattedVersionDateLabel(): string {
+  const formattedVersionDateLabel = $derived.by(() => {
+    // Doing it this way to ensure they're properly reacted to if changed.
+    const currentDate = plugin.utcCurrentDateHour;
+    const locale = plugin.localeSafe;
     return composeVersionTitle({
       interval: plugin.settings.vaultChangelogInterval,
-      plugin,
+      dayStartHour: plugin.settings.dayStartHour,
+      locale,
+      timeZone: getTimeZone(plugin),
+      utcCurrentDateHour: currentDate,
       timeZoneAdjustedEntryDate: version.timeZoneAdjustedDate
     });
-  }
-
-  onDestroy(() => {
-    plugin.app.workspace.offref(dayChangedReference);
   });
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
-  class:is-collapsed={version.isCollapsed}
+  class:is-collapsed={hideTitleAndCollapseIcon ? false : version.isCollapsed}
   class="git-changelog-bottom-padding"
 >
   <div
-    class="tree-item-self is-clickable"
+    class={`tree-item-self${hideTitleAndCollapseIcon ? '' : ' is-clickable'}`}
     data-tooltip-position="bottom"
-    onclick={() => {
-      version.isCollapsed = !version.isCollapsed;
-    }}
+    onclick={hideTitleAndCollapseIcon
+      ? undefined
+      : () => {
+          version.isCollapsed = !version.isCollapsed;
+        }}
     onauxclick={(event) => {
       event.stopPropagation();
       // eslint-disable-next-line eqeqeq
@@ -77,34 +73,38 @@
       }
     }}
   >
-    <div
-      class="tree-item-icon nav-folder-collapse-indicator collapse-icon"
-      class:is-collapsed={version.isCollapsed}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="svg-icon right-triangle"><path d="M3 8L12 17L21 8" /></svg
+    {#if !hideTitleAndCollapseIcon}
+      <div
+        class="tree-item-icon nav-folder-collapse-indicator collapse-icon"
+        class:is-collapsed={version.isCollapsed}
       >
-    </div>
-    <div class="file-stats git-changelog-files-summaries-stats">
-      <div class="git-changelog-entry-title">
-        <div>{formattedVersionDateLabel}</div>
-        {#if !version.previousVersionCommitHash}
-          <div>
-            <span class="nav-file-tag git-changelog-initial-version-tag"
-              >Initial</span
-            >
-          </div>
-        {/if}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="svg-icon right-triangle"><path d="M3 8L12 17L21 8" /></svg
+        >
       </div>
+    {/if}
+    <div class="file-stats git-changelog-files-summaries-stats">
+      {#if !hideTitleAndCollapseIcon}
+        <div class="git-changelog-entry-title">
+          <div>{formattedVersionDateLabel}</div>
+          {#if !version.previousVersionCommitHash}
+            <div>
+              <span class="nav-file-tag git-changelog-initial-version-tag"
+                >Initial</span
+              >
+            </div>
+          {/if}
+        </div>
+      {/if}
       <!-- if more than one option is selected then show labels -->
       {#if showFilesCountSummaries === FileSummariesDisplayMode.Total}
         <div class="git-changelog-stat">
@@ -148,7 +148,7 @@
       />
     </div>
   </div>
-  {#if !version.isCollapsed}
+  {#if hideTitleAndCollapseIcon ? true : !version.isCollapsed}
     <div class="tree-item-children" transition:slide|local={{ duration: 150 }}>
       {#each version.textFiles as file (file.pathGitRelative)}
         {#if file !== undefined && file !== undefined}

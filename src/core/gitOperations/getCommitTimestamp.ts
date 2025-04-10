@@ -3,32 +3,19 @@ import type { LogEntry } from 'types.ts';
 
 import spacetime from 'spacetime';
 import { AbortError } from 'types.ts';
-import { assertNotNull } from 'utils.ts';
 
 /**
- * Returns the first commit before the specified date or the specified number of minutes.
- * If no commits are found, returns undefined.
- *
- * Either `minutes` or `isoString` must be provided.
- *
- * @param abortSignal - The abort signal to cancel the operation.
- * @param minutes - The number of minutes to look back from now.
- * @param isoString - The ISO string to look back from.
- * @param git - The SimpleGit instance.
- * @param timeZone - The time zone to adjust the commit date to.
+ * Returns undefined if an error happens during a git log. For example, passed a non-existent commit hash or if there are no commits in the repo.
  */
-export async function findFirstCommitBefore({
+export async function getCommitTimestampOrUndefined({
   abortSignal,
-  minutes,
-  isoString,
+  commitHash,
   git,
   timeZone
 }: {
   abortSignal: AbortSignal;
-  minutes?: number;
-  isoString?: string;
+  commitHash?: string;
   git: SimpleGit;
-
   timeZone: string;
 }): Promise<LogEntry | undefined> {
   if (abortSignal.aborted) {
@@ -37,8 +24,7 @@ export async function findFirstCommitBefore({
 
   const options: Record<string, unknown> = {
     // "--no-patch": null,
-    // eslint-disable-next-line no-magic-numbers
-    '--before': isoString ?? `${assertNotNull(minutes) * 60 - 3} seconds ago`,
+
     '--diff-merges': 'first-parent',
     format: {
       date: '%cI',
@@ -48,22 +34,23 @@ export async function findFirstCommitBefore({
     // Splitter: '\0',
     strictDate: true
   };
+  if (commitHash) {
+    options[commitHash] = null;
+  }
 
   let result: LogResult;
   try {
     result = await git.log(options);
   } catch {
-    // E.g. error when there are no commits in the repo
+    return undefined;
+  }
+  // eslint-disable-next-line eqeqeq
+  if (result?.latest == null) {
     return undefined;
   }
 
   if (abortSignal.aborted) {
     throw new AbortError();
-  }
-
-  // If all commits fall inside the interval, or file isn't in the repo
-  if (result.total === 0) {
-    return undefined;
   }
 
   return result.all

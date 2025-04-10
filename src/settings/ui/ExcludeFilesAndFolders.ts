@@ -38,7 +38,23 @@ export class ExcludeFilesAndFolders extends SettingComponent {
           fragment.appendText("Don't forget to put .md for markdown files.");
         })
       )
+      .addToggle((toggle) => {
+        this.settingTab.bind(toggle, 'enableExclusionList', {
+          shouldShowValidationMessage: false,
+          onChanged: () => {
+            this.refreshDisplayWithDelay();
+          }
+        });
+        toggle.setTooltip(
+          `List is ${toggle.getValue() ? 'enabled' : 'temporarily disabled'}`
+        );
+      })
       .addTextArea((text) => {
+        text.setDisabled(!this.plugin.settings.enableExclusionList);
+        if (!this.plugin.settings.enableExclusionList) {
+          text.inputEl.addClass('git-changelog-disabled');
+        }
+
         this.settingTab.bind(text, 'excludeFilesAndFoldersLines', {
           componentToPluginSettingsValueConverter: (uiValue) =>
             splitExcludeItems(uiValue),
@@ -62,7 +78,7 @@ export function convertPathToGitIgnoreRule(path: string): string {
   return escaped.replaceAll(/\s(?=\s*$)/g, String.raw`\ `);
 }
 
-export function joinExcludeItems(items: string[]): string {
+export function joinExcludeItems(items: readonly string[]): string {
   return items.join('\n');
 }
 

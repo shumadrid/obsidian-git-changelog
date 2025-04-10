@@ -1,12 +1,11 @@
 <script lang="ts">
   import type { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
-  import type { EventRef } from 'obsidian';
 
   import { OPEN_FILE_ICON } from 'constants.ts';
   import { mayTriggerChangelogMenu } from 'menu.ts';
   import { setIcon } from 'obsidian';
-  import { onDestroy } from 'svelte';
+  import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
   import { DiffFileStatus } from 'types.ts';
   import { assertNotNull } from 'utils.ts';
   import DiffStatsComponent from 'Views/components/DiffStats.svelte';
@@ -28,27 +27,17 @@
 
   let openFileButton = $state<HTMLElement>();
 
-  let dayChangedReference: EventRef;
-
-  dayChangedReference = plugin.app.workspace.on(
-    'git-changelog:day-changed',
-    () => {
-      formattedVersionDateLabel = updateFormattedVersionDateLabel();
-    }
-  );
-
-  let formattedVersionDateLabel = $state(updateFormattedVersionDateLabel());
-
-  function updateFormattedVersionDateLabel(): string {
+  const formattedVersionDateLabel = $derived.by(() => {
+    const currentDate = plugin.utcCurrentDateHour;
+    const locale = plugin.localeSafe;
     return composeVersionTitle({
       interval: plugin.settings.fileChangelogInterval,
-      plugin,
+      dayStartHour: plugin.settings.dayStartHour,
+      locale,
+      timeZone: getTimeZone(plugin),
+      utcCurrentDateHour: currentDate,
       timeZoneAdjustedEntryDate: entry.timeZoneAdjustedDate
     });
-  }
-
-  onDestroy(() => {
-    plugin.app.workspace.offref(dayChangedReference);
   });
 
   function primaryClick(event: MouseEvent): void {
@@ -58,8 +47,7 @@
       changelogFileClick({
         // Plugin.emptyTreeHash is guaranteed to be initialized. Git plugin throws an error when you pass Plugin.emptyTreeHash but I haven't been able to work around it and it doesn't affect usability.
 
-        aReference:
-          previousEntry?.commitHash ?? assertNotNull(plugin.emptyTreeHash),
+        aReference: previousEntry?.commitHash ?? plugin.emptyTreeHashUnsafe,
         bReference: entry.commitHash,
         event,
         file: entry,

@@ -20,7 +20,7 @@ export async function runRepoDiffStatus({
 }: {
   newCommit: string;
   oldCommit?: string;
-  pathSpec: string[];
+  pathSpec: string[] | undefined;
   plugin?: GitChangelogPlugin;
   abortSignal: AbortSignal;
   git: SimpleGit;
@@ -44,7 +44,7 @@ export async function runRepoDiffStatus({
   // If after applying the diff settings, some changed files in runRepoDiff become identical, the runRepoDiff function will simply skip those, and those same files that were detected as changes in this function are never going to be accessed, so they can't return incorrect file statuses.
   // Also, crossing the rename threshold because of diff settings mismatch isn't a concern since this function isn't used to determine renamed file statuses.
 
-  if (pathSpec.length > 0) {
+  if (pathSpec && pathSpec.length > 0) {
     diffStatusArguments.push('--', ...pathSpec);
   }
   const diffStatusResult = await git.diffSummary(diffStatusArguments);

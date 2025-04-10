@@ -26,21 +26,23 @@ A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to
 
 ## Installation
 
-Install the plugin from [the official Community Plugins repository](https://obsidian.md/plugins?id=git-changelog).
+[Download](https://obsidian.md/plugins?id=git-changelog) the plugin from the official Community Plugins repository.
 
 > [!IMPORTANT]
 > Requires the [Git plugin](https://github.com/Vinzent03/obsidian-git) to be installed. Installing it and maintaining a Git repository can be beneficial, even if you rely on other syncing services.
 
 > [!NOTE]
-> This plugin is currently in beta and still under development, so your existing settings may break after each update.
+> This plugin is currently in beta and still under development, so your existing settings may break after each update. If some saved settings were broken, they will be mentioned in the changelog.
 
 ## Features
+
+To easily see the what's new in future updates, it's recommended to use the [Plugin Update Tracker](https://obsidian.md/plugins?id=obsidian-plugin-update-tracker).
 
 ### Vault Changelog View
 
 - Detects renamed and moved files separately.
 - Shows the total count of lines added and deleted.
-- Displays counts of files added, modified, deleted, and moved/renamed (total or text and non-text separately). If a file is both renamed/moved and modified, it will contribute towards the renamed files stats.
+- Displays counts of files added, modified, moved/renamed and deleted (total or text and non-text separately). **NOTE:** If a file is both renamed/moved and modified, it will contribute towards the renamed/moved files stats.
 - Lists per file lines added and deleted, along with additional file statuses (**A**dded, **R**enamed, **M**oved, or **D**eleted).
   - The files are sorted from most number of lines changed to least.
 - **Exclude Files and Folders:**
@@ -74,9 +76,6 @@ Install the plugin from [the official Community Plugins repository](https://obsi
 - Shows the count of added and deleted lines for all previous versions of the active note.
 
 ![File Changelog View](.github/file-changelog-view.webp)
-
-> [!WARNING]
-> Using the "Expand all" toggle will reduce view performance. This will be fixed soon.
 
 ### Changelog Customizability
 
@@ -172,6 +171,7 @@ git fsck -full
 - [ ] Integrate the status bar and the file changelog view with [Git plugin's](https://github.com/Vinzent03/obsidian-git) diff views.
 - [ ] Notify if the amount of changes between neighboring commits exceeds a threshold.
 - [ ] File & folder stats inside the File explorer view.
+- [ ] Search & filtering features.
 
 ## Alternatives
 

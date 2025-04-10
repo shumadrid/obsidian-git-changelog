@@ -1,5 +1,7 @@
+import type { GitChangelogPluginTypes } from 'constants.ts';
 import type { ChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { Spacetime } from 'spacetime';
 import type { TaskManager } from 'TaskManager.svelte.ts';
@@ -123,8 +125,12 @@ export abstract class ChangelogManager<T extends ChangelogEntry> {
   }
 
   public abstract specificSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: ReadonlyDeep<GitChangelogSettings>
+    oldSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
+    newSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >
   ): boolean;
 
   public resetAndGetSignal(): AbortSignal {

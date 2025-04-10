@@ -20,6 +20,8 @@ export interface GitChangelogPluginTypes extends PluginTypesBase {
 export const FEEDBACK_URL =
   'https://github.com/shumadrid/obsidian-git-changelog/issues';
 export const EXCLUDE_FILES_AND_FOLDERS = 'Exclude files and folders';
+export const CHANGES_SINCE_LAST_CHECKPOINT =
+  'changes since the last checkpoint';
 
 // Icons
 export const ADDITIONS_ICON = 'list-plus';
@@ -37,6 +39,7 @@ export const OPEN_FILE_ICON = 'file-input';
 export const PLUS_ICON = 'plus';
 export const MINUS_ICON = 'minus';
 export const COPY_COMMIT_HASH_ICON = 'git-commit-horizontal';
+export const COMPARED_VERSIONS_DATE_SEPARATOR = 'clock-10';
 
 export const CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER = 35;
 export const CHANGELOG_LOAD_AMOUNT_VERSIONS = 10;
@@ -46,3 +49,14 @@ export const VAULT_MAX_COUNT_MULTIPLIER = 6;
 // Settings
 export const MIN_RENAME_DETECTION_STRICTNESS = 1;
 export const MAX_RENAME_DETECTION_STRICTNESS = 100;
+
+export const COMPARE_TO_CHECKPOINT_VIEW_CONFIG = {
+  icon: 'spline',
+  name: 'Vault changes since the last checkpoint',
+  type: 'compare-to-checkpoint-view'
+};
+export const COMPARE_REPO_COMMITS_VIEW_CONFIG = {
+  icon: 'spline',
+  name: "Vault's git history comparison",
+  type: 'vault-git-history-comparison-view'
+};

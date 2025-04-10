@@ -54,8 +54,7 @@
 
     if (!isClickable) return;
     changelogFileClick({
-      aReference:
-        previousVersionCommitHash ?? assertNotNull(plugin.emptyTreeHash),
+      aReference: previousVersionCommitHash ?? plugin.emptyTreeHashUnsafe,
       bReference: currentVersionCommitHash,
       event,
       file,

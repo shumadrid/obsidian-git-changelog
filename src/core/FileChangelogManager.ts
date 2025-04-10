@@ -1,5 +1,7 @@
+import type { GitChangelogPluginTypes } from 'constants.ts';
 import type { FileChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
@@ -59,8 +61,12 @@ export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
   }
 
   public override specificSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: ReadonlyDeep<GitChangelogSettings>
+    oldSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
+    newSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >
   ): boolean {
     const oldVaultGenerationSettings = pickFileChangelogSettings(oldSettings);
     const newVaultGenerationSettings = pickFileChangelogSettings(newSettings);

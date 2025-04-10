@@ -58,6 +58,7 @@ export class FileChangelogView extends ItemView {
   }
 
   public override onunload(): void {
+    super.onunload();
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.destroy();
   }

@@ -1,4 +1,5 @@
-import type { GitChangelogSettings } from 'settings/settings.ts';
+import type { GitChangelogPluginTypes } from 'constants.ts';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
 
@@ -66,10 +67,17 @@ export class StatusBarStats {
   }
 
   public static generationSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: ReadonlyDeep<GitChangelogSettings>
+    oldSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
+    newSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >
   ): boolean {
-    return oldSettings.statusBarInterval !== newSettings.statusBarInterval;
+    return (
+      oldSettings.safeSettings.statusBarInterval !==
+      newSettings.safeSettings.statusBarInterval
+    );
   }
 
   public destroy(): void {

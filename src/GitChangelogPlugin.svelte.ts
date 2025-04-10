@@ -1,11 +1,17 @@
 import type { GitChangelogPluginTypes } from 'constants.ts';
 import type { ObsidianGitPlugin } from 'gitPluginTypes.ts';
 import type { Debouncer } from 'obsidian';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { SimpleGit } from 'simple-git';
 import type { ReadonlyDeep } from 'type-fest';
 
+import {
+  COMPARE_REPO_COMMITS_VIEW_CONFIG,
+  COMPARE_TO_CHECKPOINT_VIEW_CONFIG
+} from 'constants.ts';
 import { FileChangelogManager } from 'core/FileChangelogManager.ts';
+import { getCommitTimestampOrUndefined } from 'core/gitOperations/getCommitTimestamp.ts';
 import { runHashObjectEmptyTree } from 'core/gitOperations/runHashObjectEmptyTree.ts';
 import { changelogGenerationSettingsChanged } from 'core/helper.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
@@ -13,6 +19,7 @@ import { addContextMenuItems } from 'menu.ts';
 import { debounce, ItemView, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
+import { getLocaleToAssign } from 'settings/ui/CustomLocale.ts';
 import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import {
   gitPluginCompatibleVersion,
@@ -20,7 +27,10 @@ import {
 } from 'settings/ui/GitPluginWarning.ts';
 import spacetime from 'spacetime';
 import { TaskManager } from 'TaskManager.svelte.ts';
-import { applyDayStartHourSetting } from 'timeUtils.ts';
+import { formatDateHour } from 'timeUtils.ts';
+import { assertNotNull, removeCompareVersionsView } from 'utils.ts';
+import { CompareRepoCommitsView } from 'Views/CompareRepoCommits/CompareRepoCommits.ts';
+import { CompareToCheckpointView } from 'Views/CompareToCheckpoint/CompareToCheckpoint.ts';
 import {
   FILE_CHANGELOG_VIEW_CONFIG,
   FileChangelogView
@@ -45,8 +55,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
   public debouncedChangelogSettingsChangedCheck:
     | Debouncer<
         [
-          oldSettings: ReadonlyDeep<GitChangelogSettings>,
-          newSettings: ReadonlyDeep<GitChangelogSettings>
+          oldSettings: ReadonlyDeep<
+            ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+          >,
+          newSettings: ReadonlyDeep<
+            ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+          >
         ],
         void
       >
@@ -55,12 +69,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
   public gitPluginState = $state<GitPluginState>();
   public gitRepoReady = $state<boolean>();
   // Used for keeping relative interval labels like "today" and "yesterday" up to date
-  public currentDay: string | undefined;
-  /**
-   * If we were to persist this, it would be less flexible if the user changes his repo or the hashing algorithm and we would need to either manually have a database of all possible empty tree hashes or validate it in runtime
-   */
-  public emptyTreeHash: string | undefined;
-
   public dependenciesReady = $derived(
     (this.gitPluginState === GitPluginState.Enabled ||
       this.gitPluginState === GitPluginState.UntestedVersion) &&
@@ -69,11 +77,27 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
 
   public detectedTimeZone: string | undefined;
   public detectedLocale: string | undefined;
+  public utcCurrentDateHour = $state<string>(
+    formatDateHour(spacetime.now('utc'))
+  ); // In UTC so it doesn't depend on the timezone setting
+
   public vaultChangelogManager = $state<VaultChangelogManager>();
   public fileChangelogManager = $state<FileChangelogManager>();
   public statusBarStats?: StatusBarStats;
-
   public cachedActiveGitFile: string | undefined;
+  public compareVersionsNewerDate: string | undefined;
+  public compareVersionsOlderDate: string | undefined;
+
+  public localeSafe = $state<string>('en-US'); // Properly loaded in onLayoutReady
+
+  public get emptyTreeHashUnsafe(): string {
+    return assertNotNull(this.emptyTreeHash);
+  }
+
+  /**
+   * If we were to persist this, it would be less flexible if the user changes his repo or the hashing algorithm and we would need to either manually have a database of all possible empty tree hashes or validate it in runtime
+   */
+  private emptyTreeHash: string | undefined;
 
   public async addFileChangelogView(): Promise<void> {
     await this.app.workspace.ensureSideLeaf(
@@ -162,16 +186,23 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     return this.emptyTreeHash;
   }
 
+  // We only pass the relevant settings for checking because if some invalid value was changed to some other invalid value, that means the default value is used in both cases and we discard that change
   // eslint-disable-next-line @typescript-eslint/require-await
   public override async onSaveSettings(
-    _newSettings: GitChangelogSettings,
-    _oldSettings: GitChangelogSettings,
+    _newSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
+    _oldSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
     skipCheck?: boolean
   ): Promise<void> {
-    if (skipCheck) {
+    // If the local setting was modified externally, we need to update the localeSafe property.
+    this.localeSafe = getLocaleToAssign(this);
+
+    if (skipCheck === true) {
       return;
     }
-
     this.debouncedChangelogSettingsChangedCheck?.(_oldSettings, _newSettings);
   }
 
@@ -202,14 +233,31 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       return new FileChangelogView(leaf, this);
     });
 
+    this.registerView(COMPARE_TO_CHECKPOINT_VIEW_CONFIG.type, (leaf) => {
+      return new CompareToCheckpointView(leaf, this);
+    });
+
+    this.registerView(COMPARE_REPO_COMMITS_VIEW_CONFIG.type, (leaf) => {
+      return new CompareRepoCommitsView(
+        leaf,
+        this,
+        assertNotNull(this.compareVersionsOlderDate),
+        assertNotNull(this.compareVersionsNewerDate)
+      );
+    });
+
     addCommands(this);
 
     addContextMenuItems(this);
 
     this.debouncedChangelogSettingsChangedCheck = debounce(
       (
-        oldSettings: GitChangelogSettings,
-        newSettings: GitChangelogSettings
+        oldSettings: ReadonlyDeep<
+          ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+        >,
+        newSettings: ReadonlyDeep<
+          ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+        >
       ) => {
         this.onSaveSettingsCheck(oldSettings, newSettings);
       },
@@ -220,6 +268,11 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
   }
 
   protected override async onLayoutReady(): Promise<void> {
+    // This is a temporary view, and shouldn't persist between sessions
+    removeCompareVersionsView(this);
+
+    this.localeSafe = getLocaleToAssign(this);
+
     // These have to be initiated first.
     this.vaultChangelogManager = new VaultChangelogManager({
       plugin: this,
@@ -247,24 +300,16 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       })
     );
 
-    // Every 5 minutes it checks if it's a new day in order to update the potentially outdated interval labels.
+    // Every  minute it checks if it's a new hour (most common interval) in order to update the potentially outdated interval labels.
     this.registerInterval(
       window.setInterval(
         () => {
-          const timeZone = getTimeZone(this);
-          const fullyAdjustedNewDate = applyDayStartHourSetting({
-            timeZoneAdjustedDate: spacetime.now(timeZone),
-            dayStartHour: this.settings.dayStartHour
-          });
-
-          const fullyAdjustedNewDayString = fullyAdjustedNewDate.format('day');
-          if (fullyAdjustedNewDayString !== this.currentDay) {
-            this.currentDay = fullyAdjustedNewDayString;
-            this.app.workspace.trigger('git-changelog:day-changed');
-          }
+          const utcCurrentDate = spacetime.now('utc');
+          // Svelte triggers updates only if the strings are different.
+          this.utcCurrentDateHour = formatDateHour(utcCurrentDate);
         },
         // eslint-disable-next-line no-magic-numbers
-        5 * 60 * 1000
+        60 * 1000
       )
     );
 
@@ -281,6 +326,25 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       await this.settingsManager.editAndSave(
         (settings: GitChangelogSettings): void => {
           settings.firstStartup = false;
+        }
+      );
+    }
+
+    // If there are no vault history checkpoints, initialize the first one.
+    if (this.settings.checkpointCommits.length === 0) {
+      const git = await this.getGit();
+
+      const latestCommit = await getCommitTimestampOrUndefined({
+        abortSignal: new AbortController().signal,
+        git,
+        timeZone: getTimeZone(this)
+      });
+
+      await this.settingsManager.editAndSave(
+        (settings: GitChangelogSettings): void => {
+          if (latestCommit && settings.checkpointCommits.length === 0) {
+            settings.checkpointCommits.push(latestCommit.hash);
+          }
         }
       );
     }
@@ -328,8 +392,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
    * This allows us to check if relevant settings have changed and only then recompute changelogs, instead of recomputing after every single settings change.
    */
   private onSaveSettingsCheck(
-    oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: ReadonlyDeep<GitChangelogSettings>
+    oldSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
+    newSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >
   ): void {
     try {
       if (

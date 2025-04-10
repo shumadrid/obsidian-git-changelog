@@ -22,11 +22,16 @@ export class RenameDetectionStrictnessSlider extends SettingComponent {
       );
 
     new ResetButton(setting.controlEl).onClick(() => {
-      const settingProperty = this.plugin.settingsManager.getProperty(
-        'renameDetectionStrictness'
+      const defaultValue =
+        this.plugin.settingsManager.defaultSettings.renameDetectionStrictness;
+
+      // It saves to file, which we don't want to wait for
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.plugin.settingsManager.setProperty(
+        'renameDetectionStrictness',
+        defaultValue
       );
-      settingProperty.setValue(settingProperty.defaultValue);
-      this.refreshDisplayWithDelay();
+      this.refreshDisplayWithDelay(0);
     });
 
     setting.addSlider((percent) => {

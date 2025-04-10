@@ -32,3 +32,6 @@ export function getDayStartHourAdjustedLogs(
     };
   });
 }
+export function formatDateHour(date: Spacetime): string {
+  return date.startOf('hour').format('iso-utc');
+}

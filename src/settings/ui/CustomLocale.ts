@@ -11,7 +11,13 @@ export class CustomLocale extends SettingComponent {
         text.inputEl.maxLength = 30;
 
         this.settingTab.bind(text, 'locale', {
-          shouldShowValidationMessage: false
+          shouldShowValidationMessage: false,
+          onChanged: () => {
+            // Without this check, plugin fails on startup
+            if (this.plugin.settingsManager) {
+              this.plugin.localeSafe = getLocaleToAssign(this.plugin);
+            }
+          }
         });
       });
   }
@@ -35,9 +41,9 @@ function getSystemLocale(plugin: GitChangelogPlugin): string {
   return plugin.detectedLocale;
 }
 
-export function getLocale(plugin: GitChangelogPlugin): string {
+export function getLocaleToAssign(plugin: GitChangelogPlugin): string {
   return plugin.settings.locale ===
-    plugin.settingsManager.getProperty('locale').defaultValue
+    plugin.settingsManager.defaultSettings.locale
     ? getSystemLocale(plugin)
     : plugin.settings.locale;
 }

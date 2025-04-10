@@ -1,10 +1,7 @@
-import type GitChangelogPlugin from 'main.ts';
 import type { Spacetime } from 'spacetime';
 import type { DiffFile } from 'types.ts';
 
 import { normalizePath } from 'obsidian';
-import { getLocale } from 'settings/ui/CustomLocale.ts';
-import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import spacetime from 'spacetime';
 import { applyDayStartHourSetting } from 'timeUtils.ts';
 import { ChangelogInterval } from 'types.ts';
@@ -59,14 +56,27 @@ export function getIntervalAdjectiveString(
 }
 
 export function composeDailyVersionDisplayText({
-  fullyAdjustedCurrentDate,
-  fullyAdjustedEntryDate,
-  plugin
+  timeZoneAdjustedCurrentDate,
+  locale,
+  timeZone,
+  timeZoneAdjustedEntryDate,
+  dayStartHour
 }: {
-  fullyAdjustedCurrentDate: Spacetime;
-  fullyAdjustedEntryDate: Spacetime;
-  plugin: GitChangelogPlugin;
+  timeZoneAdjustedCurrentDate: Spacetime;
+  timeZoneAdjustedEntryDate: Spacetime;
+  locale: string;
+  dayStartHour: number;
+  timeZone: string;
 }): string {
+  const fullyAdjustedEntryDate = applyDayStartHourSetting({
+    dayStartHour,
+    timeZoneAdjustedDate: timeZoneAdjustedEntryDate
+  });
+  const fullyAdjustedCurrentDate = applyDayStartHourSetting({
+    dayStartHour,
+    timeZoneAdjustedDate: timeZoneAdjustedCurrentDate
+  });
+
   const isToday = fullyAdjustedEntryDate.isSame(
     fullyAdjustedCurrentDate,
     'day'
@@ -83,11 +93,7 @@ export function composeDailyVersionDisplayText({
     return 'Yesterday';
   }
 
-  return formatDate(
-    fullyAdjustedEntryDate.toNativeDate(),
-    getLocale(plugin),
-    getTimeZone(plugin)
-  );
+  return formatDate(fullyAdjustedEntryDate.toNativeDate(), locale, timeZone);
 }
 
 // Only for composing the UI string
@@ -103,33 +109,28 @@ export function applyDayDisplayOffset({
 }
 
 export function composeHourlyVersionDisplayText({
-  fullyAdjustedCurrentDate,
-  fullyAdjustedEntryDate,
   timeZoneAdjustedEntryDate,
-  plugin
+  locale,
+  timeZone,
+  timeZoneAdjustedCurrentDate
 }: {
-  fullyAdjustedCurrentDate: Spacetime;
-  fullyAdjustedEntryDate: Spacetime;
   timeZoneAdjustedEntryDate: Spacetime;
-  plugin: GitChangelogPlugin;
+  locale: string;
+  timeZoneAdjustedCurrentDate: Spacetime;
+  timeZone: string;
 }): string {
-  // Use the fullyAdjusted dates only to check if the dates belong to the same day after the dayStartHour setting is applied.
-  const isToday = fullyAdjustedEntryDate.isSame(
-    fullyAdjustedCurrentDate,
+  const isToday = timeZoneAdjustedEntryDate.isSame(
+    timeZoneAdjustedCurrentDate,
     'day'
   );
-  const isYesterday = fullyAdjustedEntryDate.isSame(
-    fullyAdjustedCurrentDate.clone().subtract(1, 'days'),
+  const isYesterday = timeZoneAdjustedEntryDate.isSame(
+    timeZoneAdjustedCurrentDate.clone().subtract(1, 'days'),
     'day'
   );
-
-  const userLocale = getLocale(plugin);
-
-  const timeZone = getTimeZone(plugin);
 
   // Replaces the day part of the date time string with today or yesterday labels.
   if (isToday || isYesterday) {
-    const timeFormatter = new Intl.DateTimeFormat(userLocale, {
+    const timeFormatter = new Intl.DateTimeFormat(locale, {
       timeStyle: 'short',
       timeZone
     });
@@ -139,102 +140,105 @@ export function composeHourlyVersionDisplayText({
     return `${isToday ? 'Today' : 'Yesterday'}, ${timeString}`;
   }
 
-  const formatter = new Intl.DateTimeFormat(userLocale, {
+  const formatter = new Intl.DateTimeFormat(locale, {
     dateStyle: 'short',
     timeStyle: 'short',
     timeZone
   });
 
-  // Use the timeZoneAdjustedEntryDate in the UI and just potentially subtract a day if it crosses the dayStartHour boundary. Don't show the fake fullyAdjustedEntryDate that has the dayStartHour offset applied to hours.
-  const timeZoneAdjustedEntryDateWithDayOffset = applyDayDisplayOffset({
-    dayStartHour: plugin.settings.dayStartHour,
-    timeZoneAdjustedDate: timeZoneAdjustedEntryDate
-  });
-
   return formatter.format(
-    timeZoneAdjustedEntryDateWithDayOffset.startOf('hour').toNativeDate()
+    timeZoneAdjustedEntryDate.startOf('hour').toNativeDate()
   );
 }
 
 export function composeMonthlyVersionDisplayText({
-  fullyAdjustedEntryDate,
-  plugin
+  timeZoneAdjustedEntryDate,
+  locale,
+  timeZone
 }: {
-  fullyAdjustedEntryDate: Spacetime;
-  plugin: GitChangelogPlugin;
+  timeZoneAdjustedEntryDate: Spacetime;
+  locale: string;
+  timeZone: string;
 }): string {
   return formatMonthYear(
-    fullyAdjustedEntryDate.toNativeDate(),
-    getLocale(plugin),
-    getTimeZone(plugin)
+    timeZoneAdjustedEntryDate.toNativeDate(),
+    locale,
+    timeZone
   );
 }
 
 export function composeVersionTitle({
   interval,
-  plugin,
-  timeZoneAdjustedEntryDate
+  dayStartHour,
+  locale,
+  timeZone,
+  timeZoneAdjustedEntryDate,
+  utcCurrentDateHour
 }: {
   interval: ChangelogInterval;
-  plugin: GitChangelogPlugin;
+  dayStartHour: number;
+  locale: string;
+  utcCurrentDateHour: string;
+  timeZone: string;
   timeZoneAdjustedEntryDate: Spacetime;
 }): string {
-  const timeZoneAdjustedCurrentDate = spacetime.now(getTimeZone(plugin));
-  const fullyAdjustedCurrentDate = applyDayStartHourSetting({
-    dayStartHour: plugin.settings.dayStartHour,
-    timeZoneAdjustedDate: timeZoneAdjustedCurrentDate
-  });
-  const fullyAdjustedEntryDate = applyDayStartHourSetting({
-    dayStartHour: plugin.settings.dayStartHour,
-    timeZoneAdjustedDate: timeZoneAdjustedEntryDate
-  });
+  // Clipped to the hour
+  const timeZoneAdjustedCurrentDate =
+    spacetime(utcCurrentDateHour).goto(timeZone);
 
   switch (interval) {
     case ChangelogInterval.Hourly: {
       return composeHourlyVersionDisplayText({
-        fullyAdjustedCurrentDate,
-        fullyAdjustedEntryDate,
         timeZoneAdjustedEntryDate,
-        plugin
+        timeZoneAdjustedCurrentDate,
+        locale,
+        timeZone
       });
     }
     case ChangelogInterval.Daily: {
       return composeDailyVersionDisplayText({
-        fullyAdjustedCurrentDate,
-        fullyAdjustedEntryDate,
-        plugin
+        timeZoneAdjustedEntryDate,
+        timeZoneAdjustedCurrentDate,
+        dayStartHour,
+        locale,
+        timeZone
       });
     }
     case ChangelogInterval.Weekly: {
       return composeWeeklyVersionDisplayText({
-        fullyAdjustedCurrentDate,
-        fullyAdjustedEntryDate,
-        plugin
+        timeZoneAdjustedEntryDate,
+        timeZoneAdjustedCurrentDate,
+        locale,
+        timeZone
       });
     }
     case ChangelogInterval.Monthly: {
       return composeMonthlyVersionDisplayText({
-        fullyAdjustedEntryDate,
-        plugin
+        timeZoneAdjustedEntryDate,
+        locale,
+        timeZone
       });
     }
   }
 }
 
 export function composeWeeklyVersionDisplayText({
-  fullyAdjustedCurrentDate,
-  fullyAdjustedEntryDate,
-  plugin
+  timeZoneAdjustedEntryDate,
+  timeZoneAdjustedCurrentDate,
+  locale,
+  timeZone
 }: {
-  fullyAdjustedCurrentDate: Spacetime;
-  fullyAdjustedEntryDate: Spacetime;
-  plugin: GitChangelogPlugin;
+  timeZoneAdjustedCurrentDate: Spacetime;
+  timeZoneAdjustedEntryDate: Spacetime;
+  locale: string;
+  timeZone: string;
 }): string {
-  const fullyAdjustedEntryWeek = fullyAdjustedEntryDate.startOf('week');
+  const timeZoneAdjustedEntryWeek = timeZoneAdjustedEntryDate.startOf('week');
 
-  // In order for this to be accurate we need to normalize the dates to the start of the interval, which is a week here. If comparing would be based on what the actual commit date is of the current version is, instead of that interval that version belongs to, the diffs would be inconsistent because e.g. when comparing the latest version with the latest commit on thursday with the previous version that had it's last commit on wednesday, the diff would count 2 weeks difference instead of 1.
-  const weeksDifference = fullyAdjustedEntryWeek.diff(
-    fullyAdjustedCurrentDate.startOf('week'),
+  // In order for this to be accurate we need to normalize the dates to the start of the interval, which is a week here.
+  // If comparing would be based on what the actual commit date is of the current version is, instead of that interval that version belongs to, the diffs would be inconsistent because e.g. when comparing the latest version with the latest commit on thursday with the previous version that had it's last commit on wednesday, the diff would count 2 weeks difference instead of 1.
+  const weeksDifference = timeZoneAdjustedEntryWeek.diff(
+    timeZoneAdjustedCurrentDate.startOf('week'),
     'weeks'
   );
 
@@ -245,31 +249,29 @@ export function composeWeeklyVersionDisplayText({
     return 'Last week';
   }
 
-  const userLocale = getLocale(plugin);
+  const weekNumber = timeZoneAdjustedEntryDate.week();
 
-  const weekNumber = fullyAdjustedEntryDate.week();
-
-  const isCurrentYear = fullyAdjustedEntryDate.isSame(
-    fullyAdjustedCurrentDate,
+  const isCurrentYear = timeZoneAdjustedEntryDate.isSame(
+    timeZoneAdjustedCurrentDate,
     'year'
   );
 
-  const nativeFullyAdjustedEntryWeek = fullyAdjustedEntryWeek.toNativeDate();
-  const timeZone = getTimeZone(plugin);
+  const nativeTimeZoneAdjustedEntryWeek =
+    timeZoneAdjustedEntryWeek.toNativeDate();
 
   if (isCurrentYear) {
-    const monthString = new Intl.DateTimeFormat(userLocale, {
+    const monthString = new Intl.DateTimeFormat(locale, {
       month: 'short',
       timeZone
-    }).format(nativeFullyAdjustedEntryWeek);
+    }).format(nativeTimeZoneAdjustedEntryWeek);
     return `Week ${weekNumber}, ${monthString}`;
   }
 
-  const monthAndYearString = new Intl.DateTimeFormat(userLocale, {
+  const monthAndYearString = new Intl.DateTimeFormat(locale, {
     month: 'short',
     year: '2-digit',
     timeZone
-  }).format(nativeFullyAdjustedEntryWeek);
+  }).format(nativeTimeZoneAdjustedEntryWeek);
 
   return `Week ${weekNumber}, ${monthAndYearString}`;
 }
@@ -302,6 +304,22 @@ export function formatMonthYear(
 ): string {
   return new Intl.DateTimeFormat(locale, {
     month: 'long',
+    year: 'numeric',
+    timeZone
+  }).format(date);
+}
+
+export function formatFullDate(
+  date: Date,
+  locale: string,
+  timeZone: string
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
     year: 'numeric',
     timeZone
   }).format(date);

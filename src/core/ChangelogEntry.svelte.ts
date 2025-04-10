@@ -75,7 +75,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
     binaryFiles,
     binaryFilesSummaryCached,
     commitHash,
-    previousDayLastCommitHash,
+    previousVersionLastCommitHash,
     textFiles,
     textFilesSummaryCached,
     timeZoneAdjustedDate
@@ -83,7 +83,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
     binaryFiles: DiffFile[];
     binaryFilesSummaryCached: FilesSummary;
     commitHash: string;
-    previousDayLastCommitHash?: string;
+    previousVersionLastCommitHash?: string;
     textFiles: DiffFile[];
     textFilesSummaryCached: FilesSummary;
     timeZoneAdjustedDate: Spacetime;
@@ -93,7 +93,7 @@ export class VaultChangelogEntry extends ChangelogEntry {
     this.binaryFiles = binaryFiles;
     this.textFilesSummaryCached = textFilesSummaryCached;
     this.binaryFilesSummaryCached = binaryFilesSummaryCached;
-    this.previousVersionCommitHash = previousDayLastCommitHash;
+    this.previousVersionCommitHash = previousVersionLastCommitHash;
   }
 
   public override getPotentialGitFilePath(): undefined {

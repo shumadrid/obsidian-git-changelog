@@ -1,8 +1,13 @@
 /* eslint-disable unicorn/prevent-abbreviations */
+import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
 import type { App, WorkspaceLeaf } from 'obsidian';
 import type { DiffFile, TextDiffStats } from 'types.ts';
 
-import { FEEDBACK_URL } from 'constants.ts';
+import {
+  COMPARE_REPO_COMMITS_VIEW_CONFIG,
+  COMPARE_TO_CHECKPOINT_VIEW_CONFIG,
+  FEEDBACK_URL
+} from 'constants.ts';
 // Import * as cssColorConverter from "css-color-converter";
 import { Keymap } from 'obsidian';
 import { DiffFileStatus, NullValueError } from 'types.ts';
@@ -119,4 +124,15 @@ export function assertNotNull<T>(value: null | T | undefined): T {
     throw error;
   }
   return value;
+}
+
+export function removeCompareVersionsView(plugin: GitChangelogPlugin): void {
+  // Close any existing temporary views
+  plugin.app.workspace.detachLeavesOfType(
+    COMPARE_TO_CHECKPOINT_VIEW_CONFIG.type
+  );
+
+  plugin.app.workspace.detachLeavesOfType(
+    COMPARE_REPO_COMMITS_VIEW_CONFIG.type
+  );
 }

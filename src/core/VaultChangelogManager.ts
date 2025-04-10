@@ -1,5 +1,7 @@
+import type { GitChangelogPluginTypes } from 'constants.ts';
 import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
 import type GitChangelogPlugin from 'main.ts';
+import type { ExtractPluginSettingsWrapper } from 'obsidian-dev-utils/obsidian/Plugin/PluginTypesBase';
 import type { GitChangelogSettings } from 'settings/settings.ts';
 import type { TaskManager } from 'TaskManager.svelte.ts';
 import type { ReadonlyDeep } from 'type-fest';
@@ -59,8 +61,12 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
   }
 
   public override specificSettingsChanged(
-    oldSettings: ReadonlyDeep<GitChangelogSettings>,
-    newSettings: ReadonlyDeep<GitChangelogSettings>
+    oldSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >,
+    newSettings: ReadonlyDeep<
+      ExtractPluginSettingsWrapper<GitChangelogPluginTypes>
+    >
   ): boolean {
     const oldVaultGenerationSettings = pickVaultChangelogSettings(oldSettings);
     const newVaultGenerationSettings = pickVaultChangelogSettings(newSettings);
@@ -102,6 +108,7 @@ export class VaultChangelogManager extends ChangelogManager<VaultChangelogEntry>
       emptyTreeHash: await this.plugin.getEmptyTreeHash(),
       excludeFilesAndFoldersLines:
         this.plugin.settings.excludeFilesAndFoldersLines,
+      enableExclusionList: this.plugin.settings.enableExclusionList,
       convertToIncludeList: this.plugin.settings.convertToIncludeList,
       whitespaceIgnoreMode: this.plugin.settings.whitespaceIgnoreMode,
       ignoreBlankLines: this.plugin.settings.ignoreBlankLines

@@ -40,7 +40,7 @@ function getSystemTimeZone(plugin: GitChangelogPlugin): string {
 
 export function getTimeZone(plugin: GitChangelogPlugin): string {
   return plugin.settings.timeZone ===
-    plugin.settingsManager.getProperty('timeZone').defaultValue
+    plugin.settingsManager.defaultSettings.timeZone
     ? getSystemTimeZone(plugin)
     : plugin.settings.timeZone;
 }
