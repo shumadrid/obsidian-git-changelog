@@ -51,8 +51,8 @@ export function addCommands(plugin: GitChangelogPlugin): void {
         { reveal: true }
       );
     },
-    id: `open-${COMPARE_TO_CHECKPOINT_VIEW_CONFIG.type}`,
-    name: `Open ${COMPARE_TO_CHECKPOINT_VIEW_CONFIG.name.toLocaleLowerCase()}`
+    id: `show-${COMPARE_TO_CHECKPOINT_VIEW_CONFIG.type}`,
+    name: `Show ${COMPARE_TO_CHECKPOINT_VIEW_CONFIG.name.toLocaleLowerCase()}`
   });
 
   plugin.addCommand({
