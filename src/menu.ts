@@ -1,5 +1,5 @@
 import type GitChangelogPlugin from 'main.ts';
-import type { MenuItem, WorkspaceLeaf } from 'obsidian';
+import type { WorkspaceLeaf } from 'obsidian';
 import type { GitChangelogSettings } from 'settings/settings.ts';
 
 import { COPY_COMMIT_HASH_ICON, PLUGIN_NAME_SENTENCE_CASE } from 'constants.ts';
@@ -15,17 +15,15 @@ import { VAULT_CHANGELOG_VIEW_CONFIG } from 'Views/VaultChangelog/VaultChangelog
 export function addContextMenuItems(plugin: GitChangelogPlugin): void {
   plugin.registerEvent(
     plugin.app.workspace.on('file-menu', (menu, file) => {
-      menu.addItem((item) => {
-        const gitRelativePath = plugin
-          .getGitPlugin()
-          .gitManager.getRelativeRepoPath(file.path, true);
+      const gitRelativePath = plugin
+        .getGitPlugin()
+        .gitManager.getRelativeRepoPath(file.path, true);
 
-        addExcludeMenuItem({
-          item,
-          isFolder: file instanceof TFolder,
-          gitRelativePath,
-          plugin
-        });
+      addExcludeMenuItem({
+        menu,
+        isFolder: file instanceof TFolder,
+        gitRelativePath,
+        plugin
       });
     })
   );
@@ -98,47 +96,74 @@ export function mayTriggerChangelogMenu({
   }
 }
 
+/**
+ * Check if the path is a relative path that goes above the root of the repository.
+ *
+ * If it starts with any number of /../, that means it's above the root.
+ *
+ * This is parsing the output of getRelativeRepoPath function.
+ *
+ * "../" is acceptable. (Non-absolute path)
+ */
+function isAbsoluteGitIgnoreRuleAboveRoot({
+  absoluteGitIgnoreRule
+}: {
+  absoluteGitIgnoreRule: string;
+}): boolean {
+  return absoluteGitIgnoreRule.startsWith('/../');
+}
+
 export function addExcludeMenuItem({
-  item,
+  menu,
   isFolder,
   plugin,
   gitRelativePath
 }: {
-  item: MenuItem;
+  menu: Menu;
   isFolder: boolean;
   gitRelativePath: string;
   plugin: GitChangelogPlugin;
 }): void {
-  // The ExcludeFilesAndFolders rules are applied relative to the git repo.
-
-  // Only check absolute rules, we don't want to modify any relative rules that also affect other files
-  const lineNumber = isAbsolutePathInExcludeFilesAndFolders({
+  const absoluteGitIgnoreRule = convertPathToAbsoluteGitIgnoreRule({
     isFolder,
-    gitRelativePath,
-    plugin
+    gitRelativePath
   });
-  const ruleAlreadyExists = lineNumber !== -1;
-  const isIncludeList = plugin.settings.convertToIncludeList;
-  let actionTitle: string;
-  if (isIncludeList) {
-    actionTitle = ruleAlreadyExists ? 'Re-exclude' : 'Include';
-  } else {
-    actionTitle = ruleAlreadyExists ? 'Reinclude' : 'Exclude';
+  // Don't add the menu item if the path is above the root of the repository. Otherwise git would throw this error when trying to use this rule in pathspec:
+  // Fatal: :(exclude,glob)../xx/**: '../xx/**' is outside repository at '/path/to/vault/repo'
+  if (isAbsoluteGitIgnoreRuleAboveRoot({ absoluteGitIgnoreRule })) {
+    return;
   }
 
-  item
-    .setSection('action')
-    .setTitle(`${PLUGIN_NAME_SENTENCE_CASE}: ${actionTitle}`)
-    .setIcon(VAULT_CHANGELOG_VIEW_CONFIG.icon)
-    .onClick(async () => {
-      await (ruleAlreadyExists
-        ? removeExcludeFilesAndFoldersItem(lineNumber, plugin)
-        : addExcludeFilesAndFoldersItem({
-            gitRelativePath,
-            isFolder,
-            plugin
-          }));
+  menu.addItem((item) => {
+    // The ExcludeFilesAndFolders rules are applied relative to the git repo.
+
+    // Only check absolute rules, we don't want to modify any relative rules that also affect other files
+    const lineNumber = isAbsoluteGitIgnoreRuleInExcludeFilesAndFolders({
+      absoluteGitIgnoreRule,
+      plugin
     });
+    const ruleAlreadyExists = lineNumber !== -1;
+    const isIncludeList = plugin.settings.convertToIncludeList;
+    let actionTitle: string;
+    if (isIncludeList) {
+      actionTitle = ruleAlreadyExists ? 'Re-exclude' : 'Include';
+    } else {
+      actionTitle = ruleAlreadyExists ? 'Reinclude' : 'Exclude';
+    }
+
+    item
+      .setSection('action')
+      .setTitle(`${PLUGIN_NAME_SENTENCE_CASE}: ${actionTitle}`)
+      .setIcon(VAULT_CHANGELOG_VIEW_CONFIG.icon)
+      .onClick(async () => {
+        await (ruleAlreadyExists
+          ? removeExcludeFilesAndFoldersItem(lineNumber, plugin)
+          : addExcludeFilesAndFoldersItem({
+              path: absoluteGitIgnoreRule,
+              plugin
+            }));
+      });
+  });
 }
 
 export function handleChangelogViewContextMenu({
@@ -156,13 +181,11 @@ export function handleChangelogViewContextMenu({
 }): void {
   // Skip adding the "Git changelog: Exclude" item again if the usual file menu is shown.
   if (!inFileMenu && gitRelativePath) {
-    menu.addItem((item) => {
-      addExcludeMenuItem({
-        item,
-        isFolder: false,
-        gitRelativePath,
-        plugin
-      });
+    addExcludeMenuItem({
+      menu,
+      isFolder: false,
+      gitRelativePath,
+      plugin
     });
   }
 
@@ -212,25 +235,25 @@ export function convertPathToAbsoluteGitIgnoreRule({
   return convertPathToGitIgnoreRule(composedPath);
 }
 
-export function isAbsolutePathInExcludeFilesAndFolders({
-  isFolder,
-  gitRelativePath,
+/**
+ * Checks if a given absolute gitignore rule exists in the plugin's exclude files and folders settings
+ * @param gitIgnoreAbsoluteRule - The absolute gitignore rule to check for
+ * @param plugin - The GitChangelogPlugin instance
+ * @returns The line number (index) where the rule was found, or -1 if not found
+ */
+export function isAbsoluteGitIgnoreRuleInExcludeFilesAndFolders({
+  absoluteGitIgnoreRule,
   plugin
 }: {
-  isFolder: boolean;
-  gitRelativePath: string;
+  absoluteGitIgnoreRule: string;
   plugin: GitChangelogPlugin;
 }): number {
-  const gitIgnoreAbsoluteRule = convertPathToAbsoluteGitIgnoreRule({
-    isFolder,
-    gitRelativePath
-  });
   const existingLines = plugin.settings.excludeFilesAndFoldersLines;
 
   // Trim unescaped trailing white space from existing lines, since it gets trimmed by git anyways.
   // By doing this we won't miss already existing lines that only differ in trailing white space.
   const existingRules = existingLines.map((line) => parseGitIgnoreLine(line));
-  return existingRules.indexOf(gitIgnoreAbsoluteRule);
+  return existingRules.indexOf(absoluteGitIgnoreRule);
 }
 
 export async function removeExcludeFilesAndFoldersItem(
@@ -245,22 +268,15 @@ export async function removeExcludeFilesAndFoldersItem(
 }
 
 export async function addExcludeFilesAndFoldersItem({
-  gitRelativePath,
-  isFolder,
+  path,
   plugin
 }: {
-  gitRelativePath: string;
-  isFolder: boolean;
+  path: string;
   plugin: GitChangelogPlugin;
 }): Promise<void> {
-  const gitIgnoreRule = convertPathToAbsoluteGitIgnoreRule({
-    gitRelativePath,
-    isFolder
-  });
-
   await plugin.settingsManager.editAndSave(
     (settings: GitChangelogSettings): void => {
-      settings.excludeFilesAndFoldersLines.push(gitIgnoreRule);
+      settings.excludeFilesAndFoldersLines.push(path);
     }
   );
 }

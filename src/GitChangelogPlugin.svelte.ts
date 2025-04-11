@@ -206,7 +206,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     this.debouncedChangelogSettingsChangedCheck?.(_oldSettings, _newSettings);
   }
 
-  protected override createPluginSettingsTab(): GitChangelogSettingsTab {
+  protected override createSettingsTab(): GitChangelogSettingsTab {
     return new GitChangelogSettingsTab(this);
   }
 
