@@ -7,8 +7,6 @@ import { ButtonComponent, moment } from 'obsidian';
 import { CssClass } from 'obsidian-dev-utils/CssClass';
 import { ModalBase } from 'obsidian-dev-utils/obsidian/Modals/ModalBase';
 import { SettingEx } from 'obsidian-dev-utils/obsidian/SettingEx';
-import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
-import spacetime from 'spacetime';
 import { assertNotNull } from 'utils.ts';
 
 export class CompareVersionsModal extends ModalBase<
@@ -17,8 +15,9 @@ export class CompareVersionsModal extends ModalBase<
 > {
   public plugin: GitChangelogPlugin;
 
-  private olderDate: Date | undefined;
-  private newerDate: Date;
+  // Date-time component automatically converts dates to the system timezone in the UI and stores them as UTC
+  private utcOlderDate: Date | undefined;
+  private utcNewerDate: Date;
   private compareRepoCommitsViewEphemeralState:
     | CompareRepoCommitsViewState
     | undefined;
@@ -27,16 +26,27 @@ export class CompareVersionsModal extends ModalBase<
     options,
     resolve,
     modalCssClass,
-    plugin
+    plugin,
+    utcOlderDateString,
+    utcNewerDateString
   }: {
     options: ModalOptionsBase;
     resolve: PromiseResolve<CompareRepoCommitsViewState | undefined>;
     modalCssClass: string;
     plugin: GitChangelogPlugin;
+    utcOlderDateString: string | undefined;
+    utcNewerDateString: string | undefined;
   }) {
     super(options, resolve, modalCssClass);
     this.plugin = plugin;
-    this.newerDate = spacetime.now(getTimeZone(this.plugin)).toNativeDate();
+
+    // Load the newer date from the previous modal or if this is the first time the user is comparing in this Obsidian session then assign the current date
+    this.utcNewerDate = utcNewerDateString
+      ? new Date(utcNewerDateString)
+      : new Date();
+    if (utcOlderDateString) {
+      this.utcOlderDate = new Date(utcOlderDateString);
+    }
   }
 
   public override onClose(): void {
@@ -50,24 +60,33 @@ export class CompareVersionsModal extends ModalBase<
     this.contentEl.addClass('git-changelog-checkpoint-modal');
 
     const titleElement = new SettingEx(this.contentEl);
-    titleElement.setName('Compare points in git history');
+    titleElement.setName('Compare two vault states in git history');
     titleElement.setDesc(
-      `The nearest commit that came before the specified date will be used. Specify the dates in the timezone that's configured in your settings`
+      createFragment((fragment) => {
+        fragment.appendText(
+          `The nearest commit that came before the each specified date will be used.`
+        );
+        fragment.createEl('br');
+        fragment.appendText(
+          `Specify the dates in your system timezone (not the one configured in the plugin settings).`
+        );
+      })
     );
 
     this.createTimeInput({
       text: 'Newer date',
       onChange: (value) => {
-        this.newerDate = value;
+        this.utcNewerDate = value;
       },
-      startValue: this.newerDate
+      startValue: this.utcNewerDate
     });
 
     this.createTimeInput({
       text: 'Older date',
       onChange: (value) => {
-        this.olderDate = value;
-      }
+        this.utcOlderDate = value;
+      },
+      startValue: this.utcOlderDate
     });
 
     this.createCompareButton();
@@ -80,7 +99,7 @@ export class CompareVersionsModal extends ModalBase<
   }: {
     onChange: (value: Date) => void;
     text: string;
-    startValue?: Date;
+    startValue: Date | undefined;
   }): void {
     const setting = new SettingEx(this.contentEl);
 
@@ -93,23 +112,22 @@ export class CompareVersionsModal extends ModalBase<
   }
 
   private validateDates(): string | undefined {
-    if (!this.olderDate || !this.newerDate) {
+    if (!this.utcOlderDate || !this.utcNewerDate) {
       return 'Both dates must be selected.';
     }
 
-    // Try parsing both dates - Date.parse returns NaN for invalid dates
-
-    if (!moment.isDate(this.olderDate)) {
+    // Try parsing both dates
+    if (!moment.isDate(this.utcOlderDate)) {
       return 'Invalid start date.';
     }
-    if (!moment.isDate(this.newerDate)) {
+    if (!moment.isDate(this.utcNewerDate)) {
       return 'Invalid end date.';
     }
 
     // Check if the older date is before the newer date
-    return this.olderDate < this.newerDate
+    return this.utcOlderDate < this.utcNewerDate
       ? undefined
-      : 'Start date must be before end date.';
+      : 'Older date must be before the newer date.';
   }
 
   private createCompareButton(): void {
@@ -122,24 +140,10 @@ export class CompareVersionsModal extends ModalBase<
       if (validationMessage) {
         this.plugin.displayNotice(validationMessage);
       } else {
-        const timeZone = getTimeZone(this.plugin);
-
-        // Swap the timezone, but keep the same date-time
-        // Date() doesn't store timezone information.
-        const timeZoneAppliedOlderDate = spacetime(
-          assertNotNull(this.olderDate)
-        ).timezone(timeZone);
-        const timeZoneAppliedNewerDate = spacetime(
-          assertNotNull(this.newerDate)
-        ).timezone(timeZone);
-
-        // Assumes input dates are in the configured timezone, so we need to convert them to UTC, so that git can process them accurately.
-        const utcOlderDate = timeZoneAppliedOlderDate.goto('utc');
-        const utcNewerDate = timeZoneAppliedNewerDate.goto('utc');
-
+        //  Input dates are in UTC, so that git can process them accurately.
         this.compareRepoCommitsViewEphemeralState = {
-          utcOlderDate: utcOlderDate.toNativeDate().toISOString(),
-          utcNewerDate: utcNewerDate.toNativeDate().toISOString()
+          utcOlderDate: assertNotNull(this.utcOlderDate).toISOString(),
+          utcNewerDate: this.utcNewerDate.toISOString()
         };
 
         this.close();

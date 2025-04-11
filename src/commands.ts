@@ -96,7 +96,9 @@ function addCompareRepoVersionsCommand(plugin: GitChangelogPlugin): void {
             options: {
               app: plugin.app,
               cssClass: CssClass.ConfirmModal
-            }
+            },
+            utcOlderDateString: plugin.compareVersionsUtcOlderDate,
+            utcNewerDateString: plugin.compareVersionsUtcNewerDate
           })
       );
 
@@ -104,9 +106,9 @@ function addCompareRepoVersionsCommand(plugin: GitChangelogPlugin): void {
         // Close any existing COMPARE_REPO_STATES_VIEW views
         removeCompareVersionsView(plugin);
 
-        plugin.compareVersionsNewerDate =
+        plugin.compareVersionsUtcNewerDate =
           compareRepoCommitsViewState.utcNewerDate;
-        plugin.compareVersionsOlderDate =
+        plugin.compareVersionsUtcOlderDate =
           compareRepoCommitsViewState.utcOlderDate;
 
         await plugin.app.workspace.ensureSideLeaf(

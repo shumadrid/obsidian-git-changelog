@@ -85,8 +85,8 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
   public fileChangelogManager = $state<FileChangelogManager>();
   public statusBarStats?: StatusBarStats;
   public cachedActiveGitFile: string | undefined;
-  public compareVersionsNewerDate: string | undefined;
-  public compareVersionsOlderDate: string | undefined;
+  public compareVersionsUtcNewerDate: string | undefined;
+  public compareVersionsUtcOlderDate: string | undefined;
 
   public localeSafe = $state<string>('en-US'); // Properly loaded in onLayoutReady
 
@@ -238,12 +238,12 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     });
 
     this.registerView(COMPARE_REPO_COMMITS_VIEW_CONFIG.type, (leaf) => {
-      return new CompareRepoCommitsView(
+      return new CompareRepoCommitsView({
         leaf,
-        this,
-        assertNotNull(this.compareVersionsOlderDate),
-        assertNotNull(this.compareVersionsNewerDate)
-      );
+        plugin: this,
+        utcOlderDate: assertNotNull(this.compareVersionsUtcOlderDate),
+        utcNewerDate: assertNotNull(this.compareVersionsUtcNewerDate)
+      });
     });
 
     addCommands(this);

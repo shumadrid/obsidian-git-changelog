@@ -17,12 +17,17 @@ export class CompareRepoCommitsView
   public utcNewerDate: string;
   private _view: CompareRepoCommitsComponent | undefined = undefined;
 
-  public constructor(
-    leaf: WorkspaceLeaf,
-    plugin: GitChangelogPlugin,
-    utcOlderDate: string,
-    utcNewerDate: string
-  ) {
+  public constructor({
+    leaf,
+    plugin,
+    utcOlderDate,
+    utcNewerDate
+  }: {
+    leaf: WorkspaceLeaf;
+    plugin: GitChangelogPlugin;
+    utcOlderDate: string;
+    utcNewerDate: string;
+  }) {
     super(leaf);
     this.plugin = plugin;
     this.utcOlderDate = utcOlderDate;
