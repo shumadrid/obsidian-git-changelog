@@ -6,7 +6,7 @@ export class DayStartHour extends SettingComponent {
     this.createSetting()
       .setName('Day start time')
       .setDesc(
-        'Adjust the day based on your schedule. Applies exclusively to the day interval in the changelog views'
+        'Adjust the day based on your schedule. Applies exclusively to the day interval in the changelog views.'
       )
       .addTime((text) => {
         this.settingTab.bind(text, 'dayStartHour', {
