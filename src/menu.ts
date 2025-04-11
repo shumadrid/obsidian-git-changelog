@@ -110,7 +110,11 @@ function isAbsoluteGitIgnoreRuleAboveRoot({
 }: {
   absoluteGitIgnoreRule: string;
 }): boolean {
-  return absoluteGitIgnoreRule.startsWith('/../');
+  return (
+    absoluteGitIgnoreRule.startsWith('/../') ||
+    // Case when path is the root folder itself
+    absoluteGitIgnoreRule.startsWith('//')
+  );
 }
 
 export function addExcludeMenuItem({
