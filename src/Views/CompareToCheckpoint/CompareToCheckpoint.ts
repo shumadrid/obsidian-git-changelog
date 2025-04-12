@@ -6,6 +6,7 @@ import { ItemView } from 'obsidian';
 import { mount, unmount } from 'svelte';
 import { removeCompareVersionsView } from 'utils.ts';
 import CompareToCheckpointComponent from 'Views/CompareToCheckpoint/CompareToCheckpoint.svelte';
+import { registerCloseViewIfDeferred } from 'Views/helper.ts';
 
 /**
  * This was originally a modal, but user should also be able to click on the changes to inspect them, so it was migrated to a temporary view.
@@ -57,6 +58,8 @@ export class CompareToCheckpointView extends ItemView {
       },
       target: this.contentEl
     }) as CompareToCheckpointComponent;
+
+    registerCloseViewIfDeferred(this, this.plugin);
   }
 
   public override onunload(): void {

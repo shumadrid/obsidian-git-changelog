@@ -136,3 +136,18 @@ export function showDiff(
     event
   });
 }
+
+export function registerCloseViewIfDeferred(
+  compareView: ItemView,
+  plugin: GitChangelogPlugin
+): void {
+  // On each workspace layout change, check if this view is still visible.
+  compareView.registerEvent(
+    plugin.app.workspace.on('active-leaf-change', () => {
+      // If the view exists but isn't visible, close it
+      if (!compareView.contentEl.isShown()) {
+        compareView.leaf.detach();
+      }
+    })
+  );
+}

@@ -7,6 +7,7 @@ import { ItemView } from 'obsidian';
 import { mount, unmount } from 'svelte';
 import { removeCompareVersionsView } from 'utils.ts';
 import CompareRepoCommitsComponent from 'Views/CompareRepoCommits/CompareRepoCommits.svelte';
+import { registerCloseViewIfDeferred } from 'Views/helper.ts';
 
 export class CompareRepoCommitsView
   extends ItemView
@@ -74,6 +75,8 @@ export class CompareRepoCommitsView
       },
       target: this.contentEl
     }) as CompareRepoCommitsComponent;
+
+    registerCloseViewIfDeferred(this, this.plugin);
   }
 
   public override onunload(): void {
