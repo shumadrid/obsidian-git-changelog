@@ -66,8 +66,8 @@ export class CompareRepoCommitsView
     this._view = mount(CompareRepoCommitsComponent, {
       props: {
         plugin: this.plugin,
-        closeView: async () => {
-          await this.close();
+        closeView: () => {
+          // Await this.close();
           removeCompareVersionsView(this.plugin);
         },
         utcOlderDate: this.utcOlderDate,

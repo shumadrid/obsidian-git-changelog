@@ -16,7 +16,7 @@ import { runHashObjectEmptyTree } from 'core/gitOperations/runHashObjectEmptyTre
 import { changelogGenerationSettingsChanged } from 'core/helper.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
 import { addContextMenuItems } from 'menu.ts';
-import { debounce, ItemView, Notice } from 'obsidian';
+import { debounce, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
 import { getLocaleToAssign } from 'settings/ui/CustomLocale.ts';
@@ -35,7 +35,7 @@ import {
   FILE_CHANGELOG_VIEW_CONFIG,
   FileChangelogView
 } from 'Views/FileChangelog/FileChangelog.ts';
-import { getActiveGitRelativeFile, isDiffView } from 'Views/helper.ts';
+import { getActiveGitRelativeFile, isDiffViewVisible } from 'Views/helper.ts';
 import {
   VAULT_CHANGELOG_VIEW_CONFIG,
   VaultChangelogView
@@ -288,7 +288,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     }
 
     this.registerEvent(
-      this.app.workspace.on('file-open', () => {
+      this.app.workspace.on('active-leaf-change', () => {
         this.updateActiveGitFile();
       })
     );
@@ -371,19 +371,16 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
 
       if (currentActiveGitFile) {
         this.setNewActiveGitFile(currentActiveGitFile);
-      } else {
-        const currentActiveView =
-          this.app.workspace.getActiveViewOfType(ItemView);
-
-        // If a DiffView is active, don't clear the active git file, but keep it, so that the file changelog still shows stats for that previously active file. Only works if the diff view is also focused.
-        if (isDiffView(currentActiveView)) {
-          return;
-        }
-
+      } else if (
+        !isDiffViewVisible({
+          app: this.app
+        })
+      ) {
+        // If a DiffView is visible, don't clear the active git file, but keep it, so that the file changelog still shows stats for that previously active file.
         this.setNewActiveGitFile(undefined);
       }
     } catch {
-      /* Empty */
+      /* Just do nothing */
     }
   }
 

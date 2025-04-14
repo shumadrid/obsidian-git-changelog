@@ -1,4 +1,4 @@
-import type { ItemView } from 'obsidian';
+import type { App, ItemView } from 'obsidian';
 
 import { MarkdownView, TFile } from 'obsidian';
 import { getNewLeaf } from 'utils.ts';
@@ -87,11 +87,18 @@ export function getDisplayPath(path: string): string {
   return path.split('/').last()?.replace(/\.md$/, '') ?? '';
 }
 
-export function isDiffView(view: ItemView | null): boolean {
-  return (
-    view?.getViewType() === 'diff-view' ||
-    view?.getViewType() === 'split-diff-view'
-  );
+/**
+ * Assumes that no file view is currently active
+ */
+export function isDiffViewVisible({ app }: { app: App }): boolean {
+  const diffViews = [
+    ...app.workspace.getLeavesOfType('diff-view'),
+    ...app.workspace.getLeavesOfType('split-diff-view')
+  ];
+
+  return diffViews.some((leaf) => {
+    return leaf.containerEl.isShown();
+  });
 }
 
 export function openFile({

@@ -21,7 +21,6 @@ export class DayStartHour extends SettingComponent {
             text.setValue(moment.duration(value, 'hours'));
           },
           shouldShowValidationMessage: false,
-          shouldResetSettingWhenComponentIsEmpty: false,
           pluginSettingsToComponentValueConverter: (
             pluginSettingsValue: number
           ) => moment.duration(pluginSettingsValue, 'hours')

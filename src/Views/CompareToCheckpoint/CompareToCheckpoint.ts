@@ -51,8 +51,8 @@ export class CompareToCheckpointView extends ItemView {
     this._view = mount(CompareToCheckpointComponent, {
       props: {
         plugin: this.plugin,
-        closeView: async () => {
-          await this.close();
+        closeView: () => {
+          // Await this.close();
           removeCompareVersionsView(this.plugin);
         }
       },
