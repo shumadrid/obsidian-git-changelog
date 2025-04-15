@@ -3,6 +3,7 @@
   import type { EventRef } from 'obsidian';
 
   import { INFO_TOOLTIP_ICON } from 'constants.ts';
+  import { runCheckIgnore } from 'core/gitOperations/runCheckIgnore.ts';
   import { setIcon } from 'obsidian';
   import { onDestroy, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
@@ -40,7 +41,7 @@
   const loaderState = new LoaderState();
   let intervalAdjective = $state<string>();
 
-  const changelogState = $derived.by(() => {
+  let changelogState = $derived.by(() => {
     if (!changelogManager) {
       return FileChangelogState.Initializing;
     }
@@ -61,9 +62,42 @@
     if (!plugin.cachedActiveGitFile) {
       return FileChangelogState.NoMarkdownFileOpen;
     }
-
-    return FileChangelogState.EmptyHistory;
+    //
+    untrack(() => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      checkFileInGitIgnore();
+    });
+    // Set a loading state while checkFileInGitIgnore is in progress
+    return FileChangelogState.Recomputing;
   });
+
+  // Const fileInGitIgnore = $state<boolean>();
+
+  // If the file git log yielded no entries, check if it's because the file is ignored by git, or if it's just a new file with no history. Should be instant so no visible UI mismatch.
+  async function checkFileInGitIgnore(): Promise<void> {
+    if (!plugin.cachedActiveGitFile || !changelogManager) {
+      return;
+    }
+    const abortSignal = changelogManager.taskManager.getAbortSignal();
+    const cachedActiveGitFile = plugin.cachedActiveGitFile;
+
+    await changelogManager.taskManager.enqueueAndWait(async () => {
+      try {
+        const git = await plugin.getGit();
+        const isIgnored = await runCheckIgnore({
+          abortSignal,
+          activeGitFile: cachedActiveGitFile,
+          git
+        });
+
+        changelogState = isIgnored
+          ? FileChangelogState.GitIgnoredFileOpen
+          : FileChangelogState.EmptyHistory;
+      } catch {
+        changelogState = FileChangelogState.EmptyHistory;
+      }
+    });
+  }
 
   let fileChangelogSettingsChangedReference: EventRef;
 
@@ -175,7 +209,7 @@
       {:else if changelogState === FileChangelogState.NoMarkdownFileOpen}
         <div class="pane-empty">No file opened.</div>
       {:else if changelogState === FileChangelogState.EmptyHistory}
-        <div class=" pane-empty">
+        <div class="pane-empty">
           <div>File has no Git history.</div>
           <div class="git-changelog-row">
             <div
@@ -192,6 +226,8 @@
             >
           </div>
         </div>
+      {:else if changelogState === FileChangelogState.GitIgnoredFileOpen}
+        <div class="pane-empty">File is in .gitignore.</div>
       {/if}
       <!-- if changelogState === FileChangelogState.Initializing, show nothing -->
     </div>
