@@ -39,7 +39,8 @@ export const OPEN_FILE_ICON = 'file-input';
 export const PLUS_ICON = 'plus';
 export const MINUS_ICON = 'minus';
 export const COPY_COMMIT_HASH_ICON = 'git-commit-horizontal';
-export const COMPARED_VERSIONS_DATE_SEPARATOR = 'clock-10';
+export const COMPARED_VERSIONS_DATE_SEPARATOR_ICON = 'clock-10';
+export const INFO_TOOLTIP_ICON = 'info';
 
 export const CHANGELOG_LOAD_AMOUNT_BASE_MULTIPLIER = 35;
 export const CHANGELOG_LOAD_AMOUNT_VERSIONS = 10;

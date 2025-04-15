@@ -61,8 +61,7 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
   - **Context menu integration:** To exclude a file or folder, just right-click on it inside the File explorer and select "Git changelog: Exclude" from the context menu, no need to manually define paths.
 
-    > [!NOTE]
-    > For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
+  - For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
 
 - **Include items:**
 
@@ -79,6 +78,9 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 - Shows the count of added and deleted lines for all previous versions of the active note.
 
   ![File Changelog View](.github/file-changelog-view.webp)
+
+> [!WARNING]
+> Showing a lot of versions and files will reduce view performance. This will be fixed soon.
 
 ### Changelog Customizability
 
@@ -102,24 +104,24 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
 - Click on any file version in the changelog views to open the corresponding diff view showing the changes.
 
-  > [!WARNING]
-  > Currently, only the "Split" diff view works. The "Unified" view shows inaccurate changes.
+> [!WARNING]
+> Currently, only the "Split" diff view works. The "Unified" view shows inaccurate changes.
 
 ### Compare Two Vault States in History
 
 - Use the `Compare two vault states in history` command to compare any two points in the vault's git history.
 
-- All settings that apply to the vault changelog view also apply to this command.
+- All settings that apply to the changelog views also apply to this command.
 
   ![Vault's git history comparison](.github/vault-git-history-comparison-modal.png)
 
-### See Changes since the Last Checkpoint
+### Show Vault Changes since the Last Checkpoint
 
 - The easiest way to track all changes made to your vault over time is to use the `Show vault changes since the last checkpoint` command to open a temporary view that shows all changes that happened since the last checkpoint (meaning: the last time you ran this command and approved the shown changes).
 
 - If you're someone who's always concerned about data integrity, you don't need to have the vault changelog view open all the time in order to track changes. 😁 Just run this command every now and then to inspect all changes made since the last time you checked. (Be it a few minutes ago or a few months.)
 
-- All settings that apply to the vault changelog view also apply to this command.
+- All settings that apply to the changelog views also apply to this command.
 
 ## Data Loss Monitoring
 
@@ -222,6 +224,22 @@ If you don't want to depend on Git, check out the these alternative plugins:
 - [Edit History](https://github.com/antoniotejada/obsidian-edit-history) - similar to this plugin, but generates it's own history files instead of relying on other tools.
 
 ## FAQ
+
+- Why is the File changelog view showing inaccurate history for some files?
+
+  - Most common cases for this are: **The file had its file path changed (renamed/moved or one of its parent folders was renamed/moved)**...
+
+    1. and the change isn't committed yet.
+
+    2. and was also significantly modified, so that the similarity of the old and new version went below the `File move/rename detection strictness` threshold, resulting in Git treating the file as a new file instead of a renamed/moved one.
+
+    3. but the only changes were letter capitalization changes, and now Git is saying that the file has no history ([Why?](https://github.com/shumadrid/obsidian-git-changelog/issues/3) TLDR: Git is case sensitive, your file system might not be). To solve this:
+
+       1. Add an emoji (or anything) as a prefix in the name to all the affected files/folders in your vault (an easier way is to only prefix all the topmost folders).
+
+       2. Commit all the changes.
+
+       3. After committing, the files will be tracked again with the newly capitalized names, and you can remove the emoji prefixes.
 
 - Will this plugin alter my Git repository/config?
 

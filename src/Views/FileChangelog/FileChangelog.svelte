@@ -2,6 +2,8 @@
   import type { GitChangelogPlugin } from 'GitChangelogPlugin.svelte.ts';
   import type { EventRef } from 'obsidian';
 
+  import { INFO_TOOLTIP_ICON } from 'constants.ts';
+  import { setIcon } from 'obsidian';
   import { onDestroy, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
   import { assertNotNull } from 'utils.ts';
@@ -30,6 +32,8 @@
   let headChangeReference: EventRef;
   let settingsChangedReference: EventRef;
   let activeFileChangedReference: EventRef;
+
+  let infoTooltipIcon = $state<HTMLElement>();
 
   const changelogManager = $derived(plugin.fileChangelogManager);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
@@ -100,6 +104,15 @@
     }
   });
 
+  $effect(() => {
+    if (infoTooltipIcon) {
+      setIcon(
+        infoTooltipIcon,
+        assertNotNull(infoTooltipIcon.getAttr('data-icon'))
+      );
+    }
+  });
+
   $effect.pre(() => {
     setIntervalAdjective();
   });
@@ -162,7 +175,23 @@
       {:else if changelogState === FileChangelogState.NoMarkdownFileOpen}
         <div class="pane-empty">No file opened.</div>
       {:else if changelogState === FileChangelogState.EmptyHistory}
-        <div class="pane-empty">File has no Git history.</div>
+        <div class=" pane-empty">
+          <div>File has no Git history.</div>
+          <div class="git-changelog-row">
+            <div
+              bind:this={infoTooltipIcon}
+              data-icon={INFO_TOOLTIP_ICON}
+              aria-label="Due to Git limitations, it doesn't show the history of files that had their:
+            1. file path changed without the changes being committed.
+            2. file path changes be capitalization changes only."
+              class="icon git-changelog-tooltip-icon"
+            ></div>
+            <a
+              href="https://github.com/shumadrid/obsidian-git-changelog?tab=readme-ov-file#faq"
+              class="external-link git-changelog-read-more">Read more</a
+            >
+          </div>
+        </div>
       {/if}
       <!-- if changelogState === FileChangelogState.Initializing, show nothing -->
     </div>
@@ -170,4 +199,18 @@
 </div>
 
 <style lang="scss">
+  .git-changelog-tooltip-icon {
+    margin-top: var(--size-4-1);
+  }
+
+  .git-changelog-read-more {
+    font-size: var(--font-small);
+  }
+
+  .git-changelog-row {
+    display: flex;
+    gap: var(--size-4-1);
+    align-items: center;
+    justify-content: center;
+  }
 </style>

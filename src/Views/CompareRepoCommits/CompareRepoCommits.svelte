@@ -3,7 +3,7 @@
   import type GitChangelogPlugin from 'main.ts';
 
   import {
-    COMPARED_VERSIONS_DATE_SEPARATOR,
+    COMPARED_VERSIONS_DATE_SEPARATOR_ICON,
     COPY_COMMIT_HASH_ICON,
     TOGGLE_FILES_SUMMARY_OPTION_ICON
   } from 'constants.ts';
@@ -138,7 +138,7 @@
 
   $effect(() => {
     if (arrowIconElement) {
-      setIcon(arrowIconElement, COMPARED_VERSIONS_DATE_SEPARATOR);
+      setIcon(arrowIconElement, COMPARED_VERSIONS_DATE_SEPARATOR_ICON);
     }
 
     if (sameCommitIconElement) {

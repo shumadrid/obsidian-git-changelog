@@ -4,7 +4,7 @@
   import type { GitChangelogSettings } from 'settings/settings.ts';
 
   import {
-    COMPARED_VERSIONS_DATE_SEPARATOR,
+    COMPARED_VERSIONS_DATE_SEPARATOR_ICON,
     COPY_COMMIT_HASH_ICON,
     TOGGLE_FILES_SUMMARY_OPTION_ICON
   } from 'constants.ts';
@@ -28,7 +28,7 @@
     NoCommits = 'No commits in the repository.',
     NoCheckpoints = 'No checkpoints yet.',
     CheckpointCommitNoLongerExists = 'The commit tied to the last checkpoint no longer exists or the checkpoint value is corrupted.',
-    NoChanges = 'No committed changes since the last checkpoint.',
+    NoChanges = 'No committed included changes since the last checkpoint.',
     Loaded = 'Loaded',
     UnknownError = 'Unknown error occurred.'
   }
@@ -196,7 +196,7 @@
 
   $effect(() => {
     if (arrowIconElement) {
-      setIcon(arrowIconElement, COMPARED_VERSIONS_DATE_SEPARATOR);
+      setIcon(arrowIconElement, COMPARED_VERSIONS_DATE_SEPARATOR_ICON);
     }
 
     if (onCheckpointCommitIconElement) {
