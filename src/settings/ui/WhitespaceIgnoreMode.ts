@@ -29,9 +29,7 @@ export class WhitespaceIgnoreModeOptions extends SettingComponent {
           WhitespaceIgnoreMode.AllSpace,
           'Ignore all whitespace changes'
         );
-        this.settingTab.bind(dropdown, 'whitespaceIgnoreMode', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(dropdown, 'whitespaceIgnoreMode');
       });
   }
 }

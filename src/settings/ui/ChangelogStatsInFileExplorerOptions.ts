@@ -14,7 +14,6 @@ export class ChangelogStatsInFileExplorerOptions extends SettingComponent {
         );
 
         this.settingTab.bind(dropdown, 'fileExplorerStats', {
-          shouldShowValidationMessage: false,
           onChanged: () => {
             // eslint-disable-next-line no-magic-numbers
             this.refreshDisplayWithDelay(30);

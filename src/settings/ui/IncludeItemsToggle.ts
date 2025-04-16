@@ -7,7 +7,7 @@ export class IncludeItemsToggle extends SettingComponent {
     this.createSetting()
       .setName(
         createFragment((fragment) => {
-          fragment.appendText(`Include items`);
+          fragment.appendText(`Include items instead`);
           fragment
             .createEl('span', { cls: 'nav-file-tag git-changelog-new' })
             .setText('NEW');
@@ -23,9 +23,7 @@ export class IncludeItemsToggle extends SettingComponent {
         })
       )
       .addToggle((toggle) =>
-        this.settingTab.bind(toggle, 'convertToIncludeList', {
-          shouldShowValidationMessage: false
-        })
+        this.settingTab.bind(toggle, 'convertToIncludeList')
       );
   }
 }

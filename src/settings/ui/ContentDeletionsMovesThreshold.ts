@@ -11,9 +11,7 @@ export class ContentDeletionsMovesThreshold extends SettingComponent {
         text.setDisabled(this.disabled);
         // This.restrictToPositiveIntegerInput(text);
 
-        this.settingTab.bind(text, 'contentDeletionsAndMovesWarningThreshold', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(text, 'contentDeletionsAndMovesWarningThreshold');
       });
   }
 }

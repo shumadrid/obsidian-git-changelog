@@ -18,9 +18,7 @@ export class RenameDetectionFileLimit extends SettingComponent {
         })
       )
       .addNumber((text) => {
-        this.settingTab.bind(text, 'renameLimit', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(text, 'renameLimit');
       });
   }
 }

@@ -8,9 +8,7 @@ export class ChangelogMeasurementUnit extends SettingComponent {
       .addTypedDropdown((dropdown) => {
         dropdown.addOption(DiffMeasurementUnit.Lines, 'Lines');
         dropdown.addOption(DiffMeasurementUnit.Words, 'Words');
-        this.settingTab.bind(dropdown, 'diffMeasurementUnit', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(dropdown, 'diffMeasurementUnit');
       });
   }
 }

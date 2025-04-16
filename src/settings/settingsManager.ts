@@ -61,7 +61,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
       'diffMeasurementUnit',
       (measurementUnit): MaybeReturn<string> => {
         if (!Object.values(DiffMeasurementUnit).includes(measurementUnit)) {
-          return 'Invalid measurement unit';
+          return 'Choose a valid option.';
         }
       }
     );
@@ -73,14 +73,14 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
           !Number.isInteger(Number(contentDeletionsAndMovesWarningThreshold)) ||
           Number(contentDeletionsAndMovesWarningThreshold) < 1
         ) {
-          return 'Invalid threshold value';
+          return 'Pick a positive whole number.';
         }
       }
     );
 
     this.registerValidator('locale', (locale): MaybeReturn<string> => {
       if (!validateLocale(locale) && locale !== this.defaultSettings.locale) {
-        return 'Invalid locale';
+        return 'Invalid locale code.';
       }
     });
 
@@ -89,7 +89,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
         !validateCustomTimeZone(timeZone) &&
         timeZone !== this.defaultSettings.timeZone
       ) {
-        return 'Invalid timeZone';
+        return 'Invalid timezone.';
       }
     });
 
@@ -103,7 +103,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
           dayStartHour < 0 ||
           dayStartHour >= ONE_DAY_IN_HOURS
         ) {
-          return 'Invalid day start time';
+          return 'Invalid time.';
         }
       }
     );
@@ -112,7 +112,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
       'diffAlgorithm',
       (diffAlgorithm): MaybeReturn<string> => {
         if (!Object.values(DiffAlgorithm).includes(diffAlgorithm)) {
-          return 'Invalid diff algorithm';
+          return 'Choose a valid option.';
         }
       }
     );
@@ -124,7 +124,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
           !Number.isInteger(Number(filesChangedWarningThreshold)) ||
           Number(filesChangedWarningThreshold) < 1
         ) {
-          return 'Invalid threshold value';
+          return 'Pick a positive whole number.';
         }
       }
     );
@@ -133,7 +133,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
       'fileExplorerStats',
       (fileExplorerStats): MaybeReturn<string> => {
         if (!Object.values(FileExplorerStats).includes(fileExplorerStats)) {
-          return 'Invalid option';
+          return 'Choose a valid option.';
         }
       }
     );
@@ -146,7 +146,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
           Number(fileExplorerInterval) < 1 ||
           Number(fileExplorerInterval) > MAX_SUPPORTED_INTERVAL
         ) {
-          return 'Invalid file explorer interval';
+          return `Pick a positive whole number not greater than ${MAX_SUPPORTED_INTERVAL}.`;
         }
       }
     );
@@ -162,7 +162,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
             Number(renameLimit) <= 99_999_999_999_999_999_999n
           )
         ) {
-          return 'Invalid rename limit';
+          return 'Pick a non-negative whole number.';
         }
       }
     );
@@ -175,7 +175,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
           renameDetectionStrictness < MIN_RENAME_DETECTION_STRICTNESS ||
           renameDetectionStrictness > MAX_RENAME_DETECTION_STRICTNESS
         ) {
-          return 'Invalid rename detection strictness';
+          return `Pick a whole number between ${MIN_RENAME_DETECTION_STRICTNESS} and ${MAX_RENAME_DETECTION_STRICTNESS}.`;
         }
       }
     );
@@ -188,7 +188,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
           Number(statusBarInterval) < 1 ||
           Number(statusBarInterval) > MAX_SUPPORTED_INTERVAL
         ) {
-          return 'Invalid status bar interval';
+          return `Pick a positive whole number not greater than ${MAX_SUPPORTED_INTERVAL}.`;
         }
       }
     );
@@ -199,7 +199,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
         if (
           !Object.values(WhitespaceIgnoreMode).includes(whitespaceIgnoreMode)
         ) {
-          return 'Invalid whitespace ignore mode';
+          return 'Choose a valid option.';
         }
       }
     );
@@ -208,7 +208,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
       'fileChangelogInterval',
       (fileChangelogInterval): MaybeReturn<string> => {
         if (!Object.values(ChangelogInterval).includes(fileChangelogInterval)) {
-          return 'Invalid file changelog interval';
+          return 'Choose a valid option.';
         }
       }
     );
@@ -219,7 +219,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
         if (
           !Object.values(ChangelogInterval).includes(vaultChangelogInterval)
         ) {
-          return 'Invalid vault changelog interval';
+          return 'Choose a valid option.';
         }
       }
     );

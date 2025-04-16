@@ -9,9 +9,7 @@ export class CustomTimeZone extends SettingComponent {
     this.createSetting()
       .setName('Timezone')
       .addText((text) => {
-        this.settingTab.bind(text, 'timeZone', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(text, 'timeZone');
 
         new TimeZoneSuggest(this.plugin.app, text.inputEl);
       });

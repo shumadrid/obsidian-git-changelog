@@ -227,7 +227,7 @@
           </div>
         </div>
       {:else if changelogState === FileChangelogState.GitIgnoredFileOpen}
-        <div class="pane-empty">File is in .gitignore.</div>
+        <div class="pane-empty">File is ignored by Git.</div>
       {/if}
       <!-- if changelogState === FileChangelogState.Initializing, show nothing -->
     </div>

@@ -8,9 +8,7 @@ export class StatusBarInterval extends SettingComponent {
         'Works by comparing the live file version against the first commit before the interval.'
       )
       .addNumber((text) => {
-        this.settingTab.bind(text, 'statusBarInterval', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(text, 'statusBarInterval');
 
         text.setDisabled(this.disabled);
       });

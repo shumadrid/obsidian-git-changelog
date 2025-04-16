@@ -9,7 +9,6 @@ export class DeletionsNotificationThreshold extends SettingComponent {
       )
       .addToggle((toggle) => {
         this.settingTab.bind(toggle, 'notifyOnHighContentDeletionsAndMoves', {
-          shouldShowValidationMessage: false,
           onChanged: () => {
             this.refreshDisplayWithDelay();
           }

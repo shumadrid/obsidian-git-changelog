@@ -46,7 +46,6 @@ export class DiffAlgorithmOptions extends SettingComponent {
         dropdown.addOption(DiffAlgorithm.Default, 'Default (Faster)');
         dropdown.addOption(DiffAlgorithm.Minimal, 'Minimal (More precise)');
         this.settingTab.bind(dropdown, 'diffAlgorithm', {
-          shouldShowValidationMessage: false,
           onChanged: () => {
             // eslint-disable-next-line no-magic-numbers
             this.refreshDisplayWithDelay(30);

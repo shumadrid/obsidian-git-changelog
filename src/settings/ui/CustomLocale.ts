@@ -11,7 +11,6 @@ export class CustomLocale extends SettingComponent {
         text.inputEl.maxLength = 30;
 
         this.settingTab.bind(text, 'locale', {
-          shouldShowValidationMessage: false,
           onChanged: () => {
             // Without this check, plugin fails on startup
             if (this.plugin.settingsManager) {

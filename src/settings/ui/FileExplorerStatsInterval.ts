@@ -5,9 +5,7 @@ export class FileExplorerStatsInterval extends SettingComponent {
     this.createSetting()
       .setName('Interval for file explorer stats (minutes)')
       .addText((text) => {
-        this.settingTab.bind(text, 'fileExplorerInterval', {
-          shouldShowValidationMessage: false
-        });
+        this.settingTab.bind(text, 'fileExplorerInterval');
 
         text.setDisabled(this.disabled);
       });

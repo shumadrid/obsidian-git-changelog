@@ -40,7 +40,6 @@ export class ExcludeFilesAndFolders extends SettingComponent {
       )
       .addToggle((toggle) => {
         this.settingTab.bind(toggle, 'enableExclusionList', {
-          shouldShowValidationMessage: false,
           onChanged: () => {
             this.refreshDisplayWithDelay();
           }
@@ -59,7 +58,6 @@ export class ExcludeFilesAndFolders extends SettingComponent {
           componentToPluginSettingsValueConverter: (uiValue) =>
             splitExcludeItems(uiValue),
 
-          shouldShowValidationMessage: false,
           pluginSettingsToComponentValueConverter: (pluginSettingsValue) =>
             joinExcludeItems(pluginSettingsValue)
         });

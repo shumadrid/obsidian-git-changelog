@@ -35,9 +35,7 @@ export class RenameDetectionStrictnessSlider extends SettingComponent {
     });
 
     setting.addSlider((percent) => {
-      this.settingTab.bind(percent, 'renameDetectionStrictness', {
-        shouldShowValidationMessage: false
-      });
+      this.settingTab.bind(percent, 'renameDetectionStrictness');
 
       percent
         .setLimits(

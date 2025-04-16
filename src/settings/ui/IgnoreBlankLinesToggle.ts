@@ -12,10 +12,6 @@ export class IgnoreBlankLinesToggle extends SettingComponent {
         })
       )
       .setDesc('Ignore the additions and removals of completely empty lines.')
-      .addToggle((toggle) =>
-        this.settingTab.bind(toggle, 'ignoreBlankLines', {
-          shouldShowValidationMessage: false
-        })
-      );
+      .addToggle((toggle) => this.settingTab.bind(toggle, 'ignoreBlankLines'));
   }
 }

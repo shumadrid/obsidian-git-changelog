@@ -6,7 +6,6 @@ export class StatusBarStatsToggle extends SettingComponent {
       .setName('Active note live status bar stats')
       .addToggle((toggle) => {
         this.settingTab.bind(toggle, 'showStatusBarStats', {
-          shouldShowValidationMessage: false,
           onChanged: () => {
             this.refreshDisplayWithDelay();
           }
