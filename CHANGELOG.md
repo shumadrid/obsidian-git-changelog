@@ -2,9 +2,11 @@
 
 ## 0.5.0
 
+### What's Changed
+
 #### Features
 
-- New "Compare Two Vault States in History" and "Show Vault Changes since the Last Checkpoint" commands. The results of these commands are shown in a temporary side view.
+- New "Compare two vault states in history" and "Show vault changes since the last checkpoint" commands. The results of these commands are shown in a temporary side view.
 - Add validation to settings tab UI and polish the layout.
 - Display a message in the file changelog view when the opened file is ignored by Git.
 - Mention unusual scenarios that can lead to the "File has no git history" state in the file changelog view. (#3 Thanks to @AMC-Albert for the suggestion!)

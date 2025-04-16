@@ -109,7 +109,7 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
 ### Compare Two Vault States in History
 
-- Use the `Compare two vault states in history` command to compare any two points in the vault's git history.
+- Use the `Compare two vault states in history` command to compare any two points in the vault's Git history.
 
 - All settings that apply to the changelog views also apply to this command.
 
