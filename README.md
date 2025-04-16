@@ -14,7 +14,7 @@ A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to
   - [Live Stats in the Status Bar for the Current Note](#live-stats-in-the-status-bar-for-the-current-note)
   - [Integration with Git Plugin's Diff View](#integration-with-git-plugins-diff-view)
   - [Compare Two Vault States in History](#compare-two-vault-states-in-history)
-  - [See Changes since the Last Checkpoint](#see-changes-since-the-last-checkpoint)
+  - [Show Vault Changes since the Last Checkpoint](#show-vault-changes-since-the-last-checkpoint)
 - [Data Loss Monitoring](#data-loss-monitoring)
   - [Common Causes of Data Loss](#common-causes-of-data-loss)
   - [How to Use](#how-to-use)
@@ -142,7 +142,7 @@ The result of all of this can be you asking yourself:
 
 This plugin tries it's best to help you answer that question. 😎
 
-- The recommended way to monitor for data loss is to simply frequently run the [See Changes since the Last Checkpoint](#see-changes-since-the-last-checkpoint) command.
+- The recommended way to monitor for data loss is to simply frequently run the [Show Vault Changes since the Last Checkpoint](#show-vault-changes-since-the-last-checkpoint) command.
 
 ### How it works
 
@@ -170,7 +170,7 @@ This plugin tries it's best to help you answer that question. 😎
 
 ## Limitations
 
-⚠️There are quite a few limitations, and some of them are simply the result of choosing this specific approach to changelog management.
+⚠️ There are quite a few limitations, and some of them are simply the result of choosing this specific approach to changelog management.
 
 - No meaningful way of tracking changes to canvas files.
 
@@ -239,7 +239,7 @@ If you don't want to depend on Git, check out the these alternative plugins:
 
        2. Commit all the changes.
 
-       3. After committing, the files will be tracked again with the newly capitalized names, and you can remove the emoji prefixes.
+       3. After committing, the files will be tracked with the newly capitalized file paths, and you can remove the emoji prefixes.
 
 - Will this plugin alter my Git repository/config?
 
