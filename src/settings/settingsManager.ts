@@ -47,6 +47,24 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
         record.excludeFilesAndFoldersLines = legacyExcludeLines;
         // Remove the old settings structure to prevent future migrations
         delete record.vaultChangelogGenerationSettings;
+
+        // We are assuming that the user is updating their plugin version, so we show the "what's changed" notification and alert the user that some of their settings broke.
+        const whatsNewFragment = createFragment((element) => {
+          element.createEl('p', {
+            text: 'Git changelog:\nA new version has been installed (v0.5.0).\n\nSome of your settings for this plugin have been reset!'
+          });
+
+          element.createEl('button', { text: 'Close' });
+
+          const seeButton = element.createEl('button', { text: "What's new?" });
+          seeButton.onClickEvent(() => {
+            window.open(
+              'https://github.com/shumadrid/obsidian-git-changelog/releases'
+            );
+          });
+          seeButton.addClass('git-changelog-left-padding');
+        });
+        new Notice(whatsNewFragment, 0);
       }
     }
   }
