@@ -63,7 +63,7 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
   - For advanced users: If you configured your Git repository to be below the vault root directory, the paths should be relative to the Git repo, not the vault.
 
-- **Include items:**
+- **Include items instead:**
 
   - Convert the `Exclude Files and Folders` list to an include list, while excluding everything else.
 
