@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.5.0
+
+#### Features
+
+- New "Compare Two Vault States in History" and "Show Vault Changes since the Last Checkpoint" commands. The results of these commands are shown in a temporary side view.
+- Add validation to settings tab UI and polish the layout.
+- Display a message in the file changelog view when the opened file is ignored by Git.
+- Mention unusual scenarios that can lead to the "File has no git history" state in the file changelog view. (#3 Thanks to @AMC-Albert for the suggestion!)
+- Option to convert ExcludeFilesAndFolders to an include list.
+- Option to temporarily disable the ExcludeFilesAndFolders list.
+- Reorganized the settings internally. Users that are updating from a previous version will need to reconfigure all settings that have been affected.
+
+#### Bug Fixes
+
+- Clear the file changelog view if no DiffViews are visible.
+- Improved conditional changelog recalculation logic on settings changes.
+- Fix an issue where the date labels of the changelog versions were sometimes staying outdated.
+- Prevent excluding the git root folder from the vault changelog.
+- Prevent adding paths above git root folder to the exclude list to avoid git errors.
+- Apply the "Day start time" setting only when the day interval for a changelog is active (to avoid confusion).
+- Update the minimum required Obsidian version to 1.8.9.
+
 ## 0.4.0
 
 ### Features
