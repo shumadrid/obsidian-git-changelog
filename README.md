@@ -117,9 +117,19 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
 ### Show Vault Changes since the Last Checkpoint
 
-- The easiest way to track all changes made to your vault over time is to use the `Show vault changes since the last checkpoint` command to open a temporary view that shows all changes that happened since the last checkpoint (meaning: the last time you ran this command and approved the shown changes).
+- The easiest way to track all changes made to your vault over time is to use the `Show vault changes since the last checkpoint` command to open a temporary view that shows all changes that happened since the last checkpoint (meaning: the last time you ran this command and approved the shown changes by creating a new checkpoint).
 
 - If you're someone who's always concerned about data integrity, you don't need to have the vault changelog view open all the time in order to track changes. 😁 Just run this command every now and then to inspect all changes made since the last time you checked. (Be it a few minutes ago or a few months.)
+
+- If you don't like that this command is using the latest commit as the comparison point (because it often doesn't represent the actual current state of the vault):
+
+  - You can create an action (macro) using the [QuickAdd](https://obsidian.md/plugins?id=quickadd) plugin that will:
+    1. Run the "Git: Commit-and-sync" or "Git: Commit all changes" command. (Depending on if you use Github for syncing or not.)
+    2. Wait for some time for the commit to complete (e.g. 200ms).
+    3. Run the "Show Vault Changes since the Last Checkpoint" command.
+  - That way you will always compare the current state of your vault to the state of the last checkpoint.
+  - You can assign a hotkey to this macro by exposing it as an Obsidian command ([see how](https://youtu.be/gYK3VDQsZJo?t=179)).
+  - ![Quick Add Macro](.github/quick-add-macro.png)
 
 - All settings that apply to the changelog views also apply to this command.
 
