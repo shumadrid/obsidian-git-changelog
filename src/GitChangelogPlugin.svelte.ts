@@ -11,7 +11,6 @@ import {
   COMPARE_TO_CHECKPOINT_VIEW_CONFIG
 } from 'constants.ts';
 import { FileChangelogManager } from 'core/FileChangelogManager.ts';
-import { getCommitTimestampOrUndefined } from 'core/gitOperations/getCommitTimestamp.ts';
 import { runHashObjectEmptyTree } from 'core/gitOperations/runHashObjectEmptyTree.ts';
 import { changelogGenerationSettingsChanged } from 'core/helper.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
@@ -20,7 +19,6 @@ import { debounce, Notice } from 'obsidian';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
 import { getLocaleToAssign } from 'settings/ui/CustomLocale.ts';
-import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
 import {
   gitPluginCompatibleVersion,
   gitPluginTestedVersion
@@ -326,25 +324,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       await this.settingsManager.editAndSave(
         (settings: GitChangelogSettings): void => {
           settings.firstStartup = false;
-        }
-      );
-    }
-
-    // If there are no vault history checkpoints, initialize the first one.
-    if (this.settings.checkpointCommits.length === 0) {
-      const git = await this.getGit();
-
-      const latestCommit = await getCommitTimestampOrUndefined({
-        abortSignal: new AbortController().signal,
-        git,
-        timeZone: getTimeZone(this)
-      });
-
-      await this.settingsManager.editAndSave(
-        (settings: GitChangelogSettings): void => {
-          if (latestCommit && settings.checkpointCommits.length === 0) {
-            settings.checkpointCommits.push(latestCommit.hash);
-          }
         }
       );
     }
