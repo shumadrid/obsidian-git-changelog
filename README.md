@@ -124,7 +124,7 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 - If you don't like that this command is using the latest commit as the comparison point (because it often doesn't represent the actual current state of the vault):
 
   - You can create an action (macro) using the [QuickAdd](https://obsidian.md/plugins?id=quickadd) plugin that will:
-    1. Run the "Git: Commit-and-sync" or "Git: Commit all changes" command. (Depending on if you use Github for syncing or not.)
+    1. Run the "Commit-and-sync" or "Commit all changes" command, depending on if you use Github to sync or not (these commands are available through the Git plugin).
     2. Wait for some time for the commit to complete (e.g. 200ms).
     3. Run the "Show Vault Changes since the Last Checkpoint" command.
   - That way you will always compare the current state of your vault to the state of the last checkpoint.
@@ -152,7 +152,7 @@ The result of all of this can be you asking yourself:
 
 This plugin tries it's best to help you answer that question. 😎
 
-- The recommended way to monitor for data loss is to simply frequently run the [Show Vault Changes since the Last Checkpoint](#show-vault-changes-since-the-last-checkpoint) command.
+- The recommended way to monitor for data loss is to simply frequently run the [Show Vault Changes since the Last Checkpoint](#show-vault-changes-since-the-last-checkpoint) command and check if the shown changes seem correct.
 
 ### How it works
 
