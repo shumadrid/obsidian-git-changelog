@@ -5,6 +5,7 @@ import {
   MAX_RENAME_DETECTION_STRICTNESS,
   MIN_RENAME_DETECTION_STRICTNESS
 } from 'constants.ts';
+import { Notice } from 'obsidian';
 import { PluginSettingsManagerBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginSettingsManagerBase';
 import {
   GitChangelogSettings,

@@ -38,7 +38,7 @@
     "eslint-plugin-unicorn": "^57.0.0",
     "globals": "^16.0.0",
     "obsidian": "latest",
-    "obsidian-dev-utils": "latest",
+    "obsidian-dev-utils": "26.4.0",
     "obsidian-typings": "latest",
     "prettier": "3.5.3",
     "prettier-plugin-svelte": "^3.3.3",

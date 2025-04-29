@@ -9,7 +9,7 @@ import {
   FEEDBACK_URL
 } from 'constants.ts';
 // Import * as cssColorConverter from "css-color-converter";
-import { Keymap } from 'obsidian';
+import { Keymap, Notice } from 'obsidian';
 import { DiffFileStatus, NullValueError } from 'types.ts';
 
 export function getFileNameFromPath({

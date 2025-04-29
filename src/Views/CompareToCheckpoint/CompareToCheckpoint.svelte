@@ -147,7 +147,7 @@
           ModalCheckpointState.CheckpointCommitNoLongerExists;
 
         setCta = true;
-        approveButtonText = 'Approve & create new checkpoint';
+        approveButtonText = 'Create new checkpoint';
         return;
       }
 
@@ -187,7 +187,7 @@
         : ModalCheckpointState.NoChanges;
 
       setCta = true;
-      approveButtonText = 'Approve & create new checkpoint';
+      approveButtonText = 'Create new checkpoint';
     } catch {
       modalCheckpointState = ModalCheckpointState.UnknownError;
       approveButtonText = 'Close';
