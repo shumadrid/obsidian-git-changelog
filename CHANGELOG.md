@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.1
+
+### Bug Fixes
+
+- Stop auto initializing the first checkpoint (#4 Thanks to @texastoland for the suggestion).
+- Shorten "Approve & create new checkpoint" button text.
+
 ## 0.5.0
 
 ### What's Changed
