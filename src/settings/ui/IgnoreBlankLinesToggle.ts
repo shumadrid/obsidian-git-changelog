@@ -5,13 +5,13 @@ export class IgnoreBlankLinesToggle extends SettingComponent {
     this.createSetting()
       .setName(
         createFragment((fragment) => {
-          fragment.appendText(`Ignore blank lines`);
-          fragment
-            .createEl('span', { cls: 'nav-file-tag git-changelog-new' })
-            .setText('NEW');
+          fragment.appendText(`Ignore changes whose lines are all blank`);
+          fragment.createEl('span', { cls: 'nav-file-tag git-changelog-new' });
         })
       )
-      .setDesc('Ignore the additions and removals of completely empty lines.')
+      .setDesc(
+        "Doesn't show a file as changed if the only changes are blank lines."
+      )
       .addToggle((toggle) => this.settingTab.bind(toggle, 'ignoreBlankLines'));
   }
 }

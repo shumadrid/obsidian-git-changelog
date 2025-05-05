@@ -7,9 +7,7 @@ export class WhitespaceIgnoreModeOptions extends SettingComponent {
       .setName(
         createFragment((fragment) => {
           fragment.appendText(`Whitespace changes detection`);
-          fragment
-            .createEl('span', { cls: 'nav-file-tag git-changelog-new' })
-            .setText('NEW');
+          fragment.createEl('span', { cls: 'nav-file-tag git-changelog-new' });
         })
       )
       .addTypedDropdown((dropdown) => {
@@ -27,7 +25,7 @@ export class WhitespaceIgnoreModeOptions extends SettingComponent {
         );
         dropdown.addOption(
           WhitespaceIgnoreMode.AllSpace,
-          'Ignore all whitespace changes'
+          'Ignore all whitespace changes per line'
         );
         this.settingTab.bind(dropdown, 'whitespaceIgnoreMode');
       });

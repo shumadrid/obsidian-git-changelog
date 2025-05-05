@@ -8,9 +8,7 @@ export class IncludeItemsToggle extends SettingComponent {
       .setName(
         createFragment((fragment) => {
           fragment.appendText(`Include items instead`);
-          fragment
-            .createEl('span', { cls: 'nav-file-tag git-changelog-new' })
-            .setText('NEW');
+          fragment.createEl('span', { cls: 'nav-file-tag git-changelog-new' });
         })
       )
       .setDesc(
