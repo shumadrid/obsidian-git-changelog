@@ -116,7 +116,7 @@
     gap: var(--size-4-3);
     padding-right: 0px;
     justify-content: flex-end;
-    margin-left: auto; // Add this to push content to the right
+    padding-left: auto; // Add this to push content to the right
   }
 
   .git-changelog-stats-container {
@@ -130,7 +130,7 @@
   }
 
   .git-changelog-file-type-tag {
-    margin-right: var(--size-2-1);
-    margin-left: 0;
+    padding-right: var(--size-2-1);
+    padding-left: 0;
   }
 </style>

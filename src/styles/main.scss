@@ -76,7 +76,7 @@
   @extend %flex-center;
   gap: var(--size-4-2);
   height: 100%;
-  margin-bottom: var(--size-4-1);
+  padding-bottom: var(--size-4-1);
   flex-wrap: nowrap;
   min-width: 0;
 }
@@ -151,7 +151,7 @@
   color: var(--text-accent);
   display: flex;
   gap: var(--size-4-1);
-  margin-bottom: var(--size-4-1);
+  padding-bottom: var(--size-4-1);
 }
 
 .git-changelog-compared-version-title {
@@ -183,7 +183,7 @@
 .git-changelog-file-name-container {
   display: flex;
   min-width: 54px;
-  margin-right: var(--size-2-3);
+  padding-right: var(--size-2-3);
   gap: var(--size-4-1);
 
   .open-file-icon {
@@ -196,7 +196,7 @@
 .git-changelog-file-status-letter {
   text-align: center;
   align-items: center;
-  margin-right: var(--size-4-1);
+  padding-right: var(--size-4-1);
   // width: 0.9em;
   flex-shrink: 2;
   min-width: 0;
@@ -206,7 +206,7 @@
 .git-changelog-renamed-and-moved {
   // text-overflow: clip;
   display: flex;
-  margin-left: auto;
+  padding-left: auto;
   min-width: min-content;
   // overflow: hidden;
   // white-space: nowrap;

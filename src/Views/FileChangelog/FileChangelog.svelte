@@ -236,7 +236,7 @@
 
 <style lang="scss">
   .git-changelog-tooltip-icon {
-    margin-top: var(--size-4-1);
+    padding-top: var(--size-4-1);
   }
 
   .git-changelog-read-more {
