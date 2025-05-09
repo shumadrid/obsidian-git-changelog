@@ -88,6 +88,11 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
 
   public localeSafe = $state<string>('en-US'); // Properly loaded in onLayoutReady
 
+  public versionHeaderHeight = $state<number>();
+  public versionVerboseHeaderHeight = $state<number>();
+  public versionBodySpacing = $state<number>();
+  public fileTileHeightAndBottomPadding = $state<number>();
+
   public get emptyTreeHashUnsafe(): string {
     return assertNotNull(this.emptyTreeHash);
   }

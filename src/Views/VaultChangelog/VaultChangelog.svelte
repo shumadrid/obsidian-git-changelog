@@ -6,7 +6,7 @@
 
   import { TOGGLE_FILES_SUMMARY_OPTION_ICON } from 'constants.ts';
   import { setIcon } from 'obsidian';
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { LoaderState } from 'svelte-infinite';
   import { FileSummariesDisplayMode } from 'types.ts';
   import { assertNotNull } from 'utils.ts';
@@ -176,6 +176,13 @@
       }
     }
   }
+
+  let myElement: HTMLElement;
+
+  onMount(() => {
+    // Inject a class programmatically into the DOM element
+    myElement.classList.add('infinite-loader-virtual');
+  });
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -222,18 +229,20 @@
   <DependenciesStatusCheck {plugin}>
     <div class="nav-files-container">
       {#if changelogState === VaultChangelogState.HasEntries}
-        <InfiniteScroller
-          {loaderState}
-          triggerLoad={assertNotNull(changelogManager).handleScroll}
-        >
-          {#each assertNotNull(assertNotNull(changelogManager).visibleEntries) as version (version.commitHash)}
-            <VersionComponent
-              {version}
-              {plugin}
-              showFilesCountSummaries={showFilesCountSummariesMode}
-            />
-          {/each}
-        </InfiniteScroller>
+        <div bind:this={myElement}>
+          <InfiniteScroller
+            {loaderState}
+            triggerLoad={assertNotNull(changelogManager).handleScroll}
+          >
+            {#each assertNotNull(assertNotNull(changelogManager).visibleEntries) as version (version.commitHash)}
+              <VersionComponent
+                {version}
+                {plugin}
+                showFilesCountSummaries={showFilesCountSummariesMode}
+              />
+            {/each}
+          </InfiniteScroller>
+        </div>
       {:else if changelogState === VaultChangelogState.Recomputing}
         <div class="pane-empty">
           Loading {intervalAdjective} versions...
@@ -246,4 +255,8 @@
 </div>
 
 <style lang="scss">
+  .infinite-loader-virtual {
+    // content-visibility: hidden;
+    // contain-intrinsic-height: 20px;
+  }
 </style>

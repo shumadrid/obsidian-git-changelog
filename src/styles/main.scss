@@ -45,7 +45,7 @@
   justify-content: space-between;
 }
 // Status colors
-.git-changelog-stat-color {
+.git-changelog-4stat-color {
   opacity: var(--git-changelog-opacity);
 
   &[data-type='A'],
@@ -81,7 +81,7 @@
   min-width: 0;
 }
 
-.git-changelog-stat-item {
+.git-changelog-2stat-item {
   @extend %flex-center;
   gap: 2px;
   height: 100%;
@@ -111,8 +111,8 @@
   }
 }
 
-.git-changelog-stat-item-file {
-  @extend .git-changelog-stat-item;
+.git-changelog-3stat-item-file {
+  @extend .git-changelog-2stat-item;
   gap: 1px;
 }
 
@@ -125,6 +125,7 @@
   height: auto;
 }
 
+// Main root selector of this plugin's views
 .git-changelog-view {
   --git-changelog-opacity: 0.84;
   display: flex;
@@ -132,6 +133,31 @@
   position: relative;
   height: 100%;
   padding-bottom: calc(2 * var(--size-4-1));
+
+  .tree-item-self,
+  .nav-file-title {
+    margin-bottom: 0;
+  }
+
+  // doesn't adjust for file changelog view
+  .tree-item-children {
+    padding-bottom: 3px; // also adds 2px that is removed by the nav-file-title margin-bottom of last child
+    gap: var(
+      --size-2-1
+    ); // 2px that is removed by the nav-file-title margin-bottom
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.git-changelog-vault-changelog-version {
+  padding-bottom: var(
+    --size-2-1
+  ); // adds 2px that is removed by the tree-item-self margin-bottom
+  gap: var(--size-2-1);
+  display: flex;
+  flex-direction: column;
 }
 
 .git-changelog-checkpoint-modal {
@@ -214,7 +240,7 @@
 }
 
 .git-changelog-left-padding {
-  margin-left: var(--size-4-4);
+  padding-left: var(--size-4-4);
 }
 
 .git-changelog-setting-label {
@@ -247,4 +273,10 @@
 
 .infinite-intersection-target {
   padding-block: 0 !important;
+  contain-intrinsic-height: 1px;
+  content-visibility: auto;
+}
+
+.infinite-loader-wrapper {
+  // content-visibility: hidden;
 }

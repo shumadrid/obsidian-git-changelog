@@ -64,20 +64,20 @@
 </script>
 
 {#each stats as stat (stat.type)}
-  <span class="git-changelog-stat-item">
+  <span class="git-changelog-2stat-item">
     <span
-      class="icon git-changelog-stat-color"
+      class="icon git-changelog-4stat-color"
       data-type={stat.type}
       use:setStatIcon={stat.icon}
     ></span>
-    <span class="number git-changelog-stat-color" data-type={stat.type}>
+    <span class="number git-changelog-4stat-color" data-type={stat.type}>
       {stat.count}
     </span>
   </span>
 {/each}
 
 <style lang="scss">
-  .git-changelog-stat-item {
+  .git-changelog-2stat-item {
     .number {
       font-weight: var(--font-medium);
     }

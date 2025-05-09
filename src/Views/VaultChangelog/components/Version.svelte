@@ -2,6 +2,12 @@
   import type { VaultChangelogEntry } from 'core/ChangelogEntry.svelte.ts';
   import type GitChangelogPlugin from 'main.ts';
 
+  import {
+    RESERVED_FILE_TILE_HEIGHT_AND_BOTTOM_PADDING,
+    RESERVED_VERSION_BODY_SPACING,
+    RESERVED_VERSION_HEADER_HEIGHT,
+    RESERVED_VERSION_VERBOSE_HEADER_HEIGHT
+  } from 'constants.ts';
   import { mayTriggerChangelogMenu } from 'menu.ts';
   import { getTimeZone } from 'settings/ui/CustomTimeZone.ts';
   import { slide } from 'svelte/transition';
@@ -24,7 +30,7 @@
     plugin,
     showFilesCountSummaries,
     version,
-    hideTitleAndMakeUncollapsible: hideTitleAndCollapseIcon
+    hideTitleAndMakeUncollapsible
   }: Properties = $props();
 
   const formattedVersionDateLabel = $derived.by(() => {
@@ -40,18 +46,56 @@
       timeZoneAdjustedEntryDate: version.timeZoneAdjustedDate
     });
   });
+
+  let versionElement: HTMLDivElement | null;
+
+  $effect.pre(() => {
+    if (versionElement && plugin) {
+      const versionBodyHeight = version.isCollapsed
+        ? 0
+        : version.files.length * RESERVED_FILE_TILE_HEIGHT_AND_BOTTOM_PADDING +
+          RESERVED_VERSION_BODY_SPACING;
+
+      const versionHeaderHeight =
+        showFilesCountSummaries === FileSummariesDisplayMode.TextAndBinary
+          ? RESERVED_VERSION_VERBOSE_HEADER_HEIGHT
+          : RESERVED_VERSION_HEADER_HEIGHT;
+
+      versionElement.style.setProperty('content-visibility', 'auto');
+      versionElement.style.setProperty(
+        'contain-intrinsic-height',
+        `${versionBodyHeight + versionHeaderHeight}px`
+      );
+
+      console.error(
+        'Version body height',
+        versionBodyHeight,
+        'Version header height',
+        versionHeaderHeight
+      );
+    }
+  });
+
+  // $effect(
+  //   () => {
+
+  //   }
+  // )
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
-  class:is-collapsed={hideTitleAndCollapseIcon ? false : version.isCollapsed}
-  class="git-changelog-bottom-padding"
+  bind:this={versionElement}
+  class:is-collapsed={hideTitleAndMakeUncollapsible
+    ? false
+    : version.isCollapsed}
+  class="git-changelog-vault-changelog-version"
 >
   <div
-    class={`tree-item-self${hideTitleAndCollapseIcon ? '' : ' is-clickable'}`}
+    class={`tree-item-self${hideTitleAndMakeUncollapsible ? '' : ' is-clickable'}`}
     data-tooltip-position="bottom"
-    onclick={hideTitleAndCollapseIcon
+    onclick={hideTitleAndMakeUncollapsible
       ? undefined
       : () => {
           version.isCollapsed = !version.isCollapsed;
@@ -73,7 +117,7 @@
       }
     }}
   >
-    {#if !hideTitleAndCollapseIcon}
+    {#if !hideTitleAndMakeUncollapsible}
       <div
         class="tree-item-icon nav-folder-collapse-indicator collapse-icon"
         class:is-collapsed={version.isCollapsed}
@@ -93,7 +137,7 @@
       </div>
     {/if}
     <div class="file-stats git-changelog-files-summaries-stats">
-      {#if !hideTitleAndCollapseIcon}
+      {#if !hideTitleAndMakeUncollapsible}
         <div class="git-changelog-entry-title">
           <div>{formattedVersionDateLabel}</div>
           {#if !version.previousVersionCommitHash}
@@ -148,7 +192,7 @@
       />
     </div>
   </div>
-  {#if hideTitleAndCollapseIcon ? true : !version.isCollapsed}
+  {#if hideTitleAndMakeUncollapsible ? true : !version.isCollapsed}
     <div class="tree-item-children" transition:slide|local={{ duration: 150 }}>
       {#each version.textFiles as file (file.pathGitRelative)}
         {#if file !== undefined && file !== undefined}
@@ -191,9 +235,5 @@
     margin-left: 0px;
     padding: 0px var(--size-4-1);
     font-weight: var(--font-normal);
-  }
-
-  .git-changelog-bottom-padding {
-    padding-bottom: var(--size-2-1);
   }
 </style>

@@ -236,7 +236,7 @@
           {startingCheckpointDate}
         </div>
         <span
-          class="git-changelog-compared-version-title-arrow icon git-changelog-stat-color"
+          class="git-changelog-compared-version-title-arrow icon git-changelog-4stat-color"
           bind:this={arrowIconElement}
         ></span>
       {/if}

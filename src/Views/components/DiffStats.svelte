@@ -57,7 +57,7 @@
 </script>
 
 <div
-  class={isFileStat ? 'git-changelog-stats-container' : 'git-changelog-stat'}
+  class={isFileStat ? 'git-changelog-5stats-container' : 'git-changelog-stat'}
 >
   {#if stats.every((stat) => stat.count === 0) && !isFileStat}
     <StatComponent {isFileStat} isInvisible={false} />
@@ -68,13 +68,13 @@
         {#if file.status === DiffFileStatus.RenamedAndMoved}
           <div class=" git-changelog-renamed-and-moved">
             <div
-              class="git-changelog-stat-color git-changelog-file-status-letter"
+              class="git-changelog-4stat-color git-changelog-file-status-letter"
               data-type={DiffFileStatus.Moved}
             >
               M
             </div>
             <div
-              class="git-changelog-stat-color git-changelog-file-status-letter"
+              class="git-changelog-4stat-color git-changelog-file-status-letter"
               data-type={DiffFileStatus.Renamed}
             >
               {DiffFileStatus.Renamed}
@@ -82,7 +82,7 @@
           </div>
         {:else if file.status !== DiffFileStatus.Modified}
           <span
-            class="git-changelog-stat-color git-changelog-file-status-letter"
+            class="git-changelog-4stat-color git-changelog-file-status-letter"
             data-type={file.status}
           >
             {file.status === DiffFileStatus.Moved ? 'M' : file.status}
@@ -119,7 +119,7 @@
     padding-left: auto; // Add this to push content to the right
   }
 
-  .git-changelog-stats-container {
+  .git-changelog-5stats-container {
     display: flex;
     align-items: center;
     height: 100%;

@@ -39,17 +39,17 @@
 
 <span
   class={`${
-    isFileStat ? 'git-changelog-stat-item-file' : 'git-changelog-stat-item'
+    isFileStat ? 'git-changelog-3stat-item-file' : 'git-changelog-2stat-item'
   } `}
 >
   <span
-    class="{isFileStat ? 'file-icon' : 'icon'} git-changelog-stat-color"
+    class="{isFileStat ? 'file-icon' : 'icon'} git-changelog-4stat-color"
     class:invisible={isInvisible}
     data-type={getStatType()}
     bind:this={iconElement}
   ></span>
   <span
-    class="number git-changelog-stat-color"
+    class="number git-changelog-4stat-color"
     class:invisible={isInvisible}
     data-type={getStatType()}
   >

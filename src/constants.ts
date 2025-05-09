@@ -61,3 +61,12 @@ export const COMPARE_REPO_COMMITS_VIEW_CONFIG = {
   name: "Vault's git history comparison",
   type: 'vault-git-history-comparison-view'
 };
+
+// UI Virtual List Constant Defaults
+export const RESERVED_VERSION_HEADER_HEIGHT = 74.9;
+export const RESERVED_VERSION_VERBOSE_HEADER_HEIGHT = 96.9;
+export const RESERVED_VERSION_BODY_SPACING = 3; // 2px of gap and 1px of bottom padding
+export const RESERVED_FILE_TILE_HEIGHT_AND_BOTTOM_PADDING = 26.9;
+
+// Export const RESERVED_VERSION_HEADER_BOTTOM_MARGIN = 4;
+// Export const RESERVED_FILE_TILE_BOTTOM_MARGIN = 2;

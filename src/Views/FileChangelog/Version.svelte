@@ -90,62 +90,73 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div
-  class="git-changelog-align-file nav-file-title is-clickable git-changelog-file-changelog-entry"
-  aria-label={composeAriaLabel(entry)}
-  data-tooltip-position="bottom"
-  onclick={primaryClick}
-  onauxclick={(event) => {
-    event.stopPropagation();
-    // eslint-disable-next-line eqeqeq
-    if (event.button == 2) {
-      const view = plugin.app.workspace.getActiveViewOfType(FileChangelogView);
-      if (view) {
-        mayTriggerChangelogMenu({
-          event,
-          gitRelativePath: entry.pathGitRelative,
-          commitHash: entry.commitHash,
-          // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
-          view: view.leaf,
-          plugin
-        });
-      }
-    }
-  }}
->
-  <div class="git-changelog-file-name-container">
-    <div
-      class="git-changelog-one-line {isVersionClickable()
-        ? ''
-        : 'git-changelog-faint'}"
-    >
-      {formattedVersionDateLabel}
-    </div>
-    {#if index === 0}
-      <div
-        data-icon={OPEN_FILE_ICON}
-        aria-label="Open Live Version"
-        bind:this={openFileButton}
-        onauxclick={openLiveVersion}
-        onclick={openLiveVersion}
-        class="clickable-icon open-file-icon"
-      ></div>
-    {/if}
-  </div>
-  <DiffStatsComponent
-    baseStats={entry.textDiffStats
-      ? {
-          additions: entry.textDiffStats.baseStats.additions,
-          deletions: entry.textDiffStats.baseStats.deletions
+<div class="git-changelog-file-changelog-entry">
+  <div
+    class="git-changelog-align-file nav-file-title is-clickable git-changelog-small-left-padding"
+    aria-label={composeAriaLabel(entry)}
+    data-tooltip-position="bottom"
+    onclick={primaryClick}
+    onauxclick={(event) => {
+      event.stopPropagation();
+      // eslint-disable-next-line eqeqeq
+      if (event.button == 2) {
+        const view =
+          plugin.app.workspace.getActiveViewOfType(FileChangelogView);
+        if (view) {
+          mayTriggerChangelogMenu({
+            event,
+            gitRelativePath: entry.pathGitRelative,
+            commitHash: entry.commitHash,
+            // Source: VAULT_CHANGELOG_VIEW_CONFIG.type,
+            view: view.leaf,
+            plugin
+          });
         }
-      : undefined}
-    file={entry}
-    inFileChangelog={true}
-  />
+      }
+    }}
+  >
+    <div class="git-changelog-file-name-container">
+      <div
+        class="git-changelog-one-line {isVersionClickable()
+          ? ''
+          : 'git-changelog-faint'}"
+      >
+        {formattedVersionDateLabel}
+      </div>
+      {#if index === 0}
+        <div
+          data-icon={OPEN_FILE_ICON}
+          aria-label="Open Live Version"
+          bind:this={openFileButton}
+          onauxclick={openLiveVersion}
+          onclick={openLiveVersion}
+          class="clickable-icon open-file-icon"
+        ></div>
+      {/if}
+    </div>
+    <DiffStatsComponent
+      baseStats={entry.textDiffStats
+        ? {
+            additions: entry.textDiffStats.baseStats.additions,
+            deletions: entry.textDiffStats.baseStats.deletions
+          }
+        : undefined}
+      file={entry}
+      inFileChangelog={true}
+    />
+  </div>
 </div>
 
 <style lang="scss">
   .git-changelog-file-changelog-entry {
+    content-visibility: auto;
+    contain-intrinsic-height: 26.9px;
+    padding-bottom: var(
+      --size-2-1
+    ); // adds 2px of margin that was removed from nav-file-title
+  }
+
+  .git-changelog-small-left-padding {
     padding-left: var(--size-4-2);
   }
 </style>

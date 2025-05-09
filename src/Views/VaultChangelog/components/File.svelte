@@ -141,4 +141,8 @@
 </div>
 
 <style lang="scss">
+  .nav-file-title {
+    content-visibility: auto;
+    contain-intrinsic-height: 24.9px;
+  }
 </style>
