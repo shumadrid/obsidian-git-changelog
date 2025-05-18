@@ -19,16 +19,13 @@ import { pickFileChangelogSettings } from 'settings/settings.ts';
 
 export class FileChangelogManager extends ChangelogManager<FileChangelogEntry> {
   public constructor({
-    // ActiveGitFile,
     plugin,
     taskManager
   }: {
-    // ActiveGitFile?: string;
     plugin: GitChangelogPlugin;
     taskManager: TaskManager;
   }) {
     super({ plugin, taskManager });
-    // This.cachedActiveGitFile = activeGitFile;
   }
 
   /**
