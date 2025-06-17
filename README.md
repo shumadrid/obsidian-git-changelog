@@ -121,7 +121,7 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
 - If you're someone who's always concerned about data integrity, you don't need to have the vault changelog view open all the time in order to track changes. 😁 Just run this command every now and then to inspect all changes made since the last time you checked. (Be it a few minutes ago or a few months.)
 
-- If you don't like that this command is using the latest commit as the comparison point (because it often doesn't represent the actual current state of the vault):
+- If you don't like that this command is using the latest commit as the comparison point instead of the live vault state:
 
   - You can create an action (macro) using the [QuickAdd](https://obsidian.md/plugins?id=quickadd) plugin that will:
     1. Run the "Commit-and-sync" or "Commit all changes" command, depending on if you use Github to sync or not (these commands are available through the Git plugin).
