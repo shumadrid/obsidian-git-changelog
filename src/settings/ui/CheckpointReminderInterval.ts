@@ -9,11 +9,21 @@ import { removeCompareVersionsView } from 'utils.ts';
 export class CheckpointReminderInterval extends SettingComponent {
   public display(): void {
     this.createSetting()
-      .setName('Checkpoint reminder interval')
+      .setName(
+        createFragment((fragment) => {
+          fragment.appendText('Checkpoint reminder interval');
+          fragment
+            .createEl('span', {
+              cls: 'nav-file-tag git-changelog-new'
+            })
+            .setText('NEW');
+        })
+      )
+
       .setDesc(
         createFragment((fragment) => {
           fragment.appendText(
-            'How often to remind you to review changes made inside the vault.'
+            'How often to remind you to review changes made inside the vault (minutes).'
           );
           fragment.createEl('br');
           fragment.appendText('Set 0 to disable reminders.');
@@ -84,16 +94,22 @@ export function showCheckpointReminder(plugin: GitChangelogPlugin): void {
   if (plugin.checkpointReminderNotice) return;
   const frag = createFragment((element) => {
     element.createEl('span', {
-      text: `It's time to review the changes made to your vault.`
+      text: `Git changelog:\nIt's time to review the changes made to your vault. 🧐`
     });
     element.createEl('br');
+
     const openButton = element.createEl('button', {
-      text: 'Open'
+      text: 'Review'
     });
+    openButton.style.marginTop = '8px';
+    openButton.classList.add('mod-cta');
     openButton.addEventListener('click', () => {
       invokeAsyncSafely(() => openCompareToCheckpointView(plugin));
     });
-    const dismissButton = element.createEl('button', { text: 'Dismiss' });
+    const dismissButton = element.createEl('button', {
+      text: 'Remind me later'
+    });
+    dismissButton.style.marginLeft = '8px';
     dismissButton.addEventListener('click', () => {
       invokeAsyncSafely(() => dismissCheckpointReminder(plugin));
     });

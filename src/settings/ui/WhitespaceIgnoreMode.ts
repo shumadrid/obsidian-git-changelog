@@ -7,7 +7,6 @@ export class WhitespaceIgnoreModeOptions extends SettingComponent {
       .setName(
         createFragment((fragment) => {
           fragment.appendText(`Whitespace changes detection`);
-          fragment.createEl('span', { cls: 'nav-file-tag git-changelog-new' });
         })
       )
       .addTypedDropdown((dropdown) => {

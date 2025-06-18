@@ -6,7 +6,6 @@ export class IgnoreBlankLinesToggle extends SettingComponent {
       .setName(
         createFragment((fragment) => {
           fragment.appendText(`Ignore changes whose lines are all blank`);
-          fragment.createEl('span', { cls: 'nav-file-tag git-changelog-new' });
         })
       )
       .setDesc(
