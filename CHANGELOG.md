@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.6.0
+
+### Features
+
+- "Review changes reminder" feature. Receive a notification to review changes in your vault at a recurring interval (disabled by default).
+
+### Bug Fixes
+
+- More accurate descriptions for the whitespace ignore settings.
+
 ## 0.5.1
 
 ### Bug Fixes
