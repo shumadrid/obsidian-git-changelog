@@ -7,7 +7,7 @@ import type { GitChangelogSettingsTab } from 'settings/settingsTab.ts';
 export const PLUGIN_NAME = 'Git Changelog';
 export const PLUGIN_NAME_SENTENCE_CASE = 'Git changelog';
 export const MIN_COMPATIBLE_GIT_PLUGIN_VERSION = '2.31.1';
-export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.33.0';
+export const MAX_TESTED_GIT_PLUGIN_VERSION = '2.34.0';
 
 export interface GitChangelogPluginTypes extends PluginTypesBase {
   plugin: GitChangelogPlugin;
