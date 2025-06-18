@@ -8,7 +8,7 @@ import {
 } from 'constants.ts';
 import { CssClass } from 'obsidian-dev-utils/CssClass';
 import { showModal } from 'obsidian-dev-utils/obsidian/Modals/ModalBase';
-import { openCompareToCheckpointView } from 'settings/ui/CheckpointReminderInterval.ts';
+import { openCompareToCheckpointView } from 'settings/ui/ReviewChangesReminderInterval.ts';
 import { removeCompareVersionsView } from 'utils.ts';
 import { CompareVersionsModal } from 'Views/CompareRepoCommits/CompareModal.ts';
 import { FILE_CHANGELOG_VIEW_CONFIG } from 'Views/FileChangelog/FileChangelog.ts';

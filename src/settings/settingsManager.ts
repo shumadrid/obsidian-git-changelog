@@ -202,14 +202,14 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
     );
 
     this.registerValidator(
-      'checkpointReminderInterval',
-      (checkpointReminderInterval): MaybeReturn<string> => {
+      'reviewChangesReminderInterval',
+      (reviewChangesReminderInterval): MaybeReturn<string> => {
         if (
           !(
-            Number.isInteger(checkpointReminderInterval) &&
-            Number(checkpointReminderInterval) >= 0 &&
+            Number.isInteger(reviewChangesReminderInterval) &&
+            Number(reviewChangesReminderInterval) >= 0 &&
             // eslint-disable-next-line no-magic-numbers
-            Number(checkpointReminderInterval) <= 999_999_999
+            Number(reviewChangesReminderInterval) <= 999_999_999
           )
         ) {
           return 'Pick a non-negative whole number.';

@@ -11,12 +11,12 @@ import { WhitespaceIgnoreModeOptions } from 'settings/ui/WhitespaceIgnoreMode.ts
 import { WhitespaceSettingsHeading } from 'settings/ui/WhitespaceSettingsHeading.ts';
 
 import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
-import { CheckpointReminderInterval } from './ui/CheckpointReminderInterval.ts';
 import { CustomTimeZone } from './ui/CustomTimeZone.ts';
 import { ExcludeFilesAndFolders } from './ui/ExcludeFilesAndFolders.ts';
 import { GitPluginWarning } from './ui/GitPluginWarning.ts';
 import { RenameDetectionFileLimit } from './ui/RenameDetectionFileLimit.ts';
 import { RenameDetectionStrictnessSlider } from './ui/RenameDetectionStrictnessSlider.ts';
+import { ReviewChangesReminderInterval } from './ui/ReviewChangesReminderInterval.ts';
 import { StatusBarInterval } from './ui/StatusBarInterval.ts';
 import { StatusBarStatsToggle } from './ui/StatusBarStatsToggle.ts';
 
@@ -77,7 +77,7 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
       plugin
     }).display();
 
-    new CheckpointReminderInterval({ plugin }).display();
+    new ReviewChangesReminderInterval({ plugin }).display();
 
     new WhitespaceSettingsHeading({ plugin }).display();
 

@@ -45,7 +45,7 @@ export class GitChangelogSettings {
   public filesChangedWarningThreshold = '50';
 
   public checkpointCommits: string[] = [];
-  public checkpointReminderInterval = 0;
+  public reviewChangesReminderInterval = 0;
 
   public statusBarInterval = 30; // In mins
   public showStatusBarStats = false;
@@ -119,7 +119,6 @@ type VaultGenerationSettings = Except<
   | 'activeMinutesPassedSinceLastCheckpoint'
   | 'autoCommitDisabledWarningDismissed'
   | 'checkpointCommits'
-  | 'checkpointReminderInterval'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'dayStartHour'
   | 'dedicatedFileTypeSummaries'
@@ -138,6 +137,7 @@ type VaultGenerationSettings = Except<
   | 'notifyOnHighFilesChanged'
   | 'renameDetectionStrictness'
   | 'renameLimit'
+  | 'reviewChangesReminderInterval'
   | 'showStatusBarStats'
   | 'statusBarInterval'
   | 'timeZone'
@@ -149,7 +149,6 @@ type FileGenerationSettings = Except<
   | 'activeMinutesPassedSinceLastCheckpoint'
   | 'autoCommitDisabledWarningDismissed'
   | 'checkpointCommits'
-  | 'checkpointReminderInterval'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'convertToIncludeList'
   | 'dayStartHour'
@@ -170,6 +169,7 @@ type FileGenerationSettings = Except<
   | 'notifyOnHighFilesChanged'
   | 'renameDetectionStrictness'
   | 'renameLimit'
+  | 'reviewChangesReminderInterval'
   | 'showStatusBarStats'
   | 'statusBarInterval'
   | 'timeZone'
@@ -182,7 +182,6 @@ type GenerationSettings = Except<
   | 'activeMinutesPassedSinceLastCheckpoint'
   | 'autoCommitDisabledWarningDismissed'
   | 'checkpointCommits'
-  | 'checkpointReminderInterval'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'convertToIncludeList'
   | 'dedicatedFileTypeSummaries'
@@ -197,6 +196,7 @@ type GenerationSettings = Except<
   | 'locale'
   | 'notifyOnHighContentDeletionsAndMoves'
   | 'notifyOnHighFilesChanged'
+  | 'reviewChangesReminderInterval'
   | 'showStatusBarStats'
   | 'statusBarInterval'
   | 'vaultChangelogInterval'

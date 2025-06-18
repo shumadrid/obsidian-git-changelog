@@ -19,12 +19,12 @@ import { debounce, Notice } from 'obsidian';
 import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
-import { handleCheckpointReminderInterval } from 'settings/ui/CheckpointReminderInterval.ts';
 import { getLocaleToAssign } from 'settings/ui/CustomLocale.ts';
 import {
   gitPluginCompatibleVersion,
   gitPluginTestedVersion
 } from 'settings/ui/GitPluginWarning.ts';
+import { handleReviewChangesReminderInterval } from 'settings/ui/ReviewChangesReminderInterval.ts';
 import spacetime from 'spacetime';
 import { TaskManager } from 'TaskManager.svelte.ts';
 import { formatDateHour } from 'timeUtils.ts';
@@ -345,7 +345,7 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     // Register minute interval for checkpoint reminders
     this.registerInterval(
       window.setInterval(() => {
-        invokeAsyncSafely(() => handleCheckpointReminderInterval(this));
+        invokeAsyncSafely(() => handleReviewChangesReminderInterval(this));
         // eslint-disable-next-line no-magic-numbers
       }, 60 * 1000)
     );

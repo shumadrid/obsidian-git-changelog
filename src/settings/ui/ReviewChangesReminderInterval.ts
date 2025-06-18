@@ -6,12 +6,12 @@ import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 import { SettingComponent } from 'settings/components/setting.ts';
 import { removeCompareVersionsView } from 'utils.ts';
 
-export class CheckpointReminderInterval extends SettingComponent {
+export class ReviewChangesReminderInterval extends SettingComponent {
   public display(): void {
     this.createSetting()
       .setName(
         createFragment((fragment) => {
-          fragment.appendText('Checkpoint reminder interval');
+          fragment.appendText('Review changes reminder interval');
           fragment
             .createEl('span', {
               cls: 'nav-file-tag git-changelog-new'
@@ -30,7 +30,7 @@ export class CheckpointReminderInterval extends SettingComponent {
         })
       )
       .addNumber((text) => {
-        this.settingTab.bind(text, 'checkpointReminderInterval');
+        this.settingTab.bind(text, 'reviewChangesReminderInterval');
       });
   }
 }
@@ -62,11 +62,11 @@ export async function resetCheckpointReminderCounter(
 /**
  * Handles the minute interval for checkpoint reminders.
  */
-export async function handleCheckpointReminderInterval(
+export async function handleReviewChangesReminderInterval(
   plugin: GitChangelogPlugin
 ): Promise<void> {
-  const { checkpointReminderInterval } = plugin.settings;
-  if (!checkpointReminderInterval || checkpointReminderInterval <= 0) {
+  const { reviewChangesReminderInterval } = plugin.settings;
+  if (!reviewChangesReminderInterval || reviewChangesReminderInterval <= 0) {
     await dismissCheckpointReminder(plugin);
     return;
   }
@@ -81,7 +81,7 @@ export async function handleCheckpointReminderInterval(
 
   if (
     plugin.settings.activeMinutesPassedSinceLastCheckpoint >=
-    checkpointReminderInterval
+    reviewChangesReminderInterval
   ) {
     showCheckpointReminder(plugin);
   }
