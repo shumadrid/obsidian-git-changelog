@@ -124,7 +124,7 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 - If you don't like that this command is using the latest commit as the comparison point instead of the live vault state:
 
   - You can create an action (macro) using the [QuickAdd](https://obsidian.md/plugins?id=quickadd) plugin that will:
-    1. Run the "Commit-and-sync" or "Commit all changes" command, depending on if you use Github to sync or not (these commands are available through the Git plugin).
+    1. Run the "Commit-and-sync" or "Commit" command, depending on if you use Github to sync or not (these commands are available through the Git plugin).
     2. Wait for some time for the commit to complete (e.g. 200ms).
     3. Run the "Show Vault Changes since the Last Checkpoint" command.
   - That way you will always compare the current state of your vault to the state of the last checkpoint.
