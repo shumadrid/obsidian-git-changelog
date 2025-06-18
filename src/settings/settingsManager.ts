@@ -52,7 +52,7 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
         // We are assuming that the user is updating their plugin version, so we show the "what's changed" notification and alert the user that some of their settings broke.
         const whatsNewFragment = createFragment((element) => {
           element.createEl('p', {
-            text: 'Git changelog:\nA new version has been installed (v0.5.0).\n\nSome of your settings for this plugin have been reset!'
+            text: 'Git changelog:\nA new version has been installed.\n\nSome of your settings for this plugin have been reset!'
           });
 
           element.createEl('button', { text: 'Close' });
@@ -76,6 +76,21 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
 
   protected override registerValidators(): void {
     super.registerValidators();
+
+    // If the active minutes cache is corrupted then just reset it.
+    this.registerValidator(
+      'activeMinutesPassedSinceLastCheckpoint',
+      (activeMinutesPassedSinceLastCheckpoint): MaybeReturn<string> => {
+        if (
+          !Number.isInteger(activeMinutesPassedSinceLastCheckpoint) ||
+          activeMinutesPassedSinceLastCheckpoint < 0
+        ) {
+          // Reset to 0 if corrupted
+          return 'Corrupted value detected. Resetting to 0.';
+        }
+      }
+    );
+
     this.registerValidator(
       'diffMeasurementUnit',
       (measurementUnit): MaybeReturn<string> => {
@@ -179,6 +194,22 @@ export class GitChangelogSettingsManager extends PluginSettingsManagerBase<GitCh
             Number(renameLimit) >= 0 &&
             // eslint-disable-next-line no-magic-numbers
             Number(renameLimit) <= 99_999_999_999_999_999_999n
+          )
+        ) {
+          return 'Pick a non-negative whole number.';
+        }
+      }
+    );
+
+    this.registerValidator(
+      'checkpointReminderInterval',
+      (checkpointReminderInterval): MaybeReturn<string> => {
+        if (
+          !(
+            Number.isInteger(checkpointReminderInterval) &&
+            Number(checkpointReminderInterval) >= 0 &&
+            // eslint-disable-next-line no-magic-numbers
+            Number(checkpointReminderInterval) <= 999_999_999
           )
         ) {
           return 'Pick a non-negative whole number.';

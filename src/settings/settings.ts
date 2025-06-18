@@ -22,6 +22,7 @@ export class GitChangelogSettings {
   // Plugin state
   public autoCommitDisabledWarningDismissed = false;
   public firstStartup = true;
+  public activeMinutesPassedSinceLastCheckpoint = 0;
 
   // ShowFilesSummaryCountOptions[]; //Set<ShowFilesSummaryCountOptions>;
   // VaultChangelogFilesVisibility: VaultChangelogFilesVisibility;
@@ -44,6 +45,7 @@ export class GitChangelogSettings {
   public filesChangedWarningThreshold = '50';
 
   public checkpointCommits: string[] = [];
+  public checkpointReminderInterval = 0;
 
   public statusBarInterval = 30; // In mins
   public showStatusBarStats = false;
@@ -114,8 +116,10 @@ export function pickGeneralChangelogSettings(
 
 type VaultGenerationSettings = Except<
   GitChangelogSettings,
+  | 'activeMinutesPassedSinceLastCheckpoint'
   | 'autoCommitDisabledWarningDismissed'
   | 'checkpointCommits'
+  | 'checkpointReminderInterval'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'dayStartHour'
   | 'dedicatedFileTypeSummaries'
@@ -142,8 +146,10 @@ type VaultGenerationSettings = Except<
 
 type FileGenerationSettings = Except<
   GitChangelogSettings,
+  | 'activeMinutesPassedSinceLastCheckpoint'
   | 'autoCommitDisabledWarningDismissed'
   | 'checkpointCommits'
+  | 'checkpointReminderInterval'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'convertToIncludeList'
   | 'dayStartHour'
@@ -173,8 +179,10 @@ type FileGenerationSettings = Except<
 
 type GenerationSettings = Except<
   GitChangelogSettings,
+  | 'activeMinutesPassedSinceLastCheckpoint'
   | 'autoCommitDisabledWarningDismissed'
   | 'checkpointCommits'
+  | 'checkpointReminderInterval'
   | 'contentDeletionsAndMovesWarningThreshold'
   | 'convertToIncludeList'
   | 'dedicatedFileTypeSummaries'
