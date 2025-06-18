@@ -11,6 +11,7 @@ import { WhitespaceIgnoreModeOptions } from 'settings/ui/WhitespaceIgnoreMode.ts
 import { WhitespaceSettingsHeading } from 'settings/ui/WhitespaceSettingsHeading.ts';
 
 import { AutoCommitDisabledWarning } from './ui/AutoCommitDisabledWarning.ts';
+import { CheckpointReminderInterval } from './ui/CheckpointReminderInterval.ts';
 import { CustomTimeZone } from './ui/CustomTimeZone.ts';
 import { ExcludeFilesAndFolders } from './ui/ExcludeFilesAndFolders.ts';
 import { GitPluginWarning } from './ui/GitPluginWarning.ts';
@@ -75,6 +76,8 @@ export class GitChangelogSettingsTab extends PluginSettingsTabBase<GitChangelogP
       disabled: !plugin.settings.showStatusBarStats,
       plugin
     }).display();
+
+    new CheckpointReminderInterval({ plugin }).display();
 
     new WhitespaceSettingsHeading({ plugin }).display();
 

@@ -8,6 +8,7 @@ import {
 } from 'constants.ts';
 import { CssClass } from 'obsidian-dev-utils/CssClass';
 import { showModal } from 'obsidian-dev-utils/obsidian/Modals/ModalBase';
+import { openCompareToCheckpointView } from 'settings/ui/CheckpointReminderInterval.ts';
 import { removeCompareVersionsView } from 'utils.ts';
 import { CompareVersionsModal } from 'Views/CompareRepoCommits/CompareModal.ts';
 import { FILE_CHANGELOG_VIEW_CONFIG } from 'Views/FileChangelog/FileChangelog.ts';
@@ -42,14 +43,7 @@ export function addCommands(plugin: GitChangelogPlugin): void {
 
   plugin.addCommand({
     callback: async () => {
-      // First close any existing COMPARE_REPO_STATES_VIEW views
-      removeCompareVersionsView(plugin);
-
-      await app.workspace.ensureSideLeaf(
-        COMPARE_TO_CHECKPOINT_VIEW_CONFIG.type,
-        'left',
-        { reveal: true }
-      );
+      await openCompareToCheckpointView(plugin);
     },
     id: `show-${COMPARE_TO_CHECKPOINT_VIEW_CONFIG.type}`,
     name: `Show ${COMPARE_TO_CHECKPOINT_VIEW_CONFIG.name.toLocaleLowerCase()}`

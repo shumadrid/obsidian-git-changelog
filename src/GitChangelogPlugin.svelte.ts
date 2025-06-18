@@ -16,8 +16,10 @@ import { changelogGenerationSettingsChanged } from 'core/helper.ts';
 import { VaultChangelogManager } from 'core/VaultChangelogManager.ts';
 import { addContextMenuItems } from 'menu.ts';
 import { debounce, Notice } from 'obsidian';
+import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import { GitChangelogSettingsManager } from 'settings/settingsManager.ts';
+import { handleCheckpointReminderInterval } from 'settings/ui/CheckpointReminderInterval.ts';
 import { getLocaleToAssign } from 'settings/ui/CustomLocale.ts';
 import {
   gitPluginCompatibleVersion,
@@ -65,7 +67,9 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     | undefined;
 
   public gitPluginState = $state<GitPluginState>();
+
   public gitRepoReady = $state<boolean>();
+
   // Used for keeping relative interval labels like "today" and "yesterday" up to date
   public dependenciesReady = $derived(
     (this.gitPluginState === GitPluginState.Enabled ||
@@ -80,13 +84,16 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
   ); // In UTC so it doesn't depend on the timezone setting
 
   public vaultChangelogManager = $state<VaultChangelogManager>();
+
   public fileChangelogManager = $state<FileChangelogManager>();
   public statusBarStats?: StatusBarStats;
   public cachedActiveGitFile: string | undefined;
+
   public compareVersionsUtcNewerDate: string | undefined;
   public compareVersionsUtcOlderDate: string | undefined;
-
   public localeSafe = $state<string>('en-US'); // Properly loaded in onLayoutReady
+
+  public checkpointReminderNotice: Notice | undefined;
 
   public get emptyTreeHashUnsafe(): string {
     return assertNotNull(this.emptyTreeHash);
@@ -96,7 +103,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
    * If we were to persist this, it would be less flexible if the user changes his repo or the hashing algorithm and we would need to either manually have a database of all possible empty tree hashes or validate it in runtime
    */
   private emptyTreeHash: string | undefined;
-
   public async addFileChangelogView(): Promise<void> {
     await this.app.workspace.ensureSideLeaf(
       FILE_CHANGELOG_VIEW_CONFIG.type,
@@ -219,6 +225,11 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
     this.fileChangelogManager?.taskManager.abort();
     this.vaultChangelogManager?.taskManager.abort();
     this.statusBarStats?.destroy();
+
+    if (this.checkpointReminderNotice) {
+      this.checkpointReminderNotice.hide();
+      this.checkpointReminderNotice = undefined;
+    }
   }
 
   protected override async onloadImpl(): Promise<void> {
@@ -330,6 +341,14 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
 
     // Also checks the status of the Git plugin
     this.updateActiveGitFile();
+
+    // Register minute interval for checkpoint reminders
+    this.registerInterval(
+      window.setInterval(() => {
+        invokeAsyncSafely(() => handleCheckpointReminderInterval(this));
+        // eslint-disable-next-line no-magic-numbers
+      }, 60 * 1000)
+    );
   }
 
   private setNewActiveGitFile(activeGitFile: string | undefined): void {
