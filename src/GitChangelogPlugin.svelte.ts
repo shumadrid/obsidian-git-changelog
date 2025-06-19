@@ -309,13 +309,16 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
       })
     );
 
-    // Every  minute it checks if it's a new hour (most common interval) in order to update the potentially outdated interval labels.
     this.registerInterval(
       window.setInterval(
         () => {
+          // Every  minute it checks if it's a new hour (most common interval) in order to update the potentially outdated interval labels.
           const utcCurrentDate = spacetime.now('utc');
           // Svelte triggers updates only if the strings are different.
           this.utcCurrentDateHour = formatDateHour(utcCurrentDate);
+
+          // Register minute interval for checkpoint reminders
+          invokeAsyncSafely(() => handleReviewChangesReminderInterval(this));
         },
         // eslint-disable-next-line no-magic-numbers
         60 * 1000
@@ -341,14 +344,6 @@ export class GitChangelogPlugin extends PluginBase<GitChangelogPluginTypes> {
 
     // Also checks the status of the Git plugin
     this.updateActiveGitFile();
-
-    // Register minute interval for checkpoint reminders
-    this.registerInterval(
-      window.setInterval(() => {
-        invokeAsyncSafely(() => handleReviewChangesReminderInterval(this));
-        // eslint-disable-next-line no-magic-numbers
-      }, 60 * 1000)
-    );
   }
 
   private setNewActiveGitFile(activeGitFile: string | undefined): void {

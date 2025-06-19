@@ -39,10 +39,13 @@ export class ReviewChangesReminderInterval extends SettingComponent {
  * Dismisses the checkpoint reminder notification if present.
  */
 export async function dismissCheckpointReminder(
-  plugin: GitChangelogPlugin
+  plugin: GitChangelogPlugin,
+  hide: boolean
 ): Promise<void> {
   if (plugin.checkpointReminderNotice) {
-    plugin.checkpointReminderNotice.hide();
+    if (hide) {
+      plugin.checkpointReminderNotice.hide();
+    }
     plugin.checkpointReminderNotice = undefined;
   }
   await resetCheckpointReminderCounter(plugin);
@@ -67,7 +70,7 @@ export async function handleReviewChangesReminderInterval(
 ): Promise<void> {
   const { reviewChangesReminderInterval } = plugin.settings;
   if (!reviewChangesReminderInterval || reviewChangesReminderInterval <= 0) {
-    await dismissCheckpointReminder(plugin);
+    await dismissCheckpointReminder(plugin, true);
     return;
   }
   // Don't show if already open
@@ -104,21 +107,22 @@ export function showCheckpointReminder(plugin: GitChangelogPlugin): void {
     openButton.style.marginTop = '8px';
     openButton.classList.add('mod-cta');
     openButton.addEventListener('click', () => {
-      invokeAsyncSafely(() => openCompareToCheckpointView(plugin));
+      invokeAsyncSafely(() => openCompareToCheckpointView(plugin, false));
     });
     const dismissButton = element.createEl('button', {
       text: 'Remind me later'
     });
     dismissButton.style.marginLeft = '8px';
     dismissButton.addEventListener('click', () => {
-      invokeAsyncSafely(() => dismissCheckpointReminder(plugin));
+      invokeAsyncSafely(() => dismissCheckpointReminder(plugin, false));
     });
   });
   plugin.checkpointReminderNotice = new Notice(frag, 0);
 }
 
 export async function openCompareToCheckpointView(
-  plugin: GitChangelogPlugin
+  plugin: GitChangelogPlugin,
+  hideCheckpointReminder = true
 ): Promise<void> {
   // First close any existing COMPARE_REPO_STATES_VIEW views
   removeCompareVersionsView(plugin);
@@ -129,5 +133,7 @@ export async function openCompareToCheckpointView(
     { reveal: true }
   );
 
-  invokeAsyncSafely(() => dismissCheckpointReminder(plugin));
+  invokeAsyncSafely(() =>
+    dismissCheckpointReminder(plugin, hideCheckpointReminder)
+  );
 }
