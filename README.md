@@ -42,6 +42,8 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
 ### Vault Changelog View
 
+![Vault Changelog View](.github/vault-changelog-view.webp)
+
 - Detects renamed and moved files separately.
 - Shows the total count of lines added and deleted.
 - Displays counts of files added, modified, moved/renamed and deleted (total or text and non-text separately). **NOTE:** If a file is both renamed/moved and modified, it will contribute towards the renamed/moved files stats.
@@ -71,13 +73,11 @@ To easily see the what's new in future updates, it's recommended to use the [Plu
 
     Then you can easily investigate what settings recently changed and if some of the changes are the cause of your issue.
 
-  ![Vault Changelog View](.github/vault-changelog-view.webp)
-
 ### File Changelog View
 
-- Shows the count of added and deleted lines for all previous versions of the active note.
+![File Changelog View](.github/file-changelog-view.webp)
 
-  ![File Changelog View](.github/file-changelog-view.webp)
+- Shows the count of added and deleted lines for all previous versions of the active note.
 
 > [!WARNING]
 > Showing a lot of versions and files will reduce view performance. This will be fixed soon.
