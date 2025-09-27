@@ -36,6 +36,10 @@ A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to
 > [!NOTE]
 > This plugin is currently in beta and still under development, so your existing settings may break after each update. If some saved settings were broken, they will be mentioned in the changelog.
 
+> [!NOTE]
+> September 2025: I'm taking a little break from working on this plugin.
+> But if a change happens in Obsidian or the Git plugin that breaks this plugin, I'll fix it.
+
 ## Features
 
 To easily see the what's new in future updates, it's recommended to use the [Plugin Update Tracker](https://obsidian.md/plugins?id=obsidian-plugin-update-tracker).
