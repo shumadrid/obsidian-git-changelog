@@ -1,6 +1,10 @@
 # Git Changelog
 
-A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to display dynamic changelogs in your sidebar. Also usable as a practical data loss monitoring tool.
+An [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to display dynamic changelogs in your sidebar. Also usable as a practical data loss monitoring tool.
+
+> [!NOTE]
+> January 2026 update: I didn't forget about this plugin, I'm just busy with other stuff currently. I plan to continue working on it when I get the time.
+> If in the meantime a change happens in Obsidian or the Git plugin that breaks this plugin, I'll fix it.
 
 ![Showcase](.github/showcase.gif)
 
@@ -35,10 +39,6 @@ A new [Obsidian](https://obsidian.md) plugin that utilizes Git commit history to
 
 > [!NOTE]
 > This plugin is currently in beta and still under development, so your existing settings may break after each update. If some saved settings were broken, they will be mentioned in the changelog.
-
-> [!NOTE]
-> September 2025: I'm taking a little break from working on this plugin.
-> But if a change happens in Obsidian or the Git plugin that breaks this plugin, I'll fix it.
 
 ## Features
 
@@ -249,7 +249,7 @@ If you don't want to depend on Git, check out the these alternative plugins:
 
     2. and was also significantly modified, so that the similarity of the old and new version went below the `File move/rename detection strictness` threshold, resulting in Git treating the file as a new file instead of a renamed/moved one.
 
-    3. but the only changes were letter capitalization changes, and now Git is saying that the file has no history ([Why?](https://github.com/shumadrid/obsidian-git-changelog/issues/3) TLDR: Git is case sensitive, your file system might not be). To solve this:
+    3. but the only changes were letter capitalization changes, and now Git is saying that the file has no history. [Why?](https://github.com/shumadrid/obsidian-git-changelog/issues/3) (TLDR: Git is case sensitive, your file system might not be). To solve this:
 
        1. Add an emoji (or anything) as a prefix in the name to all the affected files/folders in your vault (an easier way is to only prefix all the topmost folders).
 
@@ -261,7 +261,7 @@ If you don't want to depend on Git, check out the these alternative plugins:
 
   - No. This plugin is intended to be read-only and does not alter any Git configurations. However, it's in beta, so bugs are possible.
 
-    The only exception is if you explicitly click the `Apply` button for the `Difference detection algorithm` setting, which applies the selected algorithm to the `.git/config` file.
+    The only exception is if you explicitly click the `Apply` button for the `Difference detection algorithm` setting, which applies the selected algorithm to the `.git/config` file. But this setting is easily reversible.
 
 - I have been using Obsidian for some time but don't have a Git repo set up. Can I still use this plugin to view the history of my vault?
 
@@ -269,7 +269,7 @@ If you don't want to depend on Git, check out the these alternative plugins:
 
 - After making substantial changes, the plugin is showing unusual stats.
 
-  - Try disabling all exclusion rules and see if it was some rule that was influencing the stats.
+  - Try disabling all exclusion rules and see if it was some exclusion rule that was influencing the stats.
 
     Example scenario: A folder that was marked as excluded is now moved to a different location, the existing rule no longer affects that folder, so the plugin is showing the files inside that folder as added instead of moved.
 
