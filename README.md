@@ -239,6 +239,8 @@ If you don't want to depend on Git, check out the these alternative plugins:
 
 - [Edit History](https://github.com/antoniotejada/obsidian-edit-history) - similar to this plugin, but generates it's own history files instead of relying on other tools.
 
+- [Time Machine](https://github.com/dsebastien/obsidian-time-machine) - experimental, relies on snapshots from the Obsidian's core "File recovery" plugin.
+
 ## FAQ
 
 - Why is the File changelog view showing inaccurate history for some files?
